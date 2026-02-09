@@ -1,0 +1,74 @@
+"""FastAPI application entry point."""
+
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
+from app.core.config import settings
+
+# ── API routers ─────────────────────────────────────────────────
+
+from app.api.auth.router import router as auth_router
+from app.api.users.router import router as users_router
+from app.api.documents.router import router as documents_router
+from app.api.ai.router import router as ai_router
+from app.api.quizzes.router import router as quizzes_router
+from app.api.dashboard.router import router as dashboard_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    upload_dir = Path(settings.UPLOAD_DIR)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    yield
+    # Shutdown — close connections if needed
+
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    version="0.1.0",
+    lifespan=lifespan,
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
+)
+
+# ── CORS ────────────────────────────────────────────────────────
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ── API routes ──────────────────────────────────────────────────
+
+app.include_router(auth_router, prefix=settings.API_PREFIX)
+app.include_router(users_router, prefix=settings.API_PREFIX)
+app.include_router(documents_router, prefix=settings.API_PREFIX)
+app.include_router(ai_router, prefix=settings.API_PREFIX)
+app.include_router(quizzes_router, prefix=settings.API_PREFIX)
+app.include_router(dashboard_router, prefix=settings.API_PREFIX)
+
+
+# ── Health check ────────────────────────────────────────────────
+
+@app.get("/api/health")
+async def health():
+    return {"status": "ok", "app": settings.APP_NAME}
+
+
+# ── Serve React SPA (production) ───────────────────────────────
+
+UI_BUILD_DIR = Path(__file__).resolve().parent.parent.parent / "ui" / "dist"
+
+if UI_BUILD_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=str(UI_BUILD_DIR), html=True), name="spa")
