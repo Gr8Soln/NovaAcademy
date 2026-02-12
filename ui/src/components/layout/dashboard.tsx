@@ -1,7 +1,8 @@
-import { useAuthStore } from "@/stores/authStore";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
-export default function Layout() {
+import { useAuthStore } from "@/stores";
+
+const DashboardLayout = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
@@ -55,4 +56,5 @@ export default function Layout() {
       </footer>
     </div>
   );
-}
+};
+export default DashboardLayout;

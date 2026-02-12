@@ -1,4 +1,4 @@
-import { useSSEStream } from "@/hooks/useSSEStream";
+import { useSSEStream } from "@/hooks/use-sse-stream";
 import { aiApi } from "@/lib/api";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";

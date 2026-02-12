@@ -1,12 +1,13 @@
-import Layout from "@/components/Layout";
-import DashboardPage from "@/pages/DashboardPage";
-import DocumentsPage from "@/pages/DocumentsPage";
-import LandingPage from "@/pages/LandingPage";
-import LoginPage from "@/pages/LoginPage";
-import RegisterPage from "@/pages/RegisterPage";
-import StudyPage from "@/pages/StudyPage";
-import { useAuthStore } from "@/stores/authStore";
 import { Navigate, Route, Routes } from "react-router-dom";
+
+import Layout from "@/components/layout/dashboard";
+import DashboardPage from "@/pages/dashboard/dashboard";
+import DocumentsPage from "@/pages/study/documents";
+import LandingPage from "@/pages/landing";
+import LoginPage from "@/pages/auth/login";
+import RegisterPage from "@/pages/auth/register";
+import StudyPage from "@/pages/study/study";
+import { useAuthStore } from "@/stores";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.accessToken);

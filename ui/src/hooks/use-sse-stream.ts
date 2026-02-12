@@ -1,10 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 
-/**
- * Hook for consuming SSE streams from AI endpoints.
- * Returns accumulated text plus controls.
- */
-export function useSSEStream() {
+const useSSEStream = () => {
   const [text, setText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,4 +75,6 @@ export function useSSEStream() {
   }, []);
 
   return { text, isStreaming, error, start, stop, reset };
-}
+};
+
+export default useSSEStream;

@@ -1,7 +1,5 @@
-version: "3.9"
-
 services:
-  # ── Backend (FastAPI) ──────────────────────────────────────
+  # ===== Backend (FastAPI) ==============================
   backend:
     build:
       context: .
@@ -9,7 +7,7 @@ services:
     container_name: gr8academy-backend
     env_file: .env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/gr8academy
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - REDIS_URL=redis://redis:6379/0
       - QDRANT_HOST=qdrant
     ports:
@@ -25,7 +23,7 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  # ── UI (React + Nginx) ────────────────────────────────────
+  # ===== UI (React + Nginx) ==============================
   ui:
     build:
       context: .
@@ -37,14 +35,14 @@ services:
       - backend
     restart: unless-stopped
 
-  # ── PostgreSQL ────────────────────────────────────────────
+  # ===== PostgreSQL ==============================
   postgres:
     image: postgres:16-alpine
     container_name: gr8academy-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: gr8academy
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -56,7 +54,7 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # ── Redis ─────────────────────────────────────────────────
+  # ===== Redis ==============================
   redis:
     image: redis:7-alpine
     container_name: gr8academy-redis
@@ -66,7 +64,7 @@ services:
       - redisdata:/data
     restart: unless-stopped
 
-  # ── Qdrant (Vector DB) ───────────────────────────────────
+  # ===== Qdrant (Vector DB) ==============================
   qdrant:
     image: qdrant/qdrant:v1.12.5
     container_name: gr8academy-qdrant

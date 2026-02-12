@@ -1,11 +1,12 @@
 import { authApi } from "@/lib/api";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/auth-store";
 import type { AuthResponse } from "@/types";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,11 +18,15 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const data = (await authApi.login(email, password)) as AuthResponse;
+      const data = (await authApi.register(
+        email,
+        fullName,
+        password,
+      )) as AuthResponse;
       setAuth(data.user, data.tokens.access_token, data.tokens.refresh_token);
       navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -31,7 +36,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-sm p-8">
         <h1 className="text-2xl font-bold text-center text-gray-900 mb-6">
-          Log in to Gr8Academy
+          Create your account
         </h1>
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded text-sm">
@@ -39,6 +44,18 @@ export default function LoginPage() {
           </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Full Name
+            </label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -60,6 +77,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={8}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
@@ -68,13 +86,13 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50"
           >
-            {loading ? "Logging in..." : "Log in"}
+            {loading ? "Creating account..." : "Sign up"}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <Link to="/register" className="text-primary-600 hover:underline">
-            Sign up
+          Already have an account?{" "}
+          <Link to="/login" className="text-primary-600 hover:underline">
+            Log in
           </Link>
         </p>
       </div>
