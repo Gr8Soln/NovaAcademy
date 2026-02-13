@@ -5,16 +5,14 @@ from __future__ import annotations
 import uuid
 from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.document import Document, DocumentChunk
-from app.infrastructure.db.mappers import (
-    chunk_entity_to_model,
-    chunk_model_to_entity,
-    document_entity_to_model,
-    document_model_to_entity,
-)
+from app.infrastructure.db.mappers import (chunk_entity_to_model,
+                                           chunk_model_to_entity,
+                                           document_entity_to_model,
+                                           document_model_to_entity)
 from app.infrastructure.db.models import DocumentChunkModel, DocumentModel
 from app.interfaces.repositories.document_repository import IDocumentRepository
 
@@ -89,3 +87,9 @@ class PostgresDocumentRepository(IDocumentRepository):
         for model in result.scalars().all():
             await self._session.delete(model)
         await self._session.flush()
+
+    async def count_by_user(self, user_id: uuid.UUID) -> int:
+        result = await self._session.execute(
+            select(func.count()).select_from(DocumentModel).where(DocumentModel.user_id == user_id)
+        )
+        return result.scalar() or 0

@@ -139,7 +139,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         : undefined);
 
     return (
-      <div className="w-full">
+      <div className="w-fit">
         <label
           htmlFor={inputId}
           className="flex items-start gap-2 cursor-pointer"

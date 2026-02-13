@@ -36,3 +36,8 @@ class IPointTransactionRepository(ABC):
     async def get_points_since(self, user_id: uuid.UUID, since: datetime) -> int:
         """Sum of points earned since a given time (for rolling leaderboard windows)."""
         ...
+
+    @abstractmethod
+    async def count_history(self, user_id: uuid.UUID) -> int:
+        """Count total transactions for a user."""
+        ...

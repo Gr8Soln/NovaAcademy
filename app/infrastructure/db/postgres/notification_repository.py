@@ -79,3 +79,12 @@ class PostgresNotificationRepository(INotificationRepository):
             )
         )
         return result.scalar() or 0
+
+    async def count_user_notifications(self, user_id: uuid.UUID, unread_only: bool = False) -> int:
+        stmt = select(func.count()).select_from(NotificationModel).where(
+            NotificationModel.user_id == user_id
+        )
+        if unread_only:
+            stmt = stmt.where(NotificationModel.is_read == False)  # noqa: E712
+        result = await self._session.execute(stmt)
+        return result.scalar() or 0

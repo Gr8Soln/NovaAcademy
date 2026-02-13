@@ -30,3 +30,8 @@ class IQuizRepository(ABC):
     @abstractmethod
     async def delete(self, quiz_id: uuid.UUID) -> None:
         ...
+
+    @abstractmethod
+    async def count_by_user(self, user_id: uuid.UUID) -> int:
+        """Count quizzes created by a user."""
+        ...

@@ -11,13 +11,35 @@ from app.domain.entities.user import User
 from app.interfaces.services.leaderboard_service import (ILeaderboardService,
                                                          LeaderboardPeriod,
                                                          LeaderboardType)
+from app.schemas.response import success_response
 from app.schemas.social import LeaderboardEntryResponse
 from app.use_cases.challenges import GetLeaderboardUseCase, GetUserRankUseCase
 
 router = APIRouter(prefix="/leaderboard", tags=["leaderboard"])
 
 
-@router.get("/{board_type}/{period}", response_model=list[LeaderboardEntryResponse])
+@router.get("/public/top")
+async def get_public_leaderboard(
+    limit: int = 5,
+    leaderboard: ILeaderboardService = Depends(get_leaderboard_service),
+):
+    """Public leaderboard preview — top N by all-time points, no auth required."""
+    use_case = GetLeaderboardUseCase(leaderboard)
+    entries = await use_case.execute(
+        board_type=LeaderboardType.POINTS,
+        period=LeaderboardPeriod.ALL_TIME,
+        limit=limit,
+    )
+    return success_response(
+        data=[
+            LeaderboardEntryResponse(user_id=e.user_id, score=e.score, rank=e.rank).model_dump(mode="json")
+            for e in entries
+        ],
+        message="Public leaderboard retrieved",
+    )
+
+
+@router.get("/{board_type}/{period}")
 async def get_leaderboard(
     board_type: str,
     period: str,
@@ -31,12 +53,16 @@ async def get_leaderboard(
         period=LeaderboardPeriod(period),
         limit=limit,
     )
-    return [
-        LeaderboardEntryResponse(user_id=e.user_id, score=e.score, rank=e.rank) for e in entries
-    ]
+    return success_response(
+        data=[
+            LeaderboardEntryResponse(user_id=e.user_id, score=e.score, rank=e.rank).model_dump(mode="json")
+            for e in entries
+        ],
+        message="Leaderboard retrieved",
+    )
 
 
-@router.get("/{board_type}/{period}/me", response_model=LeaderboardEntryResponse | None)
+@router.get("/{board_type}/{period}/me")
 async def get_my_rank(
     board_type: str,
     period: str,
@@ -50,11 +76,14 @@ async def get_my_rank(
         period=LeaderboardPeriod(period),
     )
     if not entry:
-        return None
-    return LeaderboardEntryResponse(user_id=entry.user_id, score=entry.score, rank=entry.rank)
+        return success_response(message="No rank found")
+    return success_response(
+        data=LeaderboardEntryResponse(user_id=entry.user_id, score=entry.score, rank=entry.rank).model_dump(mode="json"),
+        message="User rank retrieved",
+    )
 
 
-@router.get("/{board_type}/{period}/around/{user_id}", response_model=list[LeaderboardEntryResponse])
+@router.get("/{board_type}/{period}/around/{user_id}")
 async def get_around_user(
     board_type: str,
     period: str,
@@ -69,6 +98,10 @@ async def get_around_user(
         period=LeaderboardPeriod(period),
         count=count,
     )
-    return [
-        LeaderboardEntryResponse(user_id=e.user_id, score=e.score, rank=e.rank) for e in entries
-    ]
+    return success_response(
+        data=[
+            LeaderboardEntryResponse(user_id=e.user_id, score=e.score, rank=e.rank).model_dump(mode="json")
+            for e in entries
+        ],
+        message="Leaderboard around user retrieved",
+    )

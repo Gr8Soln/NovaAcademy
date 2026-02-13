@@ -11,7 +11,8 @@ import httpx
 from jose import JWTError, jwt
 
 from app.domain.exceptions import AuthenticationError
-from app.interfaces.services.auth_service import GoogleUserInfo, IAuthService, TokenPair
+from app.interfaces.services.auth_service import (GoogleUserInfo, IAuthService,
+                                                  TokenPair)
 
 
 class JWTAuthService(IAuthService):
@@ -32,6 +33,7 @@ class JWTAuthService(IAuthService):
         self._google_client_id = google_client_id
         self._google_client_secret = google_client_secret
         self._google_redirect_uri = google_redirect_uri
+        self._reset_expire = timedelta(hours=1)
 
     # ── Password ────────────────────────────────────────────────
 
@@ -105,3 +107,11 @@ class JWTAuthService(IAuthService):
             google_sub=info["id"],
             avatar_url=info.get("picture"),
         )
+
+    # ── Password Reset ──────────────────────────────────────────
+
+    def create_password_reset_token(self, user_id: uuid.UUID) -> str:
+        return self._create_token(user_id, self._reset_expire, "password_reset")
+
+    def decode_password_reset_token(self, token: str) -> uuid.UUID:
+        return self._decode_token(token, "password_reset")

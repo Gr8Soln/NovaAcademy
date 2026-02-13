@@ -44,3 +44,8 @@ class IDocumentRepository(ABC):
     @abstractmethod
     async def delete_chunks_by_document(self, document_id: uuid.UUID) -> None:
         ...
+
+    @abstractmethod
+    async def count_by_user(self, user_id: uuid.UUID) -> int:
+        """Count documents owned by a user."""
+        ...

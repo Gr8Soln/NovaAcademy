@@ -36,3 +36,8 @@ class INotificationRepository(ABC):
     @abstractmethod
     async def count_unread(self, user_id: uuid.UUID) -> int:
         ...
+
+    @abstractmethod
+    async def count_user_notifications(self, user_id: uuid.UUID, unread_only: bool = False) -> int:
+        """Count total notifications for a user."""
+        ...

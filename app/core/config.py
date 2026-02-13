@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
 
     # ── Database ────────────────────────────────────────────────
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/gr8academy"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:admin@localhost:5432/gr8academy"
 
     # ── Redis ───────────────────────────────────────────────────
     REDIS_URL: str = "redis://localhost:6379/0"

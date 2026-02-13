@@ -102,3 +102,12 @@ class PostgresChallengeRepository(IChallengeRepository):
             )
         )
         return [challenge_model_to_entity(m) for m in result.scalars().all()]
+
+    async def count_user_challenges(self, user_id: uuid.UUID, status=None) -> int:
+        stmt = select(func.count()).select_from(ChallengeModel).where(
+            or_(ChallengeModel.challenger_id == user_id, ChallengeModel.opponent_id == user_id)
+        )
+        if status:
+            stmt = stmt.where(ChallengeModel.status == (status.value if hasattr(status, 'value') else status))
+        result = await self._session.execute(stmt)
+        return result.scalar() or 0

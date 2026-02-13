@@ -50,3 +50,13 @@ class IAuthService(ABC):
     async def get_google_user_info(self, code: str) -> GoogleUserInfo:
         """Exchange OAuth code for Google user info."""
         ...
+
+    @abstractmethod
+    def create_password_reset_token(self, user_id: uuid.UUID) -> str:
+        """Create a short-lived token for password reset."""
+        ...
+
+    @abstractmethod
+    def decode_password_reset_token(self, token: str) -> uuid.UUID:
+        """Decode and validate a password reset token, return user_id."""
+        ...

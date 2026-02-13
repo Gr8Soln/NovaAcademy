@@ -119,3 +119,17 @@ class PostgresPostRepository(IPostRepository):
             select(func.count()).where(PostModel.user_id == user_id)
         )
         return result.scalar() or 0
+
+    async def count_feed(self, following_ids: list[uuid.UUID]) -> int:
+        if not following_ids:
+            return 0
+        result = await self._session.execute(
+            select(func.count()).select_from(PostModel).where(PostModel.user_id.in_(following_ids))
+        )
+        return result.scalar() or 0
+
+    async def count_explore(self) -> int:
+        result = await self._session.execute(
+            select(func.count()).select_from(PostModel)
+        )
+        return result.scalar() or 0

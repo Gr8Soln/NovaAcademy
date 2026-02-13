@@ -11,7 +11,7 @@ from app.core.dependencies import (get_challenge_repository, get_current_user,
                                    get_notification_push_service,
                                    get_notification_repository,
                                    get_point_transaction_repository,
-                                   get_post_repository)
+                                   get_post_repository, get_user_repository)
 from app.domain.entities.challenge import ChallengeStatus
 from app.domain.entities.user import User
 from app.domain.exceptions import (ChallengeNotFoundError,
@@ -24,9 +24,11 @@ from app.interfaces.repositories.notification_repository import \
 from app.interfaces.repositories.point_transaction_repository import \
     IPointTransactionRepository
 from app.interfaces.repositories.post_repository import IPostRepository
+from app.interfaces.repositories.user_repository import IUserRepository
 from app.interfaces.services.leaderboard_service import ILeaderboardService
 from app.interfaces.services.notification_push_service import \
     INotificationPushService
+from app.schemas.response import paginated_response, success_response
 from app.schemas.social import (ChallengeResponse, CreateChallengeRequest,
                                 SubmitScoreRequest)
 from app.use_cases.challenges import (AcceptChallengeUseCase,
@@ -50,16 +52,18 @@ def _to_response(c) -> ChallengeResponse:
     )
 
 
-@router.post("/", response_model=ChallengeResponse, status_code=201)
+@router.post("/", status_code=201)
 async def create_challenge(
     body: CreateChallengeRequest,
     current_user: User = Depends(get_current_user),
     challenge_repo: IChallengeRepository = Depends(get_challenge_repository),
     point_repo: IPointTransactionRepository = Depends(get_point_transaction_repository),
+    user_repo: IUserRepository = Depends(get_user_repository),
     notification_repo: INotificationRepository = Depends(get_notification_repository),
+    leaderboard: ILeaderboardService = Depends(get_leaderboard_service),
     push: INotificationPushService = Depends(get_notification_push_service),
 ):
-    use_case = CreateChallengeUseCase(challenge_repo, point_repo, notification_repo, push)
+    use_case = CreateChallengeUseCase(challenge_repo, point_repo, user_repo, notification_repo, leaderboard, push)
     try:
         challenge = await use_case.execute(
             challenger_id=current_user.id,
@@ -72,10 +76,13 @@ async def create_challenge(
         raise HTTPException(status_code=400, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return _to_response(challenge)
+    return success_response(
+        data=_to_response(challenge).model_dump(mode="json"),
+        message="Challenge created",
+    )
 
 
-@router.get("/", response_model=list[ChallengeResponse])
+@router.get("/")
 async def list_challenges(
     status: str | None = None,
     offset: int = 0,
@@ -87,63 +94,80 @@ async def list_challenges(
     challenges = await challenge_repo.get_user_challenges(
         current_user.id, status=s, offset=offset, limit=limit
     )
-    return [_to_response(c) for c in challenges]
+    total = await challenge_repo.count_user_challenges(current_user.id, status=s)
+    return paginated_response(
+        data=[_to_response(c).model_dump(mode="json") for c in challenges],
+        message="Challenges retrieved",
+        total=total,
+        offset=offset,
+        limit=limit,
+    )
 
 
-@router.post("/{challenge_id}/accept", response_model=ChallengeResponse)
+@router.post("/{challenge_id}/accept")
 async def accept_challenge(
     challenge_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
     challenge_repo: IChallengeRepository = Depends(get_challenge_repository),
     point_repo: IPointTransactionRepository = Depends(get_point_transaction_repository),
-    notification_repo: INotificationRepository = Depends(get_notification_repository),
-    push: INotificationPushService = Depends(get_notification_push_service),
+    leaderboard: ILeaderboardService = Depends(get_leaderboard_service),
 ):
-    use_case = AcceptChallengeUseCase(challenge_repo, point_repo, notification_repo, push)
+    use_case = AcceptChallengeUseCase(challenge_repo, point_repo, leaderboard)
     try:
-        challenge = await use_case.execute(challenge_id=challenge_id, opponent_id=current_user.id)
+        challenge = await use_case.execute(challenge_id=challenge_id, user_id=current_user.id)
     except ChallengeNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except (InsufficientPointsError, ValueError) as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return _to_response(challenge)
+    return success_response(
+        data=_to_response(challenge).model_dump(mode="json"),
+        message="Challenge accepted",
+    )
 
 
-@router.post("/{challenge_id}/decline", response_model=ChallengeResponse)
+@router.post("/{challenge_id}/decline")
 async def decline_challenge(
     challenge_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
     challenge_repo: IChallengeRepository = Depends(get_challenge_repository),
     point_repo: IPointTransactionRepository = Depends(get_point_transaction_repository),
+    leaderboard: ILeaderboardService = Depends(get_leaderboard_service),
 ):
-    use_case = DeclineChallengeUseCase(challenge_repo, point_repo)
+    use_case = DeclineChallengeUseCase(challenge_repo, point_repo, leaderboard)
     try:
-        challenge = await use_case.execute(challenge_id=challenge_id, opponent_id=current_user.id)
+        challenge = await use_case.execute(challenge_id=challenge_id, user_id=current_user.id)
     except ChallengeNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return _to_response(challenge)
+    return success_response(
+        data=_to_response(challenge).model_dump(mode="json"),
+        message="Challenge declined",
+    )
 
 
-@router.post("/{challenge_id}/cancel", response_model=ChallengeResponse)
+@router.post("/{challenge_id}/cancel")
 async def cancel_challenge(
     challenge_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
     challenge_repo: IChallengeRepository = Depends(get_challenge_repository),
     point_repo: IPointTransactionRepository = Depends(get_point_transaction_repository),
+    leaderboard: ILeaderboardService = Depends(get_leaderboard_service),
 ):
-    use_case = CancelChallengeUseCase(challenge_repo, point_repo)
+    use_case = CancelChallengeUseCase(challenge_repo, point_repo, leaderboard)
     try:
-        challenge = await use_case.execute(challenge_id=challenge_id, challenger_id=current_user.id)
+        challenge = await use_case.execute(challenge_id=challenge_id, user_id=current_user.id)
     except ChallengeNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return _to_response(challenge)
+    return success_response(
+        data=_to_response(challenge).model_dump(mode="json"),
+        message="Challenge cancelled",
+    )
 
 
-@router.post("/{challenge_id}/submit-score", response_model=ChallengeResponse)
+@router.post("/{challenge_id}/submit-score")
 async def submit_score(
     challenge_id: uuid.UUID,
     body: SubmitScoreRequest,
@@ -159,22 +183,26 @@ async def submit_score(
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return _to_response(challenge)
+    return success_response(
+        data=_to_response(challenge).model_dump(mode="json"),
+        message="Score submitted",
+    )
 
 
-@router.post("/{challenge_id}/resolve", response_model=ChallengeResponse)
+@router.post("/{challenge_id}/resolve")
 async def resolve_challenge(
     challenge_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
     challenge_repo: IChallengeRepository = Depends(get_challenge_repository),
     point_repo: IPointTransactionRepository = Depends(get_point_transaction_repository),
     post_repo: IPostRepository = Depends(get_post_repository),
+    user_repo: IUserRepository = Depends(get_user_repository),
     notification_repo: INotificationRepository = Depends(get_notification_repository),
     leaderboard: ILeaderboardService = Depends(get_leaderboard_service),
     push: INotificationPushService = Depends(get_notification_push_service),
 ):
     use_case = ResolveChallengeUseCase(
-        challenge_repo, point_repo, post_repo, notification_repo, leaderboard, push
+        challenge_repo, point_repo, post_repo, user_repo, notification_repo, leaderboard, push
     )
     try:
         challenge = await use_case.execute(challenge_id=challenge_id)
@@ -182,4 +210,7 @@ async def resolve_challenge(
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return _to_response(challenge)
+    return success_response(
+        data=_to_response(challenge).model_dump(mode="json"),
+        message="Challenge resolved",
+    )

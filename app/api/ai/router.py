@@ -7,14 +7,9 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
-from app.core.dependencies import (
-    get_current_user,
-    get_document_repository,
-    get_embedding_service,
-    get_llm_service,
-    get_quiz_repository,
-    get_vector_repository,
-)
+from app.core.dependencies import (get_current_user, get_document_repository,
+                                   get_embedding_service, get_llm_service,
+                                   get_quiz_repository, get_vector_repository)
 from app.domain.entities.user import User
 from app.domain.exceptions import DocumentNotFoundError
 from app.interfaces.repositories.document_repository import IDocumentRepository
@@ -22,16 +17,13 @@ from app.interfaces.repositories.quiz_repository import IQuizRepository
 from app.interfaces.repositories.vector_repository import IVectorRepository
 from app.interfaces.services.embedding_service import IEmbeddingService
 from app.interfaces.services.llm_service import ILLMService
-from app.schemas.ai import (
-    AskQuestionRequest,
-    FlashcardResponse,
-    FlashcardsResponse,
-    GenerateFlashcardsRequest,
-    GenerateQuizRequest,
-    GenerateSummaryRequest,
-)
+from app.schemas.ai import (AskQuestionRequest, FlashcardResponse,
+                            FlashcardsResponse, GenerateFlashcardsRequest,
+                            GenerateQuizRequest, GenerateSummaryRequest)
 from app.schemas.quizzes import QuizQuestionResponse, QuizResponse
-from app.use_cases.ai import AskQuestionUseCase, GenerateFlashcardsUseCase, GenerateQuizUseCase, GenerateSummaryUseCase
+from app.schemas.response import success_response
+from app.use_cases.ai import (AskQuestionUseCase, GenerateFlashcardsUseCase,
+                              GenerateQuizUseCase, GenerateSummaryUseCase)
 from app.utils.sse import sse_stream
 
 router = APIRouter(prefix="/ai", tags=["ai"])
@@ -71,7 +63,7 @@ async def generate_summary(
         raise HTTPException(status_code=404, detail=str(exc))
 
 
-@router.post("/quiz", response_model=QuizResponse)
+@router.post("/quiz")
 async def generate_quiz(
     body: GenerateQuizRequest,
     doc_repo: IDocumentRepository = Depends(get_document_repository),
@@ -82,33 +74,36 @@ async def generate_quiz(
     try:
         uc = GenerateQuizUseCase(doc_repo, quiz_repo, llm_service)
         quiz = await uc.execute(current_user.id, body.document_id, body.num_questions)
-        return QuizResponse(
-            id=quiz.id,
-            user_id=quiz.user_id,
-            document_id=quiz.document_id,
-            title=quiz.title,
-            description=quiz.description,
-            total_questions=quiz.total_questions,
-            created_at=quiz.created_at,
-            questions=[
-                QuizQuestionResponse(
-                    id=q.id,
-                    question_text=q.question_text,
-                    question_type=q.question_type.value,
-                    options=q.options,
-                    correct_answer=q.correct_answer,
-                    explanation=q.explanation,
-                    difficulty=q.difficulty.value,
-                    order=q.order,
-                )
-                for q in quiz.questions
-            ],
+        return success_response(
+            data=QuizResponse(
+                id=quiz.id,
+                user_id=quiz.user_id,
+                document_id=quiz.document_id,
+                title=quiz.title,
+                description=quiz.description,
+                total_questions=quiz.total_questions,
+                created_at=quiz.created_at,
+                questions=[
+                    QuizQuestionResponse(
+                        id=q.id,
+                        question_text=q.question_text,
+                        question_type=q.question_type.value,
+                        options=q.options,
+                        correct_answer=q.correct_answer,
+                        explanation=q.explanation,
+                        difficulty=q.difficulty.value,
+                        order=q.order,
+                    )
+                    for q in quiz.questions
+                ],
+            ).model_dump(mode="json"),
+            message="Quiz generated",
         )
     except DocumentNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 
 
-@router.post("/flashcards", response_model=FlashcardsResponse)
+@router.post("/flashcards")
 async def generate_flashcards(
     body: GenerateFlashcardsRequest,
     doc_repo: IDocumentRepository = Depends(get_document_repository),
@@ -118,8 +113,11 @@ async def generate_flashcards(
     try:
         uc = GenerateFlashcardsUseCase(doc_repo, llm_service)
         cards = await uc.execute(body.document_id, body.num_cards)
-        return FlashcardsResponse(
-            flashcards=[FlashcardResponse(front=c.front, back=c.back) for c in cards]
+        return success_response(
+            data=FlashcardsResponse(
+                flashcards=[FlashcardResponse(front=c.front, back=c.back) for c in cards]
+            ).model_dump(mode="json"),
+            message="Flashcards generated",
         )
     except DocumentNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))

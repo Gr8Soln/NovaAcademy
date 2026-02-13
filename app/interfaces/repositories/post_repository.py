@@ -58,3 +58,13 @@ class IPostRepository(ABC):
     @abstractmethod
     async def count_user_posts(self, user_id: uuid.UUID) -> int:
         ...
+
+    @abstractmethod
+    async def count_feed(self, following_ids: list[uuid.UUID]) -> int:
+        """Count posts from followed users."""
+        ...
+
+    @abstractmethod
+    async def count_explore(self) -> int:
+        """Count all posts."""
+        ...

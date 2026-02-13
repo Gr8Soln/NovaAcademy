@@ -40,3 +40,8 @@ class IChallengeRepository(ABC):
     async def get_expired_challenges(self) -> list[Challenge]:
         """Get challenges past their expiry that need resolution."""
         ...
+
+    @abstractmethod
+    async def count_user_challenges(self, user_id: uuid.UUID, status: Optional[str] = None) -> int:
+        """Count challenges where user is challenger or opponent."""
+        ...

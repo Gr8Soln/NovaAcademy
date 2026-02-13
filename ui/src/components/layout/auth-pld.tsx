@@ -37,59 +37,54 @@ const AuthLayout = () => {
   const quote = quotes[pathname] || quotes["/login"];
 
   return (
-    <div className="min-h-screen flex">
-      {/* ── Form Panel (left) ──────────────────────────────── */}
-      <div className="w-full lg:w-1/2 flex flex-col bg-neutral-50">
+    <div className="min-h-screen relative flex flex-col items-center justify-center">
+      {/* ── Full Background Image with Blur ──────────────── */}
+      <img
+        src={image}
+        alt="Academic"
+        className="absolute inset-0 w-full h-full object-cover blur-sm scale-105"
+      />
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-primary-900/50" />
+
+      {/* ── Form Panel (centered) ────────────────────────── */}
+      <div className="relative z-10 w-full max-w-xl flex flex-col px-6 py-8">
         {/* Logo */}
-        <header className="px-6 py-5 lg:px-8">
+        <header className="mb-6 text-center">
           <Link to="/" className="inline-flex items-center gap-2 group">
-            <div className="flex items-center gap-1 text-primary-700 group-hover:text-primary-500 transition-colors">
-              {/* <BookOpen className="h-5 w-5" /> */}
+            <div className="flex items-center gap-1 text-white/90 group-hover:text-white transition-colors">
               <GraduationCap className="h-6 w-6" />
             </div>
-            <span className="font-display text-xl font-bold text-primary-900">
+            <span className="font-display text-xl font-bold text-white">
               Gr8Academy
             </span>
           </Link>
         </header>
 
-        {/* Centered form content */}
-        <main className="flex-1 flex items-center justify-center px-6 py-8 lg:px-8">
-          <div className="w-full max-w-md">
-            <Outlet />
-          </div>
+        {/* Form content */}
+        <main className="bg-white/95 backdrop-blur-sm rounded-2xl px-8 py-10">
+          <Outlet />
         </main>
 
-        {/* Footer */}
-        <footer className="px-6 py-4 lg:px-8 text-center">
-          <p className="text-xs text-neutral-400">
-            &copy; {new Date().getFullYear()} Gr8Academy &mdash; Your Personal
-            AI Tutor
-          </p>
-        </footer>
-      </div>
-
-      {/* ── Image Panel (right) ────────────────────────────── */}
-      <div className="hidden lg:block lg:w-1/2 relative">
-        <img
-          src={image}
-          alt="Academic"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-primary-900/80 via-primary-900/40 to-primary-900/20" />
-
         {/* Quote */}
-        <div className="absolute bottom-0 left-0 right-0 p-10">
-          <blockquote className="max-w-md">
-            <p className="font-display text-xl text-white italic leading-relaxed">
+        <div className="mt-8 text-center">
+          <blockquote className="max-w-md mx-auto">
+            <p className="font-display text-lg text-white italic leading-relaxed">
               &ldquo;{quote.text}&rdquo;
             </p>
-            <footer className="mt-3 font-sans text-sm text-neutral-300">
+            <footer className="mt-2 font-sans text-sm text-neutral-300">
               &mdash; {quote.author}
             </footer>
           </blockquote>
         </div>
+
+        {/* Footer */}
+        <footer className="mt-6 text-center">
+          <p className="text-xs text-neutral-300/70">
+            &copy; {new Date().getFullYear()} Gr8Academy &mdash; Your Personal
+            AI Tutor
+          </p>
+        </footer>
       </div>
     </div>
   );

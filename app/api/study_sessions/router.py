@@ -13,6 +13,7 @@ from app.domain.exceptions import StudySessionNotFoundError
 from app.interfaces.repositories.study_session_repository import \
     IStudySessionRepository
 from app.interfaces.services.leaderboard_service import ILeaderboardService
+from app.schemas.response import success_response
 from app.schemas.social import (StartSessionRequest, StudySessionResponse,
                                 StudyStatsResponse)
 from app.use_cases.study_sessions import (EndStudySessionUseCase,
@@ -32,7 +33,7 @@ def _to_response(s) -> StudySessionResponse:
     )
 
 
-@router.post("/", response_model=StudySessionResponse, status_code=201)
+@router.post("/", status_code=201)
 async def start_session(
     body: StartSessionRequest,
     current_user: User = Depends(get_current_user),
@@ -41,10 +42,13 @@ async def start_session(
 ):
     use_case = StartStudySessionUseCase(session_repo, leaderboard)
     session = await use_case.execute(user_id=current_user.id, document_id=body.document_id)
-    return _to_response(session)
+    return success_response(
+        data=_to_response(session).model_dump(mode="json"),
+        message="Study session started",
+    )
 
 
-@router.post("/{session_id}/heartbeat", response_model=StudySessionResponse)
+@router.post("/{session_id}/heartbeat")
 async def heartbeat(
     session_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
@@ -55,10 +59,13 @@ async def heartbeat(
         session = await use_case.execute(session_id=session_id, user_id=current_user.id)
     except StudySessionNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    return _to_response(session)
+    return success_response(
+        data=_to_response(session).model_dump(mode="json"),
+        message="Heartbeat recorded",
+    )
 
 
-@router.post("/{session_id}/end", response_model=StudySessionResponse)
+@router.post("/{session_id}/end")
 async def end_session(
     session_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
@@ -70,18 +77,24 @@ async def end_session(
         session = await use_case.execute(session_id=session_id, user_id=current_user.id)
     except StudySessionNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    return _to_response(session)
+    return success_response(
+        data=_to_response(session).model_dump(mode="json"),
+        message="Study session ended",
+    )
 
 
-@router.get("/stats", response_model=StudyStatsResponse)
+@router.get("/stats")
 async def get_study_stats(
     current_user: User = Depends(get_current_user),
     session_repo: IStudySessionRepository = Depends(get_study_session_repository),
 ):
     use_case = GetStudyStatsUseCase(session_repo)
     stats = await use_case.execute(user_id=current_user.id)
-    return StudyStatsResponse(
-        total_seconds=stats["total_seconds"],
-        total_minutes=stats["total_minutes"],
-        total_hours=stats["total_hours"],
+    return success_response(
+        data=StudyStatsResponse(
+            total_seconds=stats["total_seconds"],
+            total_minutes=stats["total_minutes"],
+            total_hours=stats["total_hours"],
+        ).model_dump(mode="json"),
+        message="Study stats retrieved",
     )

@@ -72,3 +72,11 @@ class PostgresPointTransactionRepository(IPointTransactionRepository):
             )
         )
         return int(result.scalar() or 0)
+
+    async def count_history(self, user_id: uuid.UUID) -> int:
+        result = await self._session.execute(
+            select(func.count()).select_from(PointTransactionModel).where(
+                PointTransactionModel.user_id == user_id
+            )
+        )
+        return result.scalar() or 0
