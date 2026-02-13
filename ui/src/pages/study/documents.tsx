@@ -1,8 +1,21 @@
 import { documentsApi } from "@/lib/api";
 import type { DocumentListResponse } from "@/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { FileText, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/buttons";
+import { Card, CardContent } from "@/components/ui/card";
+import { SectionLoader } from "@/components/ui/loaders";
+
+const fileIcon: Record<string, string> = {
+  pdf: "text-danger-600 bg-danger-50",
+  docx: "text-primary-600 bg-primary-50",
+  pptx: "text-warning-600 bg-warning-50",
+};
 
 export default function DocumentsPage() {
   const [uploading, setUploading] = useState(false);
@@ -22,8 +35,9 @@ export default function DocumentsPage() {
     try {
       await documentsApi.upload(file);
       queryClient.invalidateQueries({ queryKey: ["documents"] });
+      toast.success("Document uploaded successfully!");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Upload failed");
+      toast.error(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -31,11 +45,21 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Documents</h1>
-        <label className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 cursor-pointer">
-          {uploading ? "Uploading..." : "Upload Document"}
+    <div className="space-y-6 pb-20 lg:pb-0">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-primary-900">
+            My Documents
+          </h1>
+          <p className="text-sm text-neutral-500">
+            Upload study materials and start learning.
+          </p>
+        </div>
+        <label className="cursor-pointer">
+          <Button type="button" loading={uploading}>
+            <Upload className="mr-1.5 h-4 w-4" />
+            {uploading ? "Uploading..." : "Upload Document"}
+          </Button>
           <input
             ref={fileRef}
             type="file"
@@ -48,56 +72,61 @@ export default function DocumentsPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12 text-gray-500">
-          Loading documents...
-        </div>
+        <SectionLoader />
       ) : data?.documents.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <p className="text-4xl mb-4">📄</p>
-          <p>No documents yet. Upload your first study material!</p>
-        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center py-16 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100">
+              <FileText className="h-7 w-7 text-neutral-400" />
+            </div>
+            <p className="font-medium text-neutral-700">No documents yet</p>
+            <p className="mt-1 text-sm text-neutral-500">
+              Upload your first study material to get started!
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {data?.documents.map((doc) => (
-            <div
+            <Card
               key={doc.id}
+              className="cursor-pointer hover:shadow-md hover:border-primary-200 transition-all"
               onClick={() => navigate(`/study/${doc.id}`)}
-              className="bg-white rounded-xl p-5 shadow-sm border hover:border-primary-300 cursor-pointer transition"
             >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">
-                  {doc.file_type === "pdf"
-                    ? "📕"
-                    : doc.file_type === "docx"
-                      ? "📘"
-                      : doc.file_type === "pptx"
-                        ? "📙"
-                        : "📄"}
-                </span>
-                <h3 className="font-medium text-gray-900 truncate">
-                  {doc.title}
-                </h3>
-              </div>
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>{(doc.file_size_bytes / 1024).toFixed(0)} KB</span>
-                <span
-                  className={`px-2 py-0.5 rounded-full ${
-                    doc.processing_status === "completed"
-                      ? "bg-green-100 text-green-700"
-                      : doc.processing_status === "processing"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : doc.processing_status === "failed"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {doc.processing_status}
-                </span>
-              </div>
-              <p className="text-xs text-gray-400 mt-2">
-                {new Date(doc.created_at).toLocaleDateString()}
-              </p>
-            </div>
+              <CardContent className="p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-lg ${fileIcon[doc.file_type] ?? "text-neutral-600 bg-neutral-100"}`}
+                  >
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <h3 className="flex-1 text-sm font-medium text-neutral-900 truncate">
+                    {doc.title}
+                  </h3>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-neutral-400">
+                    {(doc.file_size_bytes / 1024).toFixed(0)} KB
+                  </span>
+                  <Badge
+                    variant={
+                      doc.processing_status === "completed"
+                        ? "success"
+                        : doc.processing_status === "processing"
+                          ? "warning"
+                          : doc.processing_status === "failed"
+                            ? "danger"
+                            : "default"
+                    }
+                  >
+                    {doc.processing_status}
+                  </Badge>
+                </div>
+                <p className="mt-2 text-xs text-neutral-400">
+                  {new Date(doc.created_at).toLocaleDateString()}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}

@@ -37,3 +37,6 @@ Thumbs.db
 pgdata/
 redisdata/
 qdrantdata/
+
+# GitHub 
+.github/prompts/*

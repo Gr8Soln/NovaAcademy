@@ -43,3 +43,45 @@ class VectorStoreError(DomainException):
 
 class LLMError(DomainException):
     """Failure communicating with the language model."""
+
+
+# ── Social feature exceptions ───────────────────────────────
+
+class AlreadyFollowingError(DomainException):
+    """User is already following the target user."""
+
+
+class NotFollowingError(DomainException):
+    """User is not following the target user."""
+
+
+class PostNotFoundError(DomainException):
+    """Requested post does not exist."""
+
+
+class AlreadyLikedError(DomainException):
+    """User has already liked this post."""
+
+
+class ChallengeNotFoundError(DomainException):
+    """Requested challenge does not exist."""
+
+
+class ChallengeValidationError(DomainException):
+    """Invalid challenge configuration or action."""
+
+
+class InsufficientPointsError(DomainException):
+    """User does not have enough points for the requested action."""
+
+
+class PointCapReachedError(DomainException):
+    """Daily or action-specific point cap reached."""
+
+
+class StudySessionNotFoundError(DomainException):
+    """Requested study session does not exist."""
+
+
+class NotificationNotFoundError(DomainException):
+    """Requested notification does not exist."""

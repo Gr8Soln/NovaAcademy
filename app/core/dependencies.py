@@ -16,33 +16,76 @@ from app.core.redis import get_redis
 from app.core.vector import get_qdrant
 from app.domain.entities.user import User
 from app.domain.exceptions import AuthenticationError
-
-# ── Repository factories ────────────────────────────────────────
-
-from app.infrastructure.db.postgres.user_repository import PostgresUserRepository
-from app.infrastructure.db.postgres.document_repository import PostgresDocumentRepository
-from app.infrastructure.db.postgres.quiz_repository import PostgresQuizRepository
-from app.infrastructure.db.postgres.student_progress_repository import PostgresStudentProgressRepository
-from app.infrastructure.vector.qdrant.vector_repository import QdrantVectorRepository
-
-# ── Service factories ───────────────────────────────────────────
-
 from app.infrastructure.auth.jwt_auth_service import JWTAuthService
 from app.infrastructure.cache.redis_cache_service import RedisCacheService
+from app.infrastructure.db.postgres.challenge_repository import \
+    PostgresChallengeRepository
+from app.infrastructure.db.postgres.document_repository import \
+    PostgresDocumentRepository
+# Social feature repositories
+from app.infrastructure.db.postgres.follow_repository import \
+    PostgresFollowRepository
+from app.infrastructure.db.postgres.notification_repository import \
+    PostgresNotificationRepository
+from app.infrastructure.db.postgres.point_transaction_repository import \
+    PostgresPointTransactionRepository
+from app.infrastructure.db.postgres.post_repository import \
+    PostgresPostRepository
+from app.infrastructure.db.postgres.quiz_repository import \
+    PostgresQuizRepository
+from app.infrastructure.db.postgres.student_progress_repository import \
+    PostgresStudentProgressRepository
+from app.infrastructure.db.postgres.study_session_repository import \
+    PostgresStudySessionRepository
+from app.infrastructure.db.postgres.user_repository import \
+    PostgresUserRepository
+from app.infrastructure.leaderboard.redis_leaderboard_service import \
+    RedisLeaderboardService
+from app.infrastructure.llm.openai_embedding_service import \
+    OpenAIEmbeddingService
 from app.infrastructure.llm.openai_llm_service import OpenAILLMService
-from app.infrastructure.llm.openai_embedding_service import OpenAIEmbeddingService
-from app.infrastructure.parser.document_parser_service import LocalDocumentParserService
-
-from app.interfaces.repositories.user_repository import IUserRepository
+from app.infrastructure.notifications.sse_notification_push_service import \
+    SSENotificationPushService
+from app.infrastructure.parser.document_parser_service import \
+    LocalDocumentParserService
+from app.infrastructure.vector.qdrant.vector_repository import \
+    QdrantVectorRepository
+from app.interfaces.repositories.challenge_repository import \
+    IChallengeRepository
 from app.interfaces.repositories.document_repository import IDocumentRepository
+from app.interfaces.repositories.follow_repository import IFollowRepository
+from app.interfaces.repositories.notification_repository import \
+    INotificationRepository
+from app.interfaces.repositories.point_transaction_repository import \
+    IPointTransactionRepository
+from app.interfaces.repositories.post_repository import IPostRepository
 from app.interfaces.repositories.quiz_repository import IQuizRepository
-from app.interfaces.repositories.student_progress_repository import IStudentProgressRepository
+from app.interfaces.repositories.student_progress_repository import \
+    IStudentProgressRepository
+from app.interfaces.repositories.study_session_repository import \
+    IStudySessionRepository
+from app.interfaces.repositories.user_repository import IUserRepository
 from app.interfaces.repositories.vector_repository import IVectorRepository
 from app.interfaces.services.auth_service import IAuthService
 from app.interfaces.services.cache_service import ICacheService
+from app.interfaces.services.document_parser_service import \
+    IDocumentParserService
 from app.interfaces.services.embedding_service import IEmbeddingService
+from app.interfaces.services.leaderboard_service import ILeaderboardService
 from app.interfaces.services.llm_service import ILLMService
-from app.interfaces.services.document_parser_service import IDocumentParserService
+from app.interfaces.services.notification_push_service import \
+    INotificationPushService
+
+# ── Repository factories ────────────────────────────────────────
+
+
+
+# ── Service factories ───────────────────────────────────────────
+
+
+
+# ── Singletons for stateful services ───────────────────────────
+_notification_push_service = SSENotificationPushService()
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -68,6 +111,32 @@ async def get_student_progress_repository(session: AsyncSession = Depends(get_db
 async def get_vector_repository() -> IVectorRepository:
     client = await get_qdrant()
     return QdrantVectorRepository(client, vector_size=settings.VECTOR_SIZE)
+
+
+# ── Social feature repositories ─────────────────────────────────
+
+async def get_follow_repository(session: AsyncSession = Depends(get_db_session)) -> IFollowRepository:
+    return PostgresFollowRepository(session)
+
+
+async def get_post_repository(session: AsyncSession = Depends(get_db_session)) -> IPostRepository:
+    return PostgresPostRepository(session)
+
+
+async def get_notification_repository(session: AsyncSession = Depends(get_db_session)) -> INotificationRepository:
+    return PostgresNotificationRepository(session)
+
+
+async def get_challenge_repository(session: AsyncSession = Depends(get_db_session)) -> IChallengeRepository:
+    return PostgresChallengeRepository(session)
+
+
+async def get_point_transaction_repository(session: AsyncSession = Depends(get_db_session)) -> IPointTransactionRepository:
+    return PostgresPointTransactionRepository(session)
+
+
+async def get_study_session_repository(session: AsyncSession = Depends(get_db_session)) -> IStudySessionRepository:
+    return PostgresStudySessionRepository(session)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -109,6 +178,17 @@ async def get_embedding_service() -> IEmbeddingService:
 
 async def get_document_parser_service() -> IDocumentParserService:
     return LocalDocumentParserService()
+
+
+# ── Social feature services ─────────────────────────────────────
+
+async def get_leaderboard_service() -> ILeaderboardService:
+    redis = await get_redis()
+    return RedisLeaderboardService(redis)
+
+
+async def get_notification_push_service() -> INotificationPushService:
+    return _notification_push_service
 
 
 # ═══════════════════════════════════════════════════════════════

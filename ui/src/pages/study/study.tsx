@@ -1,10 +1,30 @@
-import { useSSEStream } from "@/hooks/use-sse-stream";
+import useSSEStream from "@/hooks/use-sse-stream";
 import { aiApi } from "@/lib/api";
+import {
+  BookOpen,
+  HelpCircle,
+  Lightbulb,
+  Send,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
 
+import { Button } from "@/components/ui/buttons";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/inputs";
+import { cn } from "@/lib/utils";
+
 type Tab = "ask" | "summary" | "quiz" | "flashcards";
+
+const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
+  { key: "ask", label: "Ask AI", icon: HelpCircle },
+  { key: "summary", label: "Summary", icon: Lightbulb },
+  { key: "quiz", label: "Quiz", icon: BookOpen },
+  { key: "flashcards", label: "Flashcards", icon: Zap },
+];
 
 export default function StudyPage() {
   const { documentId } = useParams<{ documentId: string }>();
@@ -23,33 +43,35 @@ export default function StudyPage() {
     stream.start(() => aiApi.summaryStream(documentId));
   };
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: "ask", label: "Ask a Question" },
-    { key: "summary", label: "Summary" },
-    { key: "quiz", label: "Quiz" },
-    { key: "flashcards", label: "Flashcards" },
-  ];
-
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Study Session</h1>
+    <div className="space-y-6 pb-20 lg:pb-0">
+      <div>
+        <h1 className="font-display text-2xl font-bold text-primary-900">
+          Study Session
+        </h1>
+        <p className="text-sm text-neutral-500">
+          Use AI to explore your document.
+        </p>
+      </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-6 w-fit">
-        {tabs.map((t) => (
+      <div className="flex gap-1 rounded-lg bg-neutral-100 p-1 w-fit">
+        {tabs.map(({ key, label, icon: Icon }) => (
           <button
-            key={t.key}
+            key={key}
             onClick={() => {
-              setActiveTab(t.key);
+              setActiveTab(key);
               stream.reset();
             }}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition ${
-              activeTab === t.key
+            className={cn(
+              "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              activeTab === key
                 ? "bg-white text-primary-700 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
+                : "text-neutral-500 hover:text-neutral-700",
+            )}
           >
-            {t.label}
+            <Icon className="h-4 w-4" />
+            <span className="hidden sm:inline">{label}</span>
           </button>
         ))}
       </div>
@@ -58,29 +80,30 @@ export default function StudyPage() {
       {activeTab === "ask" && (
         <div className="space-y-4">
           <div className="flex gap-2">
-            <input
-              type="text"
+            <Input
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAsk()}
               placeholder="Ask a question about your document..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="flex-1"
+              icon={<HelpCircle className="h-4 w-4" />}
             />
-            <button
+            <Button
               onClick={handleAsk}
               disabled={stream.isStreaming || !question.trim()}
-              className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50"
             >
-              {stream.isStreaming ? "..." : "Ask"}
-            </button>
+              <Send className="h-4 w-4" />
+            </Button>
           </div>
           {(stream.text || stream.isStreaming) && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border prose max-w-none">
-              <ReactMarkdown>{stream.text || "Thinking..."}</ReactMarkdown>
-              {stream.isStreaming && (
-                <span className="inline-block w-2 h-4 bg-primary-500 animate-pulse ml-1" />
-              )}
-            </div>
+            <Card>
+              <CardContent className="p-6 prose prose-sm max-w-none prose-headings:text-primary-900 prose-a:text-primary-600">
+                <ReactMarkdown>{stream.text || "Thinking..."}</ReactMarkdown>
+                {stream.isStreaming && (
+                  <span className="inline-block w-2 h-4 bg-primary-500 animate-pulse ml-1 rounded-sm" />
+                )}
+              </CardContent>
+            </Card>
           )}
         </div>
       )}
@@ -88,46 +111,59 @@ export default function StudyPage() {
       {/* Summary */}
       {activeTab === "summary" && (
         <div className="space-y-4">
-          <button
-            onClick={handleSummary}
-            disabled={stream.isStreaming}
-            className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50"
-          >
+          <Button onClick={handleSummary} disabled={stream.isStreaming}>
+            <Sparkles className="mr-1.5 h-4 w-4" />
             {stream.isStreaming ? "Generating..." : "Generate Summary"}
-          </button>
+          </Button>
           {(stream.text || stream.isStreaming) && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border prose max-w-none">
-              <ReactMarkdown>
-                {stream.text || "Generating summary..."}
-              </ReactMarkdown>
-            </div>
+            <Card>
+              <CardContent className="p-6 prose prose-sm max-w-none prose-headings:text-primary-900 prose-a:text-primary-600">
+                <ReactMarkdown>
+                  {stream.text || "Generating summary..."}
+                </ReactMarkdown>
+              </CardContent>
+            </Card>
           )}
         </div>
       )}
 
       {/* Quiz placeholder */}
       {activeTab === "quiz" && (
-        <div className="bg-white rounded-xl p-6 shadow-sm border text-center text-gray-500">
-          <p className="text-3xl mb-3">📝</p>
-          <p>
-            Quiz generation coming soon — click "Generate Quiz" in the AI menu.
-          </p>
-        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center py-12 text-center">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary-50">
+              <BookOpen className="h-6 w-6 text-primary-400" />
+            </div>
+            <p className="font-medium text-neutral-700">Coming soon</p>
+            <p className="mt-1 text-sm text-neutral-500">
+              Quiz generation will be available here.
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       {/* Flashcards placeholder */}
       {activeTab === "flashcards" && (
-        <div className="bg-white rounded-xl p-6 shadow-sm border text-center text-gray-500">
-          <p className="text-3xl mb-3">⚡</p>
-          <p>Flashcard generation coming soon.</p>
-        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center py-12 text-center">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent-50">
+              <Zap className="h-6 w-6 text-accent-500" />
+            </div>
+            <p className="font-medium text-neutral-700">Coming soon</p>
+            <p className="mt-1 text-sm text-neutral-500">
+              Flashcard generation will be available here.
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       {/* Error */}
       {stream.error && (
-        <div className="mt-4 p-3 bg-red-50 text-red-700 rounded text-sm">
-          {stream.error}
-        </div>
+        <Card className="border-danger-200 bg-danger-50">
+          <CardContent className="p-4 text-sm text-danger-700">
+            {stream.error}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

@@ -2,19 +2,26 @@
 
 from __future__ import annotations
 
-from app.domain.entities.document import Document, DocumentChunk, DocumentType, ProcessingStatus
-from app.domain.entities.quiz import DifficultyLevel, Quiz, QuestionType, QuizQuestion
+from app.domain.entities.challenge import Challenge, ChallengeStatus
+from app.domain.entities.document import (Document, DocumentChunk,
+                                          DocumentType, ProcessingStatus)
+from app.domain.entities.follow import Follow
+from app.domain.entities.notification import Notification, NotificationType
+from app.domain.entities.point_transaction import PointAction, PointTransaction
+from app.domain.entities.post import Post, PostLike, PostType
+from app.domain.entities.quiz import (DifficultyLevel, QuestionType, Quiz,
+                                      QuizQuestion)
 from app.domain.entities.student_progress import StudentProgress
+from app.domain.entities.study_session import StudySession
 from app.domain.entities.user import AuthProvider, User
-from app.infrastructure.db.models import (
-    DocumentChunkModel,
-    DocumentModel,
-    QuizModel,
-    QuizQuestionModel,
-    StudentProgressModel,
-    UserModel,
-)
-
+from app.infrastructure.db.models import (ChallengeModel, DocumentChunkModel,
+                                          DocumentModel, FollowModel,
+                                          NotificationModel,
+                                          PointTransactionModel, PostLikeModel,
+                                          PostModel, QuizModel,
+                                          QuizQuestionModel,
+                                          StudentProgressModel,
+                                          StudySessionModel, UserModel)
 
 # ── User ────────────────────────────────────────────────────────
 
@@ -201,4 +208,192 @@ def progress_entity_to_model(e: StudentProgress) -> StudentProgressModel:
         last_study_at=e.last_study_at,
         created_at=e.created_at,
         updated_at=e.updated_at,
+    )
+
+
+# ── Follow ──────────────────────────────────────────────────────
+
+def follow_model_to_entity(m: FollowModel) -> Follow:
+    return Follow(
+        id=m.id,
+        follower_id=m.follower_id,
+        following_id=m.following_id,
+        created_at=m.created_at,
+    )
+
+
+def follow_entity_to_model(e: Follow) -> FollowModel:
+    return FollowModel(
+        id=e.id,
+        follower_id=e.follower_id,
+        following_id=e.following_id,
+        created_at=e.created_at,
+    )
+
+
+# ── Post ────────────────────────────────────────────────────────
+
+def post_model_to_entity(m: PostModel) -> Post:
+    return Post(
+        id=m.id,
+        user_id=m.user_id,
+        content=m.content,
+        post_type=PostType(m.post_type),
+        like_count=m.like_count,
+        impression_count=m.impression_count,
+        created_at=m.created_at,
+    )
+
+
+def post_entity_to_model(e: Post) -> PostModel:
+    return PostModel(
+        id=e.id,
+        user_id=e.user_id,
+        content=e.content,
+        post_type=e.post_type.value,
+        like_count=e.like_count,
+        impression_count=e.impression_count,
+        created_at=e.created_at,
+    )
+
+
+def post_like_model_to_entity(m: PostLikeModel) -> PostLike:
+    return PostLike(
+        id=m.id,
+        post_id=m.post_id,
+        user_id=m.user_id,
+        created_at=m.created_at,
+    )
+
+
+def post_like_entity_to_model(e: PostLike) -> PostLikeModel:
+    return PostLikeModel(
+        id=e.id,
+        post_id=e.post_id,
+        user_id=e.user_id,
+        created_at=e.created_at,
+    )
+
+
+# ── Notification ────────────────────────────────────────────────
+
+def notification_model_to_entity(m: NotificationModel) -> Notification:
+    return Notification(
+        id=m.id,
+        user_id=m.user_id,
+        type=NotificationType(m.type),
+        title=m.title,
+        message=m.message,
+        data=m.data or {},
+        is_read=m.is_read,
+        created_at=m.created_at,
+    )
+
+
+def notification_entity_to_model(e: Notification) -> NotificationModel:
+    return NotificationModel(
+        id=e.id,
+        user_id=e.user_id,
+        type=e.type.value,
+        title=e.title,
+        message=e.message,
+        data=e.data,
+        is_read=e.is_read,
+        created_at=e.created_at,
+    )
+
+
+# ── Challenge ───────────────────────────────────────────────────
+
+def challenge_model_to_entity(m: ChallengeModel) -> Challenge:
+    return Challenge(
+        id=m.id,
+        challenger_id=m.challenger_id,
+        opponent_id=m.opponent_id,
+        document_id=m.document_id,
+        quiz_id=m.quiz_id,
+        question_count=m.question_count,
+        wager_amount=m.wager_amount,
+        status=ChallengeStatus(m.status),
+        challenger_score=m.challenger_score,
+        opponent_score=m.opponent_score,
+        winner_id=m.winner_id,
+        expires_at=m.expires_at,
+        completed_at=m.completed_at,
+        created_at=m.created_at,
+        updated_at=m.updated_at,
+    )
+
+
+def challenge_entity_to_model(e: Challenge) -> ChallengeModel:
+    return ChallengeModel(
+        id=e.id,
+        challenger_id=e.challenger_id,
+        opponent_id=e.opponent_id,
+        document_id=e.document_id,
+        quiz_id=e.quiz_id,
+        question_count=e.question_count,
+        wager_amount=e.wager_amount,
+        status=e.status.value,
+        challenger_score=e.challenger_score,
+        opponent_score=e.opponent_score,
+        winner_id=e.winner_id,
+        expires_at=e.expires_at,
+        completed_at=e.completed_at,
+        created_at=e.created_at,
+        updated_at=e.updated_at,
+    )
+
+
+# ── PointTransaction ───────────────────────────────────────────
+
+def point_transaction_model_to_entity(m: PointTransactionModel) -> PointTransaction:
+    return PointTransaction(
+        id=m.id,
+        user_id=m.user_id,
+        action=PointAction(m.action),
+        points=m.points,
+        description=m.description,
+        reference_id=m.reference_id,
+        created_at=m.created_at,
+    )
+
+
+def point_transaction_entity_to_model(e: PointTransaction) -> PointTransactionModel:
+    return PointTransactionModel(
+        id=e.id,
+        user_id=e.user_id,
+        action=e.action.value,
+        points=e.points,
+        description=e.description,
+        reference_id=e.reference_id,
+        created_at=e.created_at,
+    )
+
+
+# ── StudySession ────────────────────────────────────────────────
+
+def study_session_model_to_entity(m: StudySessionModel) -> StudySession:
+    return StudySession(
+        id=m.id,
+        user_id=m.user_id,
+        document_id=m.document_id,
+        started_at=m.started_at,
+        last_heartbeat_at=m.last_heartbeat_at,
+        ended_at=m.ended_at,
+        duration_seconds=m.duration_seconds,
+        is_active=m.is_active,
+    )
+
+
+def study_session_entity_to_model(e: StudySession) -> StudySessionModel:
+    return StudySessionModel(
+        id=e.id,
+        user_id=e.user_id,
+        document_id=e.document_id,
+        started_at=e.started_at,
+        last_heartbeat_at=e.last_heartbeat_at,
+        ended_at=e.ended_at,
+        duration_seconds=e.duration_seconds,
+        is_active=e.is_active,
     )

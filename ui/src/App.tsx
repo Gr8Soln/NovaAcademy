@@ -1,20 +1,20 @@
 import { Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import {
-  AuthLayout,
-  DashboardLayout,
-  QuizzesLayout,
-  StudyLayout,
-} from "@/components/layout";
+import { AuthLayout, DashboardLayout } from "@/components/layout";
 import { PageLoader, SectionLoader } from "@/components/ui";
 import {
+  AnalyticsPage,
+  ChallengesPage,
   DashboardPage,
   DocumentsPage,
+  FeedPage,
   ForgotPasswordPage,
   LandingPage,
+  LeaderboardPage,
   LoginPage,
   NotFoundPage,
+  NotificationsPage,
   RegisterPage,
   ResetPasswordPage,
   StudyPage,
@@ -62,31 +62,13 @@ export default function App() {
           }
         >
           <Route path="/dashboard" element={<DashboardPage />} />
-        </Route>
-
-        <Route
-          element={
-            <ProtectedRoute>
-              <Suspense fallback={<SectionLoader />}>
-                <StudyLayout />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        >
           <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/study/:documentId" element={<StudyPage />} />
-        </Route>
-
-        <Route
-          element={
-            <ProtectedRoute>
-              <Suspense fallback={<SectionLoader />}>
-                <QuizzesLayout />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/quizzes" element={<div>Quizzes coming soon</div>} />
+          <Route path="/feed" element={<FeedPage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/challenges" element={<ChallengesPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

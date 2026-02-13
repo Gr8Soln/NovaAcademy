@@ -8,10 +8,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.api.ai.router import router as ai_router
+from app.api.analytics.router import router as analytics_router
 from app.api.auth.router import router as auth_router
+from app.api.challenges.router import router as challenges_router
 from app.api.dashboard.router import router as dashboard_router
 from app.api.documents.router import router as documents_router
+from app.api.leaderboard.router import router as leaderboard_router
+from app.api.notifications.router import router as notifications_router
+from app.api.points.router import router as points_router
+from app.api.posts.router import router as posts_router
 from app.api.quizzes.router import router as quizzes_router
+from app.api.social.router import router as social_router
+from app.api.study_sessions.router import router as study_sessions_router
 from app.api.users.router import router as users_router
 from app.core.config import settings
 
@@ -55,6 +63,14 @@ app.include_router(documents_router, prefix=settings.API_PREFIX)
 app.include_router(ai_router, prefix=settings.API_PREFIX)
 app.include_router(quizzes_router, prefix=settings.API_PREFIX)
 app.include_router(dashboard_router, prefix=settings.API_PREFIX)
+app.include_router(social_router, prefix=settings.API_PREFIX)
+app.include_router(posts_router, prefix=settings.API_PREFIX)
+app.include_router(notifications_router, prefix=settings.API_PREFIX)
+app.include_router(challenges_router, prefix=settings.API_PREFIX)
+app.include_router(points_router, prefix=settings.API_PREFIX)
+app.include_router(leaderboard_router, prefix=settings.API_PREFIX)
+app.include_router(study_sessions_router, prefix=settings.API_PREFIX)
+app.include_router(analytics_router, prefix=settings.API_PREFIX)
 
 
 # ── Health check ────────────────────────────────────────────────
