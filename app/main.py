@@ -1,5 +1,3 @@
-"""FastAPI application entry point."""
-
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
@@ -9,16 +7,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.api.ai.router import router as ai_router
+from app.api.auth.router import router as auth_router
+from app.api.dashboard.router import router as dashboard_router
+from app.api.documents.router import router as documents_router
+from app.api.quizzes.router import router as quizzes_router
+from app.api.users.router import router as users_router
 from app.core.config import settings
 
 # ── API routers ─────────────────────────────────────────────────
 
-from app.api.auth.router import router as auth_router
-from app.api.users.router import router as users_router
-from app.api.documents.router import router as documents_router
-from app.api.ai.router import router as ai_router
-from app.api.quizzes.router import router as quizzes_router
-from app.api.dashboard.router import router as dashboard_router
 
 
 @asynccontextmanager
@@ -34,9 +32,9 @@ app = FastAPI(
     title=settings.APP_NAME,
     version="0.1.0",
     lifespan=lifespan,
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
+    docs_url="/api/v1/docs",
+    redoc_url="/api/v1/redoc",
+    openapi_url="/api/v1/openapi.json",
 )
 
 # ── CORS ────────────────────────────────────────────────────────

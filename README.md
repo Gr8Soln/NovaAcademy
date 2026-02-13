@@ -12,16 +12,16 @@ Infrastructure → Interfaces → Use Cases → Domain
 
 | Layer              | Purpose                                                    | Location                  |
 | ------------------ | ---------------------------------------------------------- | ------------------------- |
-| **Domain**         | Pure entities, value objects, exceptions                   | `src/app/domain/`         |
-| **Use Cases**      | Business rules orchestration                               | `src/app/use_cases/`      |
-| **Interfaces**     | Abstract contracts (repositories, services)                | `src/app/interfaces/`     |
-| **Infrastructure** | Concrete implementations (Postgres, Redis, Qdrant, OpenAI) | `src/app/infrastructure/` |
-| **API**            | FastAPI routers                                            | `src/app/api/`            |
-| **Core**           | Config, DI container, DB/Redis/Vector init                 | `src/app/core/`           |
+| **Domain**         | Pure entities, value objects, exceptions                   | `app/domain/`         |
+| **Use Cases**      | Business rules orchestration                               | `app/use_cases/`      |
+| **Interfaces**     | Abstract contracts (repositories, services)                | `app/interfaces/`     |
+| **Infrastructure** | Concrete implementations (Postgres, Redis, Qdrant, OpenAI) | `app/infrastructure/` |
+| **API**            | FastAPI routers                                            | `app/api/`            |
+| **Core**           | Config, DI container, DB/Redis/Vector init                 | `app/core/`           |
 
 ### Swapping Providers
 
-Change only `src/app/core/dependencies.py` to replace any provider:
+Change only `app/core/dependencies.py` to replace any provider:
 
 - **LLM**: OpenAI → Ollama/Llama3 (change `OpenAILLMService` → your impl)
 - **Vector DB**: Qdrant → Pinecone (implement `IVectorRepository`)
@@ -62,7 +62,7 @@ cd gr8academy
 python -m venv .venv
 .venv\Scripts\activate        # Windows
 pip install -r requirements.txt
-set PYTHONPATH=src             # Windows
+set PYTHONPATH=app             # Windows
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Frontend
@@ -85,7 +85,7 @@ alembic upgrade head
 
 ```
 gr8academy/
-├── src/app/
+├── app/
 │   ├── domain/           # Pure entities, exceptions
 │   ├── use_cases/        # Auth, Documents, AI, Student
 │   ├── interfaces/       # Abstract repositories & services
