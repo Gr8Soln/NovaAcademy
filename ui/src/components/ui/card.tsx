@@ -52,6 +52,25 @@ export function CardHeader({
   return <div className={cn("mb-4", className)}>{children}</div>;
 }
 
+export function CardTitle({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <h3
+      className={cn(
+        "text-lg font-semibold leading-none tracking-tight text-neutral-900",
+        className,
+      )}
+    >
+      {children}
+    </h3>
+  );
+}
+
 export function CardContent({
   children,
   className,

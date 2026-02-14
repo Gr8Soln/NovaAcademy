@@ -79,7 +79,7 @@ class PostgresPostRepository(IPostRepository):
         )
         await self._session.flush()
 
-    async def like(self, like: PostLike) -> PostLike:
+    async def add_like(self, like: PostLike) -> PostLike:
         model = post_like_entity_to_model(like)
         self._session.add(model)
         # Also increment the post's like_count
@@ -92,7 +92,7 @@ class PostgresPostRepository(IPostRepository):
         await self._session.refresh(model)
         return post_like_model_to_entity(model)
 
-    async def unlike(self, post_id: uuid.UUID, user_id: uuid.UUID) -> None:
+    async def remove_like(self, post_id: uuid.UUID, user_id: uuid.UUID) -> None:
         await self._session.execute(
             delete(PostLikeModel).where(
                 and_(PostLikeModel.post_id == post_id, PostLikeModel.user_id == user_id)
@@ -106,13 +106,14 @@ class PostgresPostRepository(IPostRepository):
         )
         await self._session.flush()
 
-    async def has_liked(self, post_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+    async def get_like(self, post_id: uuid.UUID, user_id: uuid.UUID) -> Optional[PostLike]:
         result = await self._session.execute(
-            select(func.count()).where(
+            select(PostLikeModel).where(
                 and_(PostLikeModel.post_id == post_id, PostLikeModel.user_id == user_id)
             )
         )
-        return (result.scalar() or 0) > 0
+        model = result.scalar_one_or_none()
+        return post_like_model_to_entity(model) if model else None
 
     async def count_user_posts(self, user_id: uuid.UUID) -> int:
         result = await self._session.execute(

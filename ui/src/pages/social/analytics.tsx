@@ -1,119 +1,152 @@
-import { analyticsApi, pointsApi, studySessionsApi } from "@/lib/api";
-import type { StudyStats, UserAnalytics } from "@/types";
+import { analyticsApi } from "@/lib/api";
+import type { UserAnalytics } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import {
   BarChart3,
+  BookOpen,
+  BrainCircuit,
   Clock,
-  MessageSquare,
-  Star,
   Swords,
   Target,
+  Trophy,
   Users,
 } from "lucide-react";
+import {
+  PolarAngleAxis,
+  PolarGrid,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+} from "recharts";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionLoader } from "@/components/ui/loaders";
+
+const mockSubjectData = [
+  { subject: "Math", A: 120, fullMark: 150 },
+  { subject: "Science", A: 98, fullMark: 150 },
+  { subject: "English", A: 86, fullMark: 150 },
+  { subject: "History", A: 99, fullMark: 150 },
+  { subject: "Geography", A: 85, fullMark: 150 },
+  { subject: "Physics", A: 65, fullMark: 150 },
+];
 
 export default function AnalyticsPage() {
   const { data: analytics, isLoading } = useQuery<UserAnalytics>({
-    queryKey: ["analytics"],
+    queryKey: ["analytics", "me"],
     queryFn: () => analyticsApi.me() as Promise<UserAnalytics>,
   });
 
-  const { data: balance } = useQuery<{ balance: number }>({
-    queryKey: ["points-balance"],
-    queryFn: () => pointsApi.balance() as Promise<{ balance: number }>,
-  });
-
-  const { data: studyStats } = useQuery<StudyStats>({
-    queryKey: ["study-stats"],
-    queryFn: () => studySessionsApi.stats() as Promise<StudyStats>,
-  });
-
   if (isLoading) return <SectionLoader />;
+  if (!analytics) return <div>No data available</div>;
 
   const stats = [
     {
       label: "Total Points",
-      value: balance?.balance?.toLocaleString() ?? "0",
-      icon: Star,
-      color: "text-accent-600 bg-accent-50",
-    },
-    {
-      label: "Followers",
-      value: analytics?.followers_count ?? 0,
-      icon: Users,
-      color: "text-primary-600 bg-primary-50",
-    },
-    {
-      label: "Following",
-      value: analytics?.following_count ?? 0,
-      icon: Users,
-      color: "text-primary-600 bg-primary-50",
-    },
-    {
-      label: "Posts",
-      value: analytics?.total_posts ?? 0,
-      icon: MessageSquare,
-      color: "text-success-600 bg-success-50",
+      value: analytics.total_points.toLocaleString(),
+      icon: Trophy,
+      color: "text-yellow-600",
+      bg: "bg-yellow-100",
     },
     {
       label: "Study Time",
-      value: `${studyStats?.total_hours ?? 0}h ${(studyStats?.total_minutes ?? 0) % 60}m`,
+      value: `${Math.round(analytics.total_study_seconds / 3600)}h`,
       icon: Clock,
-      color: "text-warning-600 bg-warning-50",
+      color: "text-blue-600",
+      bg: "bg-blue-100",
     },
     {
       label: "Quizzes Taken",
-      value: analytics?.total_quizzes ?? 0,
+      value: analytics.total_quizzes,
       icon: Target,
-      color: "text-danger-600 bg-danger-50",
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
     },
     {
       label: "Challenges",
-      value: analytics?.total_challenges ?? 0,
+      value: analytics.total_challenges,
       icon: Swords,
-      color: "text-accent-600 bg-accent-50",
-    },
+      color: "text-orange-600",
+      bg: "bg-orange-100",
+    }
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20 lg:pb-0">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-primary-900">
-          Your Analytics
-        </h1>
-        <p className="text-sm text-neutral-500">
-          Track your learning progress and engagement.
-        </p>
+    <div className="max-w-4xl mx-auto space-y-8 pb-20 lg:pb-0">
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600">
+          <BarChart3 className="h-6 w-6" />
+        </div>
+        <div>
+          <h1 className="font-display text-2xl font-bold text-primary-900">
+            Performance Analytics
+          </h1>
+          <p className="text-sm text-neutral-500">
+            Track your growth and mastery across subjects.
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map(({ label, value, icon: Icon, color }) => (
-          <Card key={label}>
-            <CardContent className="flex flex-col items-center p-5 text-center">
-              <div
-                className={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg ${color}`}
-              >
-                <Icon className="h-5 w-5" />
-              </div>
-              <p className="text-2xl font-bold text-primary-900">{value}</p>
-              <p className="mt-1 text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                {label}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-
-        {/* Placeholder card for future analytics */}
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center p-5 text-center">
-            <BarChart3 className="mb-2 h-8 w-8 text-neutral-300" />
-            <p className="text-xs text-neutral-400">
-              More insights coming soon
-            </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Radar Chart Section */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BrainCircuit className="h-5 w-5 text-accent-500" />
+              Subject Mastery
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={mockSubjectData}>
+                  <PolarGrid stroke="#e5e5e5" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#737373', fontSize: 12 }} />
+                  <Radar
+                    name="Mastery"
+                    dataKey="A"
+                    stroke="#8b5cf6"
+                    fill="#8b5cf6"
+                    fillOpacity={0.5}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
+
+        {/* Key Stats Column */}
+        <div className="space-y-4">
+          {stats.map((stat) => (
+            <Card key={stat.label} className="overflow-hidden">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color}`}>
+                  <stat.icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">{stat.label}</p>
+                  <p className="text-xl font-bold text-neutral-900">{stat.value}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
+          {/* Social Stats */}
+          <Card>
+            <CardContent className="p-4 flex justify-between items-center text-center divide-x divide-neutral-100">
+              <div className="flex-1 px-2">
+                <Users className="h-4 w-4 text-neutral-400 mx-auto mb-1" />
+                <p className="text-lg font-bold text-neutral-900">{analytics.followers_count}</p>
+                <p className="text-[10px] text-neutral-500 uppercase">Followers</p>
+              </div>
+              <div className="flex-1 px-2">
+                <BookOpen className="h-4 w-4 text-neutral-400 mx-auto mb-1" />
+                <p className="text-lg font-bold text-neutral-900">{analytics.total_posts}</p>
+                <p className="text-[10px] text-neutral-500 uppercase">Posts</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

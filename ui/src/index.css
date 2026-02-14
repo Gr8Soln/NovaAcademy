@@ -8,19 +8,25 @@
   }
 
   body {
-    @apply font-sans text-neutral-700 bg-neutral-50 m-0;
+    @apply font-sans text-neutral-900 bg-neutral-50 m-0 antialiased;
   }
 
-  h1,
-  h2,
+  h1 {
+    @apply font-sans font-bold text-neutral-900 tracking-tight;
+  }
+
+  h2 {
+    @apply font-sans font-semibold text-neutral-900 tracking-tight;
+  }
+
   h3 {
-    @apply font-display text-neutral-900;
+    @apply font-sans font-semibold text-neutral-900;
   }
 
   h4,
   h5,
   h6 {
-    @apply font-sans text-neutral-900;
+    @apply font-sans font-medium text-neutral-900;
   }
 }
 
@@ -29,13 +35,16 @@
   0% {
     transform: translateX(-100%);
   }
+
   50% {
     transform: translateX(0%);
   }
+
   100% {
     transform: translateX(100%);
   }
 }
+
 .animate-loading-bar {
   animation: loading-bar 1.4s ease-in-out infinite;
 }

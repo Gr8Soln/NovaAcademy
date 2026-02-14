@@ -50,7 +50,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               icon && "pl-10",
               isPassword && "pr-10",
               error &&
-                "border-danger-500 focus:ring-danger-500/30 focus:border-danger-500",
+              "border-danger-500 focus:ring-danger-500/30 focus:border-danger-500",
               className,
             )}
             {...props}
@@ -107,7 +107,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             "focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:outline-none",
             "placeholder:text-neutral-400",
             error &&
-              "border-danger-500 focus:ring-danger-500/30 focus:border-danger-500",
+            "border-danger-500 focus:ring-danger-500/30 focus:border-danger-500",
             className,
           )}
           {...props}
@@ -193,7 +193,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             "w-full border border-neutral-200 rounded-xl px-4 py-3 font-sans text-base bg-white transition-all",
             "focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:outline-none",
             error &&
-              "border-danger-500 focus:ring-danger-500/30 focus:border-danger-500",
+            "border-danger-500 focus:ring-danger-500/30 focus:border-danger-500",
             className,
           )}
           {...props}
