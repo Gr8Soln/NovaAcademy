@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/buttons";
 import { useAuthStore } from "@/stores";
+import { pages } from "@/lib/constant";
 
 export default function NotFoundPage() {
   const token = useAuthStore((s) => s.accessToken);
@@ -27,26 +28,26 @@ export default function NotFoundPage() {
       </p>
 
       {token ? (
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Link to="/dashboard">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Link to={pages.dashboard}>
             <Button>
               <Home className="mr-1.5 h-4 w-4" />
               Go to Dashboard
             </Button>
           </Link>
-          <Link to="/documents">
+          <Link to={pages.documents}>
             <Button variant="outline">My Documents</Button>
           </Link>
         </div>
       ) : (
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Link to="/login">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Link to={pages.login}>
             <Button>
               <LogIn className="mr-1.5 h-4 w-4" />
               Log In
             </Button>
           </Link>
-          <Link to="/">
+          <Link to={pages.home}>
             <Button variant="outline">Back to Home</Button>
           </Link>
         </div>

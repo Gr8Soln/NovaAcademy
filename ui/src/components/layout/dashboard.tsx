@@ -209,55 +209,54 @@ const DashboardLayout = () => {
         )}
       >
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-neutral-200 bg-white/70 backdrop-blur px-4 sm:px-6 lg:px-8">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="rounded-md p-2 text-neutral-500 hover:bg-neutral-100 lg:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-neutral-200 bg-white/70 backdrop-blur">
+          <div className="w-full max-w-[1400px] flex items-center justify-between mx-auto px-4 sm:px-6 lg:px-8">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="rounded-md p-2 text-neutral-500 hover:bg-neutral-100 lg:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
 
-          {/* Search Bar */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-neutral-100/50 rounded-lg border border-transparent focus-within:border-primary-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-100 transition-all w-full max-w-md">
-            <Search className="h-4 w-4 text-neutral-400" />
-            <input
-              type="text"
-              placeholder="Search for documents, students, or topics..."
-              className="bg-transparent border-none focus:outline-none text-sm text-neutral-700 placeholder:text-neutral-400 w-full"
-            />
-            <div className="flex items-center gap-1">
-              <span className="hidden lg:inline-flex items-center rounded border border-neutral-200 bg-white px-1.5 font-mono text-[10px] font-medium text-neutral-500">
+            {/* Search Bar */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-neutral-100/50 rounded-lg border border-transparent focus-within:border-primary-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-100 transition-all w-full max-w-md">
+              <div className="flex-1 flex items-center gap-2 ">
+                <Search className="h-4 w-4 text-neutral-400" />
+                <input
+                  type="text"
+                  placeholder="Search for documents, students, or topics..."
+                  className="bg-transparent border-none focus:outline-none text-sm text-neutral-700 placeholder:text-neutral-400 w-full"
+                />
+              </div>
+              <span className="hidden lg:inline-flex items-center rounded border border-neutral-200 bg-white p-1 font-mono text-[9px] font-medium text-neutral-500">
                 Ctrl K
               </span>
             </div>
-          </div>
 
-          <div className="flex-1" />
+            <div className="flex-1" />
 
-          <div className="flex items-center gap-3 sm:gap-4">
-            {/* Action Buttons */}
-            <Link
-              to={pages.documents}
-              className="hidden sm:flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-all hover:shadow hover:-translate-y-0.5"
-            >
-              <BookOpen className="h-4 w-4" />
-              <span>Study Now</span>
-            </Link>
+            <div className="flex items-center gap-3 sm:gap-4">
+              {/* Action Buttons */}
+              <Link
+                to={pages.documents}
+                className="hidden sm:flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-all hover:shadow hover:-translate-y-0.5"
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>Study Now</span>
+              </Link>
 
-            <button className="relative rounded-full p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors">
-              <Search className="h-5 w-5 sm:hidden" />
-            </button>
-            <div className="h-8 w-px bg-neutral-200 hidden sm:block"></div>
-            <Link
-              to={pages.analytics}
-              className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity"
-            >
-              <Avatar
-                name={user?.full_name ?? "User"}
-                size="sm"
-                className="ring-2 ring-white shadow-sm"
-              />
-            </Link>
+              <div className="h-8 w-px bg-neutral-200 hidden sm:block"></div>
+              <Link
+                to={pages.analytics}
+                className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity"
+              >
+                <Avatar
+                  name={user?.full_name ?? "User"}
+                  size="sm"
+                  className="ring-2 ring-white shadow-sm"
+                />
+              </Link>
+            </div>
           </div>
         </header>
 

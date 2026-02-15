@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/buttons";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SectionLoader } from "@/components/ui/loaders";
 import { useAuthStore } from "@/stores";
+import { pages } from "@/lib/constant";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -44,13 +45,13 @@ export default function DashboardPage() {
 
   // Mock data for graphs/streaks if not in API yet
   const studyData = [
-    { day: "Mon", minutes: 45 },
-    { day: "Tue", minutes: 30 },
+    { day: "Mon", minutes: 35 },
+    { day: "Tue", minutes: 85 },
     { day: "Wed", minutes: 60 },
-    { day: "Thu", minutes: 25 },
+    { day: "Thu", minutes: 55 },
     { day: "Fri", minutes: 90 },
-    { day: "Sat", minutes: 12 },
-    { day: "Sun", minutes: 5 },
+    { day: "Sat", minutes: 120 },
+    { day: "Sun", minutes: 25 },
   ];
 
   const pendingChallenges =
@@ -59,11 +60,10 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 pb-20 lg:pb-0">
-      {/* 1. Greeting + Streak Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 flex flex-col justify-center">
           <h1 className="font-display text-3xl font-bold text-primary-900">
-            Welcome back, {user?.full_name?.split(" ")[0]}! 👋
+            Welcome back, {user?.full_name?.split(" ")[1]}! 👋
           </h1>
           <p className="text-neutral-500 mt-2">
             You're on a roll. Keep up the momentum!
@@ -74,7 +74,7 @@ export default function DashboardPage() {
           className="relative overflow-hidden border-none text-white shadow-lg shadow-primary-500/20"
         >
           <div className="relative z-10 flex items-center justify-between">
-            <div>
+            <div className="space-y-4">
               <div className="flex items-center gap-2 mb-1">
                 <Flame className="h-5 w-5 text-accent-300 fill-accent-300" />
                 <span className="text-sm font-bold uppercase tracking-wider text-primary-200">
@@ -83,7 +83,7 @@ export default function DashboardPage() {
               </div>
               <div className="text-4xl font-display font-bold">5 Days</div>
             </div>
-            <div className="text-right">
+            <div className="text-right space-y-2">
               <div className="text-sm text-primary-200 mb-1">Target</div>
               <div className="font-mono font-semibold">30m / day</div>
             </div>
@@ -93,9 +93,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* 2. Main Grid: Continue Learning & Challenges */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Continue Learning (2 cols) */}
         <div className="lg:col-span-2 space-y-6">
           <h2 className="font-display text-lg font-semibold text-primary-900 flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-primary-600" />
@@ -185,9 +183,9 @@ export default function DashboardPage() {
                     />
                     <Bar
                       dataKey="minutes"
-                      fill="#7C3AED"
+                      fill="#3B5BDB"
                       radius={[4, 4, 0, 0]}
-                      barSize={32}
+                      barSize={45}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -208,8 +206,8 @@ export default function DashboardPage() {
             <CardContent className="p-0">
               <div className="divide-y divide-neutral-100">
                 <button
-                  onClick={() => navigate("/documents")}
-                  className="w-full flex items-center gap-3 p-4 hover:bg-neutral-50 transition-colors text-left"
+                  onClick={() => navigate(pages.documents)}
+                  className="w-full flex items-center gap-3 py-4 hover:px-4 rounded-lg hover:bg-neutral-50 transition-all text-left"
                 >
                   <div className="h-8 w-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600">
                     <Upload className="h-4 w-4" />
@@ -219,8 +217,8 @@ export default function DashboardPage() {
                   </span>
                 </button>
                 <button
-                  className="w-full flex items-center gap-3 p-4 hover:bg-neutral-50 transition-colors text-left"
-                  onClick={() => navigate("/exam-hall")}
+                  className="w-full flex items-center gap-3 py-4 hover:px-4 rounded-lg hover:bg-neutral-50 transition-all text-left"
+                  onClick={() => navigate(pages.examHall)}
                 >
                   <div className="h-8 w-8 rounded-lg bg-accent-50 flex items-center justify-center text-accent-600">
                     <Shield className="h-4 w-4" />
@@ -230,8 +228,8 @@ export default function DashboardPage() {
                   </span>
                 </button>
                 <button
-                  className="w-full flex items-center gap-3 p-4 hover:bg-neutral-50 transition-colors text-left"
-                  onClick={() => navigate("/challenges")}
+                  className="w-full flex items-center gap-3 py-4 hover:px-4 rounded-lg hover:bg-neutral-50 transition-all text-left"
+                  onClick={() => navigate(pages.challenges)}
                 >
                   <div className="h-8 w-8 rounded-lg bg-success-50 flex items-center justify-center text-success-600">
                     <Swords className="h-4 w-4" />
@@ -251,7 +249,7 @@ export default function DashboardPage() {
                 Challenges
               </h2>
               <Link
-                to="/challenges"
+                to={pages.challenges}
                 className="text-xs font-semibold text-primary-600 hover:text-primary-700"
               >
                 View All
@@ -280,7 +278,7 @@ export default function DashboardPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => navigate("/challenges")}
+                      onClick={() => navigate(pages.challenges)}
                     >
                       View
                     </Button>
@@ -297,7 +295,7 @@ export default function DashboardPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate("/challenges")}
+                    onClick={() => navigate(pages.challenges)}
                   >
                     Create one?
                   </Button>

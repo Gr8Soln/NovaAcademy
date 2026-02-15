@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 
 import { LogoWithName } from "../ui";
-import { displayDescription } from "@/lib/constant";
+import { displayDescription, socialLinks } from "@/lib/constant";
 
 const Footer = () => {
   return (
@@ -20,21 +20,24 @@ const Footer = () => {
             </p>
             <div className="flex items-center gap-3">
               <a
-                href="#"
+                href={socialLinks.github}
+                target="_blank"
                 className="text-neutral-400 hover:text-white transition-colors"
                 aria-label="GitHub"
               >
                 <Github className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href={socialLinks.twitter}
+                target="_blank"
                 className="text-neutral-400 hover:text-white transition-colors"
                 aria-label="Twitter"
               >
                 <Twitter className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href={socialLinks.linkedin}
+                target="_blank"
                 className="text-neutral-400 hover:text-white transition-colors"
                 aria-label="LinkedIn"
               >
