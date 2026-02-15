@@ -1,10 +1,11 @@
-from __future__ import annotations
-
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.ai.router import router as ai_router
@@ -16,9 +17,7 @@ from app.api.documents.router import router as documents_router
 from app.api.leaderboard.router import router as leaderboard_router
 from app.api.notifications.router import router as notifications_router
 from app.api.points.router import router as points_router
-from app.api.posts.router import router as posts_router
 from app.api.quizzes.router import router as quizzes_router
-from app.api.social.router import router as social_router
 from app.api.study_sessions.router import router as study_sessions_router
 from app.api.users.router import router as users_router
 from app.core.config import settings
@@ -63,14 +62,33 @@ app.include_router(documents_router, prefix=settings.API_PREFIX)
 app.include_router(ai_router, prefix=settings.API_PREFIX)
 app.include_router(quizzes_router, prefix=settings.API_PREFIX)
 app.include_router(dashboard_router, prefix=settings.API_PREFIX)
-app.include_router(social_router, prefix=settings.API_PREFIX)
-app.include_router(posts_router, prefix=settings.API_PREFIX)
 app.include_router(notifications_router, prefix=settings.API_PREFIX)
 app.include_router(challenges_router, prefix=settings.API_PREFIX)
 app.include_router(points_router, prefix=settings.API_PREFIX)
 app.include_router(leaderboard_router, prefix=settings.API_PREFIX)
 app.include_router(study_sessions_router, prefix=settings.API_PREFIX)
 app.include_router(analytics_router, prefix=settings.API_PREFIX)
+
+
+
+
+# ── Exception handlers ─────────────────────────────────────────
+
+# @app.exception_handler(RequestValidationError)
+# async def validation_exception_handler(request: Request, exc: RequestValidationError):
+#     """Handle Pydantic validation errors with structured JSON response."""
+#     errors = exc.errors()
+#     # Extract meaningful error messages
+#     error_messages = []
+#     for error in errors:
+#         field = " -> ".join(str(loc) for loc in error["loc"] if loc != "body")
+#         message = error["msg"]
+#         error_messages.append(f"{field}: {message}")
+    
+#     detail = "; ".join(error_messages) if error_messages else "Validation error"
+#     response = success_response(ResponseStatus.FAILED, detail)
+#     return JSONResponse(status_code=422, content=jsonable_encoder(response))
+
 
 
 # ── Health check ────────────────────────────────────────────────

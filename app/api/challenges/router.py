@@ -11,7 +11,7 @@ from app.core.dependencies import (get_challenge_repository, get_current_user,
                                    get_notification_push_service,
                                    get_notification_repository,
                                    get_point_transaction_repository,
-                                   get_post_repository, get_user_repository)
+                                   get_user_repository)
 from app.domain.entities.challenge import ChallengeStatus
 from app.domain.entities.user import User
 from app.domain.exceptions import (ChallengeNotFoundError,
@@ -23,7 +23,6 @@ from app.interfaces.repositories.notification_repository import \
     INotificationRepository
 from app.interfaces.repositories.point_transaction_repository import \
     IPointTransactionRepository
-from app.interfaces.repositories.post_repository import IPostRepository
 from app.interfaces.repositories.user_repository import IUserRepository
 from app.interfaces.services.leaderboard_service import ILeaderboardService
 from app.interfaces.services.notification_push_service import \
@@ -195,14 +194,13 @@ async def resolve_challenge(
     current_user: User = Depends(get_current_user),
     challenge_repo: IChallengeRepository = Depends(get_challenge_repository),
     point_repo: IPointTransactionRepository = Depends(get_point_transaction_repository),
-    post_repo: IPostRepository = Depends(get_post_repository),
     user_repo: IUserRepository = Depends(get_user_repository),
     notification_repo: INotificationRepository = Depends(get_notification_repository),
     leaderboard: ILeaderboardService = Depends(get_leaderboard_service),
     push: INotificationPushService = Depends(get_notification_push_service),
 ):
     use_case = ResolveChallengeUseCase(
-        challenge_repo, point_repo, post_repo, user_repo, notification_repo, leaderboard, push
+        challenge_repo, point_repo, user_repo, notification_repo, leaderboard, push
     )
     try:
         challenge = await use_case.execute(challenge_id=challenge_id)

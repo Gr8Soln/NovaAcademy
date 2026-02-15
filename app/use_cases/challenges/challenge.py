@@ -7,7 +7,6 @@ import uuid
 from app.domain.entities.challenge import Challenge, ChallengeStatus
 from app.domain.entities.notification import Notification, NotificationType
 from app.domain.entities.point_transaction import PointAction, PointTransaction
-from app.domain.entities.post import Post
 from app.domain.exceptions import (AuthorizationError, ChallengeNotFoundError,
                                    ChallengeValidationError,
                                    InsufficientPointsError, UserNotFoundError)
@@ -17,7 +16,6 @@ from app.interfaces.repositories.notification_repository import \
     INotificationRepository
 from app.interfaces.repositories.point_transaction_repository import \
     IPointTransactionRepository
-from app.interfaces.repositories.post_repository import IPostRepository
 from app.interfaces.repositories.user_repository import IUserRepository
 from app.interfaces.services.leaderboard_service import (ILeaderboardService,
                                                          LeaderboardType)
@@ -237,7 +235,6 @@ class ResolveChallengeUseCase:
         self,
         challenge_repo: IChallengeRepository,
         point_repo: IPointTransactionRepository,
-        post_repo: IPostRepository,
         user_repo: IUserRepository,
         notification_repo: INotificationRepository,
         leaderboard_service: ILeaderboardService,
@@ -245,7 +242,6 @@ class ResolveChallengeUseCase:
     ) -> None:
         self._challenge_repo = challenge_repo
         self._point_repo = point_repo
-        self._post_repo = post_repo
         self._user_repo = user_repo
         self._notification_repo = notification_repo
         self._leaderboard = leaderboard_service
@@ -299,16 +295,7 @@ class ResolveChallengeUseCase:
                 ))
                 await self._leaderboard.increment_score(winner_id, LeaderboardType.POINTS, bonus)
 
-            # Auto-post result
-            winner = await self._user_repo.get_by_id(winner_id)
-            loser = await self._user_repo.get_by_id(loser_id)
-            auto_content = (
-                f"🏆 {winner.full_name if winner else 'Winner'} beat "
-                f"{loser.full_name if loser else 'Opponent'} in a challenge for "
-                f"{challenge.wager_amount} points!"
-            )
-            auto_post = Post.create_auto(winner_id, auto_content)
-            await self._post_repo.create(auto_post)
+            # Auto-post result removed (social feature)
 
             # Notify both
             for uid, msg in [

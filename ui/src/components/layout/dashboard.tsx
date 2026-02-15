@@ -1,6 +1,5 @@
 import {
   BarChart3,
-  Bell,
   BookOpen,
   ChevronLeft,
   ChevronRight,
@@ -8,8 +7,8 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  Newspaper,
   Search,
+  Shield,
   Swords,
   Trophy,
   X,
@@ -20,6 +19,7 @@ import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
+import { pages } from "@/lib/constant";
 
 interface NavItem {
   to: string;
@@ -29,29 +29,23 @@ interface NavItem {
 
 const navSections: { title?: string; items: NavItem[] }[] = [
   {
-    title: "Core Learning",
+    title: "Learning",
     items: [
-      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/documents", label: "Classroom", icon: BookOpen },
-      // { to: "/quizzes", label: "Exam Hall", icon: FileQuestion }, // TODO: Add Quizzes route if needed, for now sticking to known routes
-      { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-      { to: "/analytics", label: "Analytics", icon: BarChart3 },
+      { to: pages.dashboard, label: "Dashboard", icon: LayoutDashboard },
+      { to: pages.documents, label: "Classroom", icon: BookOpen },
+      { to: pages.examHall, label: "Exam Hall", icon: Shield },
     ],
   },
   {
-    title: "Social",
+    title: "Compete",
     items: [
-      { to: "/feed", label: "Social Feed", icon: Newspaper },
-      { to: "/challenges", label: "Challenges", icon: Swords },
-      // { to: "/following", label: "Following", icon: Users }, // Placeholder for Following page
+      { to: pages.challenges, label: "Challenges", icon: Swords },
+      { to: pages.leaderboard, label: "Leaderboard", icon: Trophy },
     ],
   },
   {
-    title: "Personal",
-    items: [
-      // { to: "/profile", label: "Profile", icon: User }, // Placeholder for Profile
-      // { to: "/settings", label: "Settings", icon: Settings }, // Placeholder for Settings
-    ],
+    title: "Insights",
+    items: [{ to: pages.analytics, label: "Analytics", icon: BarChart3 }],
   },
 ];
 
@@ -63,13 +57,18 @@ const DashboardLayout = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate(pages.home);
   };
 
   const SidebarContent = () => (
     <div className="flex select-none flex-col h-full">
       {/* Logo */}
-      <div className={cn("flex items-center gap-3 px-5 py-6", sidebarCollapsed ? "justify-center px-2" : "")}>
+      <div
+        className={cn(
+          "flex items-center gap-3 px-5 py-6",
+          sidebarCollapsed ? "justify-center px-2" : "",
+        )}
+      >
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-700 shadow-sm flex-shrink-0">
           <GraduationCap className="h-6 w-6 text-white" />
         </div>
@@ -102,14 +101,20 @@ const DashboardLayout = () => {
                       isActive
                         ? "bg-primary-50 text-primary-700"
                         : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
-                      sidebarCollapsed && "justify-center px-2"
+                      sidebarCollapsed && "justify-center px-2",
                     )
                   }
                   title={sidebarCollapsed ? label : undefined}
                 >
-                  <Icon className={cn("h-5 w-5 flex-shrink-0 transition-colors",
-                    ({ isActive }: { isActive: boolean }) => isActive ? "text-primary-600" : "text-neutral-400 group-hover:text-neutral-600"
-                  )} />
+                  <Icon
+                    className={cn(
+                      "h-5 w-5 flex-shrink-0 transition-colors",
+                      ({ isActive }: { isActive: boolean }) =>
+                        isActive
+                          ? "text-primary-600"
+                          : "text-neutral-400 group-hover:text-neutral-600",
+                    )}
+                  />
                   {!sidebarCollapsed && <span>{label}</span>}
 
                   {/* Tooltip for collapsed state could go here */}
@@ -126,7 +131,12 @@ const DashboardLayout = () => {
 
       {/* User section */}
       <div className="border-t border-neutral-200 p-4">
-        <div className={cn("flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-neutral-50", sidebarCollapsed ? "justify-center" : "")}>
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-neutral-50",
+            sidebarCollapsed ? "justify-center" : "",
+          )}
+        >
           <Avatar name={user?.full_name ?? "User"} size="sm" />
           {!sidebarCollapsed && (
             <div className="flex-1 min-w-0">
@@ -155,7 +165,7 @@ const DashboardLayout = () => {
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-neutral-900/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-50 bg-neutral-900/50 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -165,7 +175,7 @@ const DashboardLayout = () => {
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-neutral-200 transition-all duration-300 ease-in-out shadow-sm",
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-          sidebarCollapsed ? "w-20" : "w-64"
+          sidebarCollapsed ? "w-20" : "w-64",
         )}
       >
         {/* Mobile Close button */}
@@ -181,16 +191,25 @@ const DashboardLayout = () => {
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           className="hidden lg:flex absolute -right-3 top-9 h-6 w-6 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-400 hover:text-primary-600 shadow-sm transition-colors z-50"
         >
-          {sidebarCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+          {sidebarCollapsed ? (
+            <ChevronRight className="h-3 w-3" />
+          ) : (
+            <ChevronLeft className="h-3 w-3" />
+          )}
         </button>
 
         <SidebarContent />
       </aside>
 
       {/* Main area */}
-      <div className={cn("transition-all duration-300 min-h-screen flex flex-col", sidebarCollapsed ? "lg:pl-20" : "lg:pl-64")}>
+      <div
+        className={cn(
+          "transition-all duration-300 min-h-screen flex flex-col",
+          sidebarCollapsed ? "lg:pl-20" : "lg:pl-64",
+        )}
+      >
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-neutral-200 bg-white/80 backdrop-blur px-4 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-neutral-200 bg-white/70 backdrop-blur px-4 sm:px-6 lg:px-8">
           <button
             onClick={() => setSidebarOpen(true)}
             className="rounded-md p-2 text-neutral-500 hover:bg-neutral-100 lg:hidden"
@@ -218,7 +237,7 @@ const DashboardLayout = () => {
           <div className="flex items-center gap-3 sm:gap-4">
             {/* Action Buttons */}
             <Link
-              to="/documents"
+              to={pages.documents}
               className="hidden sm:flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-all hover:shadow hover:-translate-y-0.5"
             >
               <BookOpen className="h-4 w-4" />
@@ -226,12 +245,18 @@ const DashboardLayout = () => {
             </Link>
 
             <button className="relative rounded-full p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-danger-500 border-2 border-white"></span>
+              <Search className="h-5 w-5 sm:hidden" />
             </button>
             <div className="h-8 w-px bg-neutral-200 hidden sm:block"></div>
-            <Link to="/analytics" className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Avatar name={user?.full_name ?? "User"} size="sm" className="ring-2 ring-white shadow-sm" />
+            <Link
+              to={pages.analytics}
+              className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <Avatar
+                name={user?.full_name ?? "User"}
+                size="sm"
+                className="ring-2 ring-white shadow-sm"
+              />
             </Link>
           </div>
         </header>
@@ -246,15 +271,15 @@ const DashboardLayout = () => {
       <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-neutral-200 bg-white lg:hidden pb-safe">
         <div className="flex items-center justify-around">
           {[
-            { to: "/dashboard", icon: LayoutDashboard, label: "Home" },
-            { to: "/documents", icon: BookOpen, label: "Study" },
-            { to: "/feed", icon: Newspaper, label: "Feed" },
-            { to: "/leaderboard", icon: Trophy, label: "Rank" },
+            { to: pages.dashboard, icon: LayoutDashboard, label: "Home" },
+            { to: pages.documents, icon: BookOpen, label: "Study" },
+            { to: pages.examHall, icon: Shield, label: "Exam" },
+            { to: pages.leaderboard, icon: Trophy, label: "Rank" },
           ].map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
-              end={to === "/dashboard"}
+              end={to === pages.dashboard}
               className={({ isActive }) =>
                 cn(
                   "flex flex-col items-center gap-1 p-3 text-[10px] font-medium transition-colors",

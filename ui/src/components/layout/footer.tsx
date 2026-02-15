@@ -1,11 +1,11 @@
 import {
-  BookOpen,
   Github,
-  GraduationCap,
   Linkedin,
   Twitter,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+
+import { LogoWithName } from "../ui";
+import { displayDescription } from "@/lib/constant";
 
 const Footer = () => {
   return (
@@ -14,18 +14,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <Link to="/" className="inline-flex items-center gap-2 mb-4">
-              <div className="flex items-center gap-1 text-white">
-                <BookOpen className="h-5 w-5" />
-                <GraduationCap className="h-6 w-6" />
-              </div>
-              <span className="font-display text-xl font-bold text-white">
-                Gr8Academy
-              </span>
-            </Link>
+            <LogoWithName isWhite />
             <p className="text-sm text-neutral-400 max-w-xs mb-4">
-              AI-powered study platform that helps students learn smarter with
-              personalized summaries, quizzes, and social learning.
+              {displayDescription}
             </p>
             <div className="flex items-center gap-3">
               <a

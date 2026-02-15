@@ -1,37 +1,4 @@
-// ── Social feature types ─────────────────────────────────────────
-
-export interface Follow {
-  id: string;
-  follower_id: string;
-  following_id: string;
-  created_at: string;
-}
-
-export interface FollowStats {
-  followers_count: number;
-  following_count: number;
-}
-
-export interface Post {
-  id: string;
-  user_id: string;
-  content: string;
-  post_type: "manual" | "auto";
-  like_count: number;
-  impression_count: number;
-  created_at: string;
-}
-
-export interface Notification {
-  id: string;
-  user_id: string;
-  type: string;
-  title: string;
-  message: string;
-  data: Record<string, unknown>;
-  is_read: boolean;
-  created_at: string;
-}
+// ── Competition & performance types ──────────────────────────────
 
 export interface Challenge {
   id: string;
@@ -85,9 +52,6 @@ export interface StudyStats {
 
 export interface UserAnalytics {
   total_points: number;
-  followers_count: number;
-  following_count: number;
-  total_posts: number;
   total_study_seconds: number;
   total_quizzes: number;
   total_challenges: number;

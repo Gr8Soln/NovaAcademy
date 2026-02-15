@@ -1,9 +1,7 @@
 import { GraduationCap } from "lucide-react";
 
-/** Full-page loader shown during lazy chunk loading */
 export const PageLoader = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-neutral-50 via-white to-primary-50">
-    {/* Pulsing logo ring */}
+  <div className="min-h-screen flex flex-col items-center justify-center bg-black/10 backdrop-blur-sm">
     <div className="relative flex items-center justify-center mb-8">
       <span className="absolute inline-flex h-20 w-20 rounded-full bg-primary-400 opacity-20 animate-ping" />
       <span className="relative flex items-center justify-center h-20 w-20 rounded-full bg-primary-700 text-white shadow-lg">
@@ -11,18 +9,17 @@ export const PageLoader = () => (
       </span>
     </div>
 
-    {/* Animated loading bar */}
     <div className="w-48 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
       <div className="h-full bg-gradient-to-r from-primary-500 via-accent-500 to-primary-500 rounded-full animate-loading-bar" />
     </div>
 
     <p className="mt-4 text-sm font-medium text-neutral-500 tracking-wide animate-pulse">
-      Loading&hellip;
+      Loading...&hellip;
     </p>
   </div>
 );
 
-/** Inline section loader for smaller areas (e.g. nested routes) */
+
 export const SectionLoader = () => (
   <div className="flex flex-col items-center justify-center py-24">
     <div className="relative flex items-center justify-center mb-6">

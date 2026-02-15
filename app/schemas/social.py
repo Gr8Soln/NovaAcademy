@@ -1,4 +1,4 @@
-"""Social feature schemas — follow, posts, notifications, challenges, leaderboard, study sessions, analytics."""
+"""Social feature schemas — notifications, challenges, leaderboard, study sessions, analytics."""
 
 from __future__ import annotations
 
@@ -7,40 +7,6 @@ from datetime import datetime
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
-
-# ═══════════════════════════════════════════════════════════════
-# Follow
-# ═══════════════════════════════════════════════════════════════
-
-class FollowResponse(BaseModel):
-    id: uuid.UUID
-    follower_id: uuid.UUID
-    following_id: uuid.UUID
-    created_at: datetime
-
-
-class FollowStatsResponse(BaseModel):
-    followers_count: int
-    following_count: int
-
-
-# ═══════════════════════════════════════════════════════════════
-# Posts
-# ═══════════════════════════════════════════════════════════════
-
-class CreatePostRequest(BaseModel):
-    content: str = Field(..., min_length=1, max_length=280)
-
-
-class PostResponse(BaseModel):
-    id: uuid.UUID
-    user_id: uuid.UUID
-    content: str
-    post_type: str
-    like_count: int
-    impression_count: int
-    created_at: datetime
-
 
 # ═══════════════════════════════════════════════════════════════
 # Notifications
@@ -152,9 +118,6 @@ class StudyStatsResponse(BaseModel):
 
 class UserAnalyticsResponse(BaseModel):
     total_points: int
-    followers_count: int
-    following_count: int
-    total_posts: int
     total_study_seconds: int
     total_quizzes: int
     total_challenges: int

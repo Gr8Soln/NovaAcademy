@@ -1,6 +1,4 @@
 import {
-  BookOpen,
-  GraduationCap,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -14,6 +12,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/buttons";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
+import { displayName, pages } from "@/lib/constant";
+import { LogoWithName } from "../ui";
 
 interface HeaderProps {
   /** Transparent background that becomes solid on scroll */
@@ -47,15 +47,7 @@ const Header = ({ transparent = false }: HeaderProps) => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="inline-flex items-center gap-2">
-            <div className="flex items-center gap-1 text-primary-700">
-              <BookOpen className="h-5 w-5" />
-              <GraduationCap className="h-6 w-6" />
-            </div>
-            <span className="font-display text-xl font-bold text-primary-900">
-              Gr8Academy
-            </span>
-          </Link>
+          <LogoWithName />
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
@@ -72,7 +64,7 @@ const Header = ({ transparent = false }: HeaderProps) => {
               How It Works
             </a>
             <Link
-              to="/leaderboard"
+              to={pages.leaderboard}
               className="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors"
             >
               Leaderboard
@@ -96,7 +88,7 @@ const Header = ({ transparent = false }: HeaderProps) => {
                 {profileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-neutral-200 py-2 z-50">
                     <Link
-                      to="/dashboard"
+                      to={pages.dashboard}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
                       onClick={() => setProfileOpen(false)}
                     >
@@ -104,7 +96,7 @@ const Header = ({ transparent = false }: HeaderProps) => {
                       Dashboard
                     </Link>
                     <Link
-                      to="/analytics"
+                      to={pages.analytics}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
                       onClick={() => setProfileOpen(false)}
                     >
@@ -127,12 +119,12 @@ const Header = ({ transparent = false }: HeaderProps) => {
               </div>
             ) : (
               <>
-                <Link to="/login">
+                <Link to={pages.login}>
                   <Button variant="ghost" size="sm">
                     Log In
                   </Button>
                 </Link>
-                <Link to="/register">
+                <Link to={pages.register}>
                   <Button variant="accent" size="sm">
                     Get Started
                   </Button>
@@ -165,7 +157,7 @@ const Header = ({ transparent = false }: HeaderProps) => {
           <div className="absolute right-0 top-0 h-full w-72 bg-white shadow-xl p-6 flex flex-col gap-6">
             <div className="flex items-center justify-between">
               <span className="font-display text-lg font-bold text-primary-900">
-                Gr8Academy
+                {displayName}
               </span>
               <button
                 onClick={() => setMobileOpen(false)}
@@ -191,7 +183,7 @@ const Header = ({ transparent = false }: HeaderProps) => {
                 How It Works
               </a>
               <Link
-                to="/leaderboard"
+                to={pages.leaderboard}
                 onClick={() => setMobileOpen(false)}
                 className="text-sm font-medium text-neutral-700 hover:text-primary-600 py-2"
               >
@@ -202,7 +194,7 @@ const Header = ({ transparent = false }: HeaderProps) => {
             <div className="mt-auto flex flex-col gap-3">
               {user ? (
                 <>
-                  <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
+                  <Link to={pages.dashboard} onClick={() => setMobileOpen(false)}>
                     <Button variant="primary" fullWidth>
                       Dashboard
                     </Button>
@@ -220,12 +212,12 @@ const Header = ({ transparent = false }: HeaderProps) => {
                 </>
               ) : (
                 <>
-                  <Link to="/login" onClick={() => setMobileOpen(false)}>
+                  <Link to={pages.login} onClick={() => setMobileOpen(false)}>
                     <Button variant="outline" fullWidth>
                       Log In
                     </Button>
                   </Link>
-                  <Link to="/register" onClick={() => setMobileOpen(false)}>
+                  <Link to={pages.register} onClick={() => setMobileOpen(false)}>
                     <Button variant="accent" fullWidth>
                       Get Started
                     </Button>

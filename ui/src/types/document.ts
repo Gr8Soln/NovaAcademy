@@ -12,6 +12,16 @@ export interface Document {
 }
 
 export interface DocumentListResponse {
-  documents: Document[];
-  total: number;
+  status: string;
+  message: string;
+  data: Document[];
+  metadata: {
+    current_page: number;
+    page_size: number;
+    total_data: number;
+    total_data_fetched: number;
+    total_pages: number;
+    previous_page: number | null;
+    next_page: number | null;
+  } | null;
 }

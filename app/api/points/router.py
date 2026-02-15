@@ -11,7 +11,7 @@ from app.interfaces.repositories.point_transaction_repository import \
     IPointTransactionRepository
 from app.schemas.response import paginated_response, success_response
 from app.schemas.social import PointBalanceResponse, PointTransactionResponse
-from app.use_cases.social import (GetPointsBalanceUseCase,
+from app.use_cases.points import (GetPointsBalanceUseCase,
                                   GetPointsHistoryUseCase)
 
 router = APIRouter(prefix="/points", tags=["points"])

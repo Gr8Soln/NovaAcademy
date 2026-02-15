@@ -1,7 +1,3 @@
-"""Qdrant async client factory."""
-
-from __future__ import annotations
-
 from qdrant_client import AsyncQdrantClient
 
 from app.core.config import settings

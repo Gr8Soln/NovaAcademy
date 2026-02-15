@@ -5,11 +5,10 @@ import {
   Brain,
   Layers,
   MessageSquare,
+  Shield,
   Swords,
   TrendingUp,
-  Trophy,
   Upload,
-  Users,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -21,6 +20,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/buttons";
 import { Card } from "@/components/ui/card";
 import { useAuthStore } from "@/stores";
+import { pages } from "@/lib/constant";
 
 /* ─── Counter hook ──────────────────────────────────────────── */
 
@@ -84,20 +84,19 @@ const features: Feature[] = [
     description: "Auto-generated study aids from your uploaded content.",
   },
   {
-    icon: Trophy,
-    title: "Quiz Challenges",
+    icon: Shield,
+    title: "Exam Hall",
     description:
-      "Challenge friends to quizzes, wager points, climb the leaderboard.",
+      "Immersive timed exams that simulate real test pressure and build confidence.",
   },
   {
-    icon: Users,
-    title: "Social Learning",
-    description:
-      "Follow classmates, share progress, build study buddy networks.",
+    icon: Swords,
+    title: "1v1 Challenges",
+    description: "Compete head-to-head against other students and earn points.",
   },
   {
     icon: BarChart3,
-    title: "Progress Analytics",
+    title: "Performance Analytics",
     description:
       "Track study time, quiz scores, streaks, and mastery over time.",
   },
@@ -156,18 +155,18 @@ export default function LandingPage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24 lg:pt-24 lg:pb-32">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
             {/* Left column — Text */}
             <div className="text-center lg:text-left">
               <span className="inline-block font-sans text-xs font-semibold uppercase tracking-widest text-accent-700 mb-4">
-                AI-Powered Learning
+                AI-Powered Academic Excellence
               </span>
               <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-primary-900 leading-tight">
-                Your Personal AI Tutor, Always Ready
+                Outperform. Outlearn. Outrank.
               </h1>
               <p className="mt-6 font-sans text-lg text-neutral-600 max-w-xl mx-auto lg:mx-0">
-                Upload your study materials. Get summaries, flashcards, quizzes,
-                and AI-powered Q&A — all personalized to how you learn.
+                Upload your materials. Master them with AI-generated summaries,
+                flashcards, and timed exams. Compete on the leaderboard.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
@@ -185,7 +184,7 @@ export default function LandingPage() {
               </div>
 
               {/* Social proof */}
-              <div className="mt-8 flex items-center gap-3 justify-center lg:justify-start">
+              <div className="mt-8 hidden lg:flex items-center gap-3 justify-center lg:justify-start">
                 <div className="flex -space-x-2">
                   {["Alice Chen", "Bob Smith", "Carlos Diaz", "Dana Lee"].map(
                     (name) => (
@@ -206,7 +205,7 @@ export default function LandingPage() {
             </div>
 
             {/* Right column — Illustration */}
-            <div className="hidden lg:block relative">
+            <div className="block relative">
               <div className="relative bg-gradient-to-br from-primary-900 to-primary-700 rounded-2xl shadow-2xl p-8 text-white">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-3 h-3 rounded-full bg-danger-500" />
@@ -251,10 +250,31 @@ export default function LandingPage() {
                 </div>
 
                 {/* Floating badge */}
-                <div className="absolute -top-4 -right-4 bg-accent-500 text-primary-900 rounded-full px-3 py-1.5 text-xs font-bold shadow-lg">
+                <div className="absolute -top-4 right-4 lg:-right-4 bg-accent-500 text-primary-900 rounded-full px-3 py-1.5 text-xs font-bold shadow-lg">
                   #3 on Leaderboard
                 </div>
               </div>
+            </div>
+
+
+            {/*  */}
+            <div className="flex lg:hidden items-center gap-3 justify-center">
+              <div className="flex -space-x-2">
+                {["Alice Chen", "Bob Smith", "Carlos Diaz", "Dana Lee"].map(
+                  (name) => (
+                    <Avatar
+                      key={name}
+                      name={name}
+                      size="sm"
+                      className="ring-2 ring-white"
+                    />
+                  ),
+                )}
+              </div>
+              <span className="text-sm text-neutral-600">
+                Join <strong className="text-primary-900">2,000+</strong>{" "}
+                students
+              </span>
             </div>
           </div>
         </div>
@@ -310,7 +330,7 @@ export default function LandingPage() {
               <div key={step.title} className="relative text-center">
                 {/* Connector line (desktop only) */}
                 {i < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-[60%] right-[-40%] h-px border-t-2 border-dashed border-primary-600" />
+                  <div className="hidden md:block absolute top-5 left-[60%] right-[-40%] h-px border-t-2 border-dashed border-primary-600" />
                 )}
 
                 <div className="relative z-10 flex flex-col items-center">
@@ -376,25 +396,23 @@ export default function LandingPage() {
               ].map((entry, i) => (
                 <div
                   key={entry.name}
-                  className="flex items-center gap-4 p-4 hover:bg-neutral-50 transition-colors"
+                  className="flex items-center gap-4 py-4 hover:px-4 hover:bg-neutral-50 rounded-md transition-all cursor-pointer"
                 >
-                  {/* Rank */}
-                  <span
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                      i === 0
+                  <div className="relative">
+                    <Avatar name={entry.name} size="sm" />
+                    <span
+                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ring-1 ring-white ${i === 0
                         ? "bg-accent-500 text-white"
                         : i === 1
                           ? "bg-neutral-300 text-neutral-800"
                           : i === 2
                             ? "bg-accent-700 text-white"
                             : "bg-neutral-100 text-neutral-600"
-                    }`}
-                  >
-                    {i + 1}
-                  </span>
-
-                  <Avatar name={entry.name} size="sm" />
-
+                        }`}
+                    >
+                      {i + 1}
+                    </span>
+                  </div>
                   <span className="font-medium text-neutral-900 flex-1">
                     {entry.name}
                   </span>
@@ -409,14 +427,14 @@ export default function LandingPage() {
 
           <div className="text-center mt-6">
             {user ? (
-              <Link to="/leaderboard">
+              <Link to={pages.leaderboard}>
                 <Button variant="primary">
                   View Full Leaderboard
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
             ) : (
-              <Link to="/register">
+              <Link to={pages.register}>
                 <Button variant="accent">
                   Sign Up to See Your Rank
                   <ArrowRight className="h-4 w-4" />
@@ -431,10 +449,11 @@ export default function LandingPage() {
       <section className="bg-gradient-to-br from-accent-500 to-accent-700 py-16 lg:py-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-white">
-            Ready to Study Smarter?
+            Ready to Dominate Your Exams?
           </h2>
           <p className="mt-4 text-lg text-white/80">
-            Join thousands of students using AI to ace their exams.
+            Join thousands of high-performing students using AI to achieve
+            academic excellence.
           </p>
           <div className="mt-8">
             <Link to="/register">

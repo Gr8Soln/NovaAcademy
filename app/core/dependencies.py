@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -22,15 +23,10 @@ from app.infrastructure.db.postgres.challenge_repository import \
     PostgresChallengeRepository
 from app.infrastructure.db.postgres.document_repository import \
     PostgresDocumentRepository
-# Social feature repositories
-from app.infrastructure.db.postgres.follow_repository import \
-    PostgresFollowRepository
 from app.infrastructure.db.postgres.notification_repository import \
     PostgresNotificationRepository
 from app.infrastructure.db.postgres.point_transaction_repository import \
     PostgresPointTransactionRepository
-from app.infrastructure.db.postgres.post_repository import \
-    PostgresPostRepository
 from app.infrastructure.db.postgres.quiz_repository import \
     PostgresQuizRepository
 from app.infrastructure.db.postgres.student_progress_repository import \
@@ -53,12 +49,10 @@ from app.infrastructure.vector.qdrant.vector_repository import \
 from app.interfaces.repositories.challenge_repository import \
     IChallengeRepository
 from app.interfaces.repositories.document_repository import IDocumentRepository
-from app.interfaces.repositories.follow_repository import IFollowRepository
 from app.interfaces.repositories.notification_repository import \
     INotificationRepository
 from app.interfaces.repositories.point_transaction_repository import \
     IPointTransactionRepository
-from app.interfaces.repositories.post_repository import IPostRepository
 from app.interfaces.repositories.quiz_repository import IQuizRepository
 from app.interfaces.repositories.student_progress_repository import \
     IStudentProgressRepository
@@ -111,16 +105,6 @@ async def get_student_progress_repository(session: AsyncSession = Depends(get_db
 async def get_vector_repository() -> IVectorRepository:
     client = await get_qdrant()
     return QdrantVectorRepository(client, vector_size=settings.VECTOR_SIZE)
-
-
-# ── Social feature repositories ─────────────────────────────────
-
-async def get_follow_repository(session: AsyncSession = Depends(get_db_session)) -> IFollowRepository:
-    return PostgresFollowRepository(session)
-
-
-async def get_post_repository(session: AsyncSession = Depends(get_db_session)) -> IPostRepository:
-    return PostgresPostRepository(session)
 
 
 async def get_notification_repository(session: AsyncSession = Depends(get_db_session)) -> INotificationRepository:
@@ -195,18 +179,20 @@ async def get_notification_push_service() -> INotificationPushService:
 # Auth — extract current user from JWT
 # ═══════════════════════════════════════════════════════════════
 
+http_bearer_scheme = HTTPBearer()
+
+
 async def get_current_user(
-    authorization: str = Header(...),
+    credentials: HTTPAuthorizationCredentials = Depends(http_bearer_scheme),
     user_repo: IUserRepository = Depends(get_user_repository),
     auth_service: IAuthService = Depends(get_auth_service),
 ) -> User:
     """Extract and validate the current user from the Authorization header."""
-    scheme, _, token = authorization.partition(" ")
-    if scheme.lower() != "bearer" or not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authorization header")
+    if not credentials:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing authorization credentials")
 
     try:
-        user_id = auth_service.decode_access_token(token)
+        user_id = auth_service.decode_access_token(credentials.credentials)
     except AuthenticationError as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
 

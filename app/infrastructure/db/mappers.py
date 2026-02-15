@@ -5,20 +5,16 @@ from __future__ import annotations
 from app.domain.entities.challenge import Challenge, ChallengeStatus
 from app.domain.entities.document import (Document, DocumentChunk,
                                           DocumentType, ProcessingStatus)
-from app.domain.entities.follow import Follow
 from app.domain.entities.notification import Notification, NotificationType
 from app.domain.entities.point_transaction import PointAction, PointTransaction
-from app.domain.entities.post import Post, PostLike, PostType
 from app.domain.entities.quiz import (DifficultyLevel, QuestionType, Quiz,
                                       QuizQuestion)
 from app.domain.entities.student_progress import StudentProgress
 from app.domain.entities.study_session import StudySession
 from app.domain.entities.user import AuthProvider, User
 from app.infrastructure.db.models import (ChallengeModel, DocumentChunkModel,
-                                          DocumentModel, FollowModel,
-                                          NotificationModel,
-                                          PointTransactionModel, PostLikeModel,
-                                          PostModel, QuizModel,
+                                          DocumentModel, NotificationModel,
+                                          PointTransactionModel, QuizModel,
                                           QuizQuestionModel,
                                           StudentProgressModel,
                                           StudySessionModel, UserModel)

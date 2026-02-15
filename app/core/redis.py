@@ -1,7 +1,3 @@
-"""Redis client factory."""
-
-from __future__ import annotations
-
 import redis.asyncio as aioredis
 
 from app.core.config import settings

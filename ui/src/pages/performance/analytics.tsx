@@ -3,13 +3,11 @@ import type { UserAnalytics } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import {
   BarChart3,
-  BookOpen,
   BrainCircuit,
   Clock,
   Swords,
   Target,
   Trophy,
-  Users,
 } from "lucide-react";
 import {
   PolarAngleAxis,
@@ -68,7 +66,7 @@ export default function AnalyticsPage() {
       icon: Swords,
       color: "text-orange-600",
       bg: "bg-orange-100",
-    }
+    },
   ];
 
   return (
@@ -99,9 +97,17 @@ export default function AnalyticsPage() {
           <CardContent>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={mockSubjectData}>
+                <RadarChart
+                  cx="50%"
+                  cy="50%"
+                  outerRadius="80%"
+                  data={mockSubjectData}
+                >
                   <PolarGrid stroke="#e5e5e5" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#737373', fontSize: 12 }} />
+                  <PolarAngleAxis
+                    dataKey="subject"
+                    tick={{ fill: "#737373", fontSize: 12 }}
+                  />
                   <Radar
                     name="Mastery"
                     dataKey="A"
@@ -120,32 +126,22 @@ export default function AnalyticsPage() {
           {stats.map((stat) => (
             <Card key={stat.label} className="overflow-hidden">
               <CardContent className="p-4 flex items-center gap-4">
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color}`}>
+                <div
+                  className={`h-10 w-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color}`}
+                >
                   <stat.icon className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">{stat.label}</p>
-                  <p className="text-xl font-bold text-neutral-900">{stat.value}</p>
+                  <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">
+                    {stat.label}
+                  </p>
+                  <p className="text-xl font-bold text-neutral-900">
+                    {stat.value}
+                  </p>
                 </div>
               </CardContent>
             </Card>
           ))}
-
-          {/* Social Stats */}
-          <Card>
-            <CardContent className="p-4 flex justify-between items-center text-center divide-x divide-neutral-100">
-              <div className="flex-1 px-2">
-                <Users className="h-4 w-4 text-neutral-400 mx-auto mb-1" />
-                <p className="text-lg font-bold text-neutral-900">{analytics.followers_count}</p>
-                <p className="text-[10px] text-neutral-500 uppercase">Followers</p>
-              </div>
-              <div className="flex-1 px-2">
-                <BookOpen className="h-4 w-4 text-neutral-400 mx-auto mb-1" />
-                <p className="text-lg font-bold text-neutral-900">{analytics.total_posts}</p>
-                <p className="text-[10px] text-neutral-500 uppercase">Posts</p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

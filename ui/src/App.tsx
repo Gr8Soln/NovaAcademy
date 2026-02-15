@@ -2,34 +2,34 @@ import { Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AuthLayout, DashboardLayout } from "@/components/layout";
-import { PageLoader, SectionLoader } from "@/components/ui";
+import { PageLoader } from "@/components/ui";
 import {
   AnalyticsPage,
   ChallengesPage,
   DashboardPage,
   DocumentsPage,
-  FeedPage,
+  ExamHallPage,
   ForgotPasswordPage,
   LandingPage,
   LeaderboardPage,
   LoginPage,
   NotFoundPage,
-  NotificationsPage,
   RegisterPage,
   ResetPasswordPage,
   StudyPage,
 } from "@/pages";
 import { useAuthStore } from "@/stores";
+import { pages } from "@/lib/constant";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.accessToken);
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) return <Navigate to={pages.login} replace />;
   return <>{children}</>;
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.accessToken);
-  if (token) return <Navigate to="/dashboard" replace />;
+  if (token) return <Navigate to={pages.dashboard} replace />;
   return <>{children}</>;
 }
 
@@ -39,36 +39,48 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
 
+        {/* Auth */}
         <Route
+          path="auth"
           element={
             <GuestRoute>
               <AuthLayout />
             </GuestRoute>
           }
         >
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="reset-password" element={<ResetPasswordPage />} />
         </Route>
 
+        {/* Dashboard */}
         <Route
+          path="dashboard"
           element={
             <ProtectedRoute>
-              <Suspense fallback={<SectionLoader />}>
-                <DashboardLayout />
-              </Suspense>
+              <DashboardLayout />
             </ProtectedRoute>
           }
         >
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/documents" element={<DocumentsPage />} />
-          <Route path="/study/:documentId" element={<StudyPage />} />
-          <Route path="/feed" element={<FeedPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/challenges" element={<ChallengesPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route index element={<DashboardPage />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
+        </Route>
+
+        {/* Classroom */}
+        <Route
+          path="classroom"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="documents" element={<DocumentsPage />} />
+          <Route path="study/:documentId" element={<StudyPage />} />
+          <Route path="exam-hall" element={<ExamHallPage />} />
+          <Route path="leaderboard" element={<LeaderboardPage />} />
+          <Route path="challenges" element={<ChallengesPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

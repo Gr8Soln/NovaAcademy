@@ -1,4 +1,3 @@
-import { documentsApi } from "@/lib/api";
 import type { DocumentListResponse } from "@/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText, Upload } from "lucide-react";
@@ -10,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/buttons";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionLoader } from "@/components/ui/loaders";
+import { documentsApi } from "@/lib/api";
 
 const fileIcon: Record<string, string> = {
   pdf: "text-danger-600 bg-danger-50",
@@ -73,7 +73,7 @@ export default function DocumentsPage() {
 
       {isLoading ? (
         <SectionLoader />
-      ) : data?.documents.length === 0 ? (
+      ) : (data?.data ?? []).length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center py-16 text-center">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100">
@@ -87,7 +87,7 @@ export default function DocumentsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data?.documents.map((doc) => (
+          {data?.data?.map((doc) => (
             <Card
               key={doc.id}
               className="cursor-pointer hover:shadow-md hover:border-primary-200 transition-all"

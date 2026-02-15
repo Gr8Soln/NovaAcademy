@@ -12,14 +12,16 @@ export const ResetPasswordPage = lazy(() => import("./auth/reset-password"));
 
 // ── Dashboard ───────────────────────────────────────────────
 export const DashboardPage = lazy(() => import("./dashboard/dashboard"));
+export const AnalyticsPage = lazy(() => import("./performance/analytics"));
 
 // ── Study ───────────────────────────────────────────────────
 export const DocumentsPage = lazy(() => import("./study/documents"));
 export const StudyPage = lazy(() => import("./study/study"));
 
-// ── Social ──────────────────────────────────────────────────
-export const FeedPage = lazy(() => import("./social/feed"));
-export const LeaderboardPage = lazy(() => import("./social/leaderboard"));
-export const ChallengesPage = lazy(() => import("./social/challenges"));
-export const AnalyticsPage = lazy(() => import("./social/analytics"));
-export const NotificationsPage = lazy(() => import("./social/notifications"));
+// ── Exam ────────────────────────────────────────────────────
+export const ExamHallPage = lazy(() => import("./exam/exam-hall"));
+
+// ── Compete ─────────────────────────────────────────────────
+export const LeaderboardPage = lazy(() => import("./compete/leaderboard"));
+export const ChallengesPage = lazy(() => import("./compete/challenges"));
+

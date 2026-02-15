@@ -1,7 +1,14 @@
 import { challengesApi } from "@/lib/api";
 import type { Challenge } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, Clock, Plus, Swords, XCircle, Trophy } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  Plus,
+  Swords,
+  Trophy,
+  XCircle,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/buttons";
@@ -73,7 +80,10 @@ export default function ChallengesPage() {
               </span>
             </div>
             <div className="text-xs text-neutral-500">
-              Opponent: <span className="font-medium text-neutral-700">{c.opponent_id.slice(0, 8)}...</span>
+              Opponent:{" "}
+              <span className="font-medium text-neutral-700">
+                {c.opponent_id.slice(0, 8)}...
+              </span>
             </div>
           </div>
 
@@ -142,10 +152,10 @@ export default function ChallengesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold text-primary-900">
-            Quiz Challenges
+            1v1 Challenges
           </h1>
           <p className="text-sm text-neutral-500">
-            Compete for points and glory.
+            Test your knowledge against others.
           </p>
         </div>
         <Button size="sm">
@@ -162,19 +172,23 @@ export default function ChallengesPage() {
 
         <TabsContent value="active" className="space-y-4">
           {activeChallenges.length > 0 ? (
-            activeChallenges.map(c => <ChallengeCard key={c.id} c={c} />)
+            activeChallenges.map((c) => <ChallengeCard key={c.id} c={c} />)
           ) : (
             <div className="text-center py-12 bg-white rounded-lg border border-dashed border-neutral-300">
               <Swords className="h-10 w-10 text-neutral-300 mx-auto mb-3" />
-              <p className="text-neutral-500 font-medium">No active challenges.</p>
-              <p className="text-sm text-neutral-400">Start a new one to test your skills!</p>
+              <p className="text-neutral-500 font-medium">
+                No active challenges.
+              </p>
+              <p className="text-sm text-neutral-400">
+                Start a new one to test your skills!
+              </p>
             </div>
           )}
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">
           {historyChallenges.length > 0 ? (
-            historyChallenges.map(c => <ChallengeCard key={c.id} c={c} />)
+            historyChallenges.map((c) => <ChallengeCard key={c.id} c={c} />)
           ) : (
             <div className="text-center py-12">
               <p className="text-neutral-500">No challenge history yet.</p>

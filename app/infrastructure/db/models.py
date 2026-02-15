@@ -114,52 +114,6 @@ class StudentProgressModel(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
 
-# ── Social Models ───────────────────────────────────────────────
-
-
-class FollowModel(Base):
-    __tablename__ = "follows"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    follower_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    following_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-
-    __table_args__ = (
-        # One unique follow relationship per pair
-        {"sqlite_autoincrement": False},
-    )
-
-    follower = relationship("UserModel", foreign_keys=[follower_id])
-    following = relationship("UserModel", foreign_keys=[following_id])
-
-
-class PostModel(Base):
-    __tablename__ = "posts"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    content = Column(Text, nullable=False)
-    post_type = Column(String(16), nullable=False, default="manual")
-    like_count = Column(Integer, nullable=False, default=0)
-    impression_count = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-
-    user = relationship("UserModel")
-    likes = relationship("PostLikeModel", back_populates="post", cascade="all, delete-orphan")
-
-
-class PostLikeModel(Base):
-    __tablename__ = "post_likes"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    post_id = Column(UUID(as_uuid=True), ForeignKey("posts.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-
-    post = relationship("PostModel", back_populates="likes")
-
-
 class NotificationModel(Base):
     __tablename__ = "notifications"
 

@@ -7,7 +7,5 @@ export * from "./documents";
 export * from "./leaderboard";
 export * from "./notifications";
 export * from "./points";
-export * from "./posts";
 export * from "./quizzes";
-export * from "./social";
 export * from "./study-sessions";
