@@ -142,7 +142,7 @@ export default function ExamHallPage() {
   // ── Select Phase ─────────────────────────────────────────────
   if (phase === "select") {
     return (
-      <div className="max-w-4xl mx-auto space-y-8 pb-20 lg:pb-0">
+      <div className="max-w-[1400] mx-auto space-y-8 pb-20 lg:pb-0">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600">
             <Shield className="h-6 w-6" />

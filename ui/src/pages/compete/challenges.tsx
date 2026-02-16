@@ -148,7 +148,7 @@ export default function ChallengesPage() {
   if (isLoading) return <SectionLoader />;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-20 lg:pb-0">
+    <div className="max-w-[1400] mx-auto space-y-6 pb-20 lg:pb-0">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold text-primary-900">

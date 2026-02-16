@@ -70,7 +70,7 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-20 lg:pb-0">
+    <div className="max-w-[1400] mx-auto space-y-8 pb-20 lg:pb-0">
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600">
           <BarChart3 className="h-6 w-6" />
@@ -94,8 +94,8 @@ export default function AnalyticsPage() {
               Subject Mastery
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-[300px] w-full">
+          <CardContent className="w-full h-full flex items-center justify-center">
+            <div className="h-[300px] lg:h-[400px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart
                   cx="50%"

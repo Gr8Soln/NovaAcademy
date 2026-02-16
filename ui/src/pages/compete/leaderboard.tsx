@@ -98,51 +98,52 @@ export default function LeaderboardPage() {
   );
 
   return (
-    <div className="max-w-3xl mx-auto pb-24 lg:pb-0 relative min-h-screen">
+    <div className="max-w-[1400] mx-auto pb-24 lg:pb-0 relative min-h-screen">
       <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="font-display text-2xl font-bold text-primary-900">
-            Leaderboard
-          </h1>
-          <p className="text-sm text-neutral-500">
-            See who's leading the pack!
-          </p>
-        </div>
+        <div className="w-full flex items-center justify-between">
+          <div className="text-left">
+            <h1 className="font-display text-2xl font-bold text-primary-900">
+              Leaderboard
+            </h1>
+            <p className="text-left text-xs text-neutral-500">
+              See who's leading the pack!
+            </p>
+          </div>
 
-        {/* Controls */}
-        <div className="flex flex-col items-center gap-4">
-          <Tabs
-            value={boardType}
-            onValueChange={(v) => setBoardType(v as any)}
-            className="w-full max-w-md"
-          >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="points">
-                <Trophy className="mr-2 h-4 w-4" />
-                Points
-              </TabsTrigger>
-              <TabsTrigger value="study-time">
-                <Clock className="mr-2 h-4 w-4" />
-                Study Time
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          <div className="flex gap-2 bg-neutral-100 p-1 rounded-lg">
-            {(["weekly", "monthly", "all-time"] as const).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={cn(
-                  "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                  period === p
-                    ? "bg-white text-neutral-900 shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-900",
-                )}
-              >
-                {p.replace("-", " ")}
-              </button>
-            ))}
+          {/* Controls */}
+          <div className="flex items-center gap-4">
+            <div className="w-full flex gap-1 bg-neutral-100 p-1 rounded-lg">
+              {(["weekly", "monthly", "all-time"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={cn(
+                    "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                    period === p
+                      ? "bg-white text-neutral-900 shadow-sm"
+                      : "text-neutral-500 hover:text-neutral-900",
+                  )}
+                >
+                  {p.replace("-", " ")}
+                </button>
+              ))}
+            </div>
+            <Tabs
+              value={boardType}
+              onValueChange={(v) => setBoardType(v as any)}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="points">
+                  <Trophy className="mr-2 h-4 w-4" />
+                  Points
+                </TabsTrigger>
+                <TabsTrigger value="study-time">
+                  <Clock className="mr-2 h-4 w-4" />
+                  Study Time
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
 
