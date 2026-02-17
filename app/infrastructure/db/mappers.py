@@ -1,6 +1,6 @@
 """Mapper helpers — convert between domain entities and ORM models."""
 
-from __future__ import annotations
+
 
 from app.domain.entities.challenge import Challenge, ChallengeStatus
 from app.domain.entities.document import (Document, DocumentChunk,

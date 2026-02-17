@@ -1,7 +1,3 @@
-"""Abstract auth service interface — handles hashing, tokens, OAuth."""
-
-from __future__ import annotations
-
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass

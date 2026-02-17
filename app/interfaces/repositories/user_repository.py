@@ -1,7 +1,3 @@
-"""Abstract user repository interface."""
-
-from __future__ import annotations
-
 import uuid
 from abc import ABC, abstractmethod
 from typing import Optional

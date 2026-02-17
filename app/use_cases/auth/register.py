@@ -1,7 +1,3 @@
-"""Register a new user with email + password."""
-
-from __future__ import annotations
-
 from app.domain.entities.user import User
 from app.domain.exceptions import UserAlreadyExistsError
 from app.interfaces.repositories.user_repository import IUserRepository

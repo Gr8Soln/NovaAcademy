@@ -1,7 +1,3 @@
-"""User domain entity — pure business object, no ORM dependency."""
-
-from __future__ import annotations
-
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime

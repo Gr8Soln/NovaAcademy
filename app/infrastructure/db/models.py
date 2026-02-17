@@ -1,6 +1,6 @@
 """SQLAlchemy ORM models — separate from domain entities."""
 
-from __future__ import annotations
+
 
 import uuid
 from datetime import datetime
