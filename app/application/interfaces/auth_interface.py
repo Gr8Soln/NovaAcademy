@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from app.application.dtos import GoogleUserInfo, TokenPair
 
 
-class IAuthInterface(ABC):
+class IJwtService(ABC):
 
     @abstractmethod
     def hash_password(self, password: str) -> str:

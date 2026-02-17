@@ -2,21 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.adapters.schemas import (AuthResponse, RegisterRequest, TokenResponse,
                                   UserResponse, success_response)
-from app.application.interfaces import IUserInterface
+from app.application.use_cases import RegisterUseCase
 from app.domain.exceptions import UserAlreadyExistsError
+from app.infrastructure.api.dependencies import get_register_usecase
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(prefix="/auth", tags=["Auth Endpoints"])
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(
     body: RegisterRequest,
-    user_repo: IUserInterface = Depends(get_user_repository),
-    auth_service: IAuthService = Depends(get_auth_service),
+    use_case: RegisterUseCase = Depends(get_register_usecase)
 ):
     try:
-        uc = RegisterUseCase(user_repo, auth_service)
-        user, tokens = await uc.execute(body.email, body.first_name, body.last_name, body.password)
+        user, tokens = await use_case.execute(body.email, body.first_name, body.last_name, body.password)
         return success_response(
             data=AuthResponse(
                 user=UserResponse(

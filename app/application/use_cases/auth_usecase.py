@@ -1,11 +1,11 @@
 from app.application.dtos import TokenPair
-from app.application.interfaces import IAuthInterface, IUserInterface
+from app.application.interfaces import IJwtService, IUserInterface
 from app.domain.entities import User
 from app.domain.exceptions import UserAlreadyExistsError
 
 
 class RegisterUseCase:
-    def __init__(self, user_repo: IUserInterface, auth_repo: IAuthInterface) -> None:
+    def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService) -> None:
         self._user_repo = user_repo
         self._auth_repo = auth_repo
 
