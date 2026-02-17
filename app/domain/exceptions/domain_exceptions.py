@@ -1,20 +1,90 @@
+"""Domain exceptions — business-rule violations independent of any framework."""
 
-# ── Auth ────────────────────────────────────────────────────
 
-class AuthenticationError(Exception):
-    """Raised when authentication fails due to invalid credentials or tokens."""
-    
-class AuthorizationError(Exception):
-    """Raised when a user tries to access a resource they don't have permissions for."""
+class DomainException(Exception):
+    """Base class for all domain exceptions."""
 
-class TokenError(Exception):
-    """Raised when there is an issue with token generation or validation."""
-    
-class UserNotFoundError(Exception):
-    """Raised when a user is not found in the database."""
-    
-class PasswordResetError(Exception):
-    """Raised when there is an issue with password reset process."""
-    
-class UserAlreadyExistsError(Exception):
-    """Raised when trying to register a user with an email that already exists."""    
+
+# ── Auth Exceptions ─────────────────────────────────────────────
+class AuthenticationError(DomainException):
+    """Invalid credentials or token."""
+
+
+class AuthorizationError(DomainException):
+    """User lacks permission for the requested action."""
+
+
+class UserAlreadyExistsError(DomainException):
+    """Attempt to register with an email that already exists."""
+
+
+class UserNotFoundError(DomainException):
+    """Requested user does not exist."""
+
+
+
+# ── Document-related exceptions ─────────────────────────────────
+class DocumentNotFoundError(DomainException):
+    """Requested document does not exist."""
+
+
+class DocumentProcessingError(DomainException):
+    """Failure during document parsing / chunking."""
+
+
+class QuizNotFoundError(DomainException):
+    """Requested quiz does not exist."""
+
+
+class InvalidFileTypeError(DomainException):
+    """Uploaded file type is not supported."""
+
+
+class VectorStoreError(DomainException):
+    """Failure communicating with the vector database."""
+
+
+class LLMError(DomainException):
+    """Failure communicating with the language model."""
+
+
+# ── Social feature exceptions ───────────────────────────────
+
+class AlreadyFollowingError(DomainException):
+    """User is already following the target user."""
+
+
+class NotFollowingError(DomainException):
+    """User is not following the target user."""
+
+
+class PostNotFoundError(DomainException):
+    """Requested post does not exist."""
+
+
+class AlreadyLikedError(DomainException):
+    """User has already liked this post."""
+
+
+class ChallengeNotFoundError(DomainException):
+    """Requested challenge does not exist."""
+
+
+class ChallengeValidationError(DomainException):
+    """Invalid challenge configuration or action."""
+
+
+class InsufficientPointsError(DomainException):
+    """User does not have enough points for the requested action."""
+
+
+class PointCapReachedError(DomainException):
+    """Daily or action-specific point cap reached."""
+
+
+class StudySessionNotFoundError(DomainException):
+    """Requested study session does not exist."""
+
+
+class NotificationNotFoundError(DomainException):
+    """Requested notification does not exist."""

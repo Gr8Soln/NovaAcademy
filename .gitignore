@@ -40,3 +40,4 @@ qdrantdata/
 
 # GitHub 
 .github/prompts/*
+google-client.json

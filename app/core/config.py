@@ -6,9 +6,12 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # ── App ─────────────────────────────────────────────────────
-    APP_NAME: str = "NovalAcademy"
+    APP_NAME: str = "NovaAcademy"
     API_PREFIX: str = "/api/v1"
     BASE_URL: str = "http://localhost:8000"
+    LOG_DIR: str = "./logs"
+    PORT: int = 8000
+    ENV: str = "development"  # or "production"
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
     DEBUG: bool = False
 
