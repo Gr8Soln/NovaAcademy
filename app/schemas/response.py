@@ -1,21 +1,7 @@
-"""Standardised API response envelope.
-
-Every endpoint returns:
-    {
-        "status": "success" | "error",
-        "message": "Human-readable message",
-        "data": <payload>,               # single object, list, or null
-        "metadata": { ... } | null        # pagination info for list endpoints
-    }
-"""
-
-from __future__ import annotations
-
 import math
 from typing import Any, Generic, Optional, TypeVar
 
-from pydantic import BaseModel, Field
-from pydantic.generics import GenericModel
+from pydantic import BaseModel
 
 T = TypeVar("T")
 

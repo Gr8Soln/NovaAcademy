@@ -1,9 +1,5 @@
-"""Abstract LLM service interface."""
-
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
-from typing import AsyncIterator, List, Optional
+from typing import AsyncIterator, Optional
 
 
 class ILLMService(ABC):

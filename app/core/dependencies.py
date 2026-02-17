@@ -3,8 +3,6 @@
 Change only THIS file to swap providers (e.g. Qdrant → Pinecone, OpenAI → Ollama).
 """
 
-from __future__ import annotations
-
 import uuid
 
 from fastapi import Depends, HTTPException, status

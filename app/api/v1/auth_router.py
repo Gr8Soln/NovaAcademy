@@ -1,7 +1,3 @@
-"""Auth API router."""
-
-from __future__ import annotations
-
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.dependencies import get_auth_service, get_user_repository

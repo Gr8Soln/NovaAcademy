@@ -1,10 +1,5 @@
-"""Abstract notification push service — sends realtime notifications."""
-
-from __future__ import annotations
-
 import uuid
 from abc import ABC, abstractmethod
-from typing import Any
 
 from app.domain.entities.notification import Notification
 

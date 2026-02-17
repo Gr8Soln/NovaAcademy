@@ -1,9 +1,3 @@
-"""AI endpoints — Q&A (SSE), summaries, quizzes, flashcards."""
-
-from __future__ import annotations
-
-import uuid
-
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 

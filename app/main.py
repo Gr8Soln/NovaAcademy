@@ -8,18 +8,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api.ai.router import router as ai_router
-from app.api.analytics.router import router as analytics_router
-from app.api.auth.router import router as auth_router
-from app.api.challenges.router import router as challenges_router
-from app.api.dashboard.router import router as dashboard_router
-from app.api.documents.router import router as documents_router
-from app.api.leaderboard.router import router as leaderboard_router
-from app.api.notifications.router import router as notifications_router
-from app.api.points.router import router as points_router
-from app.api.quizzes.router import router as quizzes_router
-from app.api.study_sessions.router import router as study_sessions_router
-from app.api.users.router import router as users_router
+from app.api.v1.ai_router import router as ai_router
+from app.api.analytics.analytics_router import router as analytics_router
+from app.api.auth.auth_router import router as auth_router
+from app.api.challenges.challenges_router import router as challenges_router
+from app.api.dashboard.dashboard_router import router as dashboard_router
+from app.api.documents.documents_router import router as documents_router
+from app.api.leaderboard.leaderboard_router import router as leaderboard_router
+from app.api.notifications.notifications_router import router as notifications_router
+from app.api.points.points_router import router as points_router
+from app.api.quizzes.quizzes_router import router as quizzes_router
+from app.api.study_sessions.study_sessions_router import router as study_sessions_router
+from app.api.users.users_router import router as users_router
 from app.core.config import settings
 
 # ── API routers ─────────────────────────────────────────────────
