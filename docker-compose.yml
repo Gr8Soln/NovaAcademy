@@ -3,8 +3,8 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile.backend
-    container_name: gr8academy-backend
+      dockerfile: Dockerfile.be
+    container_name: nova-academy-backend
     env_file: .env
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
@@ -28,7 +28,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.ui
-    container_name: gr8academy-ui
+    container_name: nova-academy-ui
     ports:
       - "3000:80"
     depends_on:
@@ -38,7 +38,7 @@ services:
   # ===== PostgreSQL ==============================
   postgres:
     image: postgres:16-alpine
-    container_name: gr8academy-postgres
+    container_name: nova-academy-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -57,7 +57,7 @@ services:
   # ===== Redis ==============================
   redis:
     image: redis:7-alpine
-    container_name: gr8academy-redis
+    container_name: nova-academy-redis
     ports:
       - "6379:6379"
     volumes:
@@ -67,7 +67,7 @@ services:
   # ===== Qdrant (Vector DB) ==============================
   qdrant:
     image: qdrant/qdrant:v1.12.5
-    container_name: gr8academy-qdrant
+    container_name: nova-academy-qdrant
     ports:
       - "6333:6333"
       - "6334:6334"

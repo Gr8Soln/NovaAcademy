@@ -21,7 +21,7 @@ const useAuthStore = create<AuthState>()(
         set({ user, accessToken, refreshToken }),
       logout: () => set({ user: null, accessToken: null, refreshToken: null }),
     }),
-    { name: "gr8academy-auth" },
+    { name: "novaacademy-auth" },
   ),
 );
 
