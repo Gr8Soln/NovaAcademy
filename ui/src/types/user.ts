@@ -1,7 +1,8 @@
 export interface User {
   id: string;
   email: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
   auth_provider: string;
   avatar_url: string | null;
   is_active: boolean;

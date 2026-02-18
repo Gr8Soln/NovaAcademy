@@ -137,11 +137,15 @@ const DashboardLayout = () => {
             sidebarCollapsed ? "justify-center" : "",
           )}
         >
-          <Avatar name={user?.full_name ?? "User"} size="sm" />
+          <Avatar
+            src={user?.avatar_url ?? undefined}
+            name={user?.first_name ?? "User"}
+            size="sm"
+          />
           {!sidebarCollapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-neutral-900 truncate">
-                {user?.full_name}
+                {user?.first_name} {user?.last_name}
               </p>
               <p className="text-xs text-neutral-500 truncate">{user?.email}</p>
             </div>
@@ -251,7 +255,8 @@ const DashboardLayout = () => {
                 className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 <Avatar
-                  name={user?.full_name ?? "User"}
+                  src={user?.avatar_url ?? undefined}
+                  name={user?.first_name ?? "User"}
                   size="sm"
                   className="ring-2 ring-white shadow-sm"
                 />

@@ -1,3 +1,4 @@
+import { useGoogleLogin } from "@react-oauth/google";
 import { Mail } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,7 +9,6 @@ import { Checkbox, Input } from "@/components/ui/inputs";
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/stores";
 import type { AuthResponse } from "@/types";
-import { useGoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
