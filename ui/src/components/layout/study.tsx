@@ -1,3 +1,4 @@
+import { googleLogout } from "@react-oauth/google";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
 import { useAuthStore } from "@/stores";
@@ -8,6 +9,7 @@ const StudyLayout = () => {
 
   const handleLogout = () => {
     logout();
+    googleLogout();
     navigate("/");
   };
 
@@ -41,7 +43,7 @@ const StudyLayout = () => {
 
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-500 hidden sm:inline">
-              {user?.full_name}
+              {user?.first_name || "User"}
             </span>
             <button
               onClick={handleLogout}

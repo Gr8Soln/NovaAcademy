@@ -9,7 +9,9 @@ from app.application.dtos import TokenPair
 from app.application.interfaces import IJwtService, IUserInterface
 from app.core.logging import get_logger
 from app.domain.entities import User
-from app.domain.exceptions import UserAlreadyExistsError
+from app.domain.exceptions import (InvalidAuthMethodError,
+                                   InvalidCredentialError,
+                                   UserAlreadyExistsError)
 
 logger = get_logger(__name__)
 
@@ -29,6 +31,27 @@ class RegisterUseCase:
         tokens = self._auth_repo.create_tokens(user.id)
         return user, tokens
 
+
+class LoginUseCase:
+    def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService) -> None:
+        self._user_repo = user_repo
+        self._auth_repo = auth_repo
+
+    async def execute(self, email: str, password: str) -> tuple[User, TokenPair]:
+        user = await self._user_repo.get_by_email(email)
+        if not user:
+            raise InvalidCredentialError(f"Incorrect credentials")
+
+        if user.auth_provider != 'email' or not user.hashed_password:
+            raise InvalidAuthMethodError(f"This account is registered with a different authentication method")
+
+        if not self._auth_repo.verify_password(password, user.hashed_password):
+            raise InvalidCredentialError(f"Incorrect credentials")
+
+        tokens = self._auth_repo.create_tokens(user.id)
+        return user, tokens
+
+
 class GoogleAuthUseCase:
     def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService, google_client_id: str) -> None:
         self._user_repo = user_repo
@@ -38,17 +61,20 @@ class GoogleAuthUseCase:
         
     async def execute(self, code: str, is_access_token: Optional[bool] = True) -> tuple[User, TokenPair, bool]:
         google_user = {}
+        is_new_user = True
         
         if is_access_token:
-            async with httpx.AsyncClient() as client:
-                resp = await client.get(
-                    "https://www.googleapis.com/oauth2/v3/userinfo",
-                    headers={"Authorization": f"Bearer {code}"}
-                )
-                if resp.status_code != 200:
-                    raise HTTPException(status_code=401, detail="Invalid token")
-                google_user = resp.json()  # contains email, name, sub, etc.
-            
+            try:
+                async with httpx.AsyncClient() as client:
+                    resp = await client.get(
+                        "https://www.googleapis.com/oauth2/v3/userinfo",
+                        headers={"Authorization": f"Bearer {code}"}
+                    )
+                    if resp.status_code != 200:
+                        raise HTTPException(status_code=401, detail="Invalid token")
+                    google_user = resp.json() 
+            except ValueError as exc:
+                raise HTTPException(status_code=401, detail="An error occured, try again!")
         else:
             try:
                 google_user = id_token.verify_oauth2_token(
@@ -67,9 +93,11 @@ class GoogleAuthUseCase:
         google_user_avatar = google_user.get("picture")
        
         user = await self._user_repo.get_by_email(email)
-        
-        is_new_user = False
-        if not user:
+        if user:
+            is_new_user = False
+            if user.auth_provider != 'google' or user.google_sub != google_sub:
+                raise UserAlreadyExistsError(f"User with email already exists with a different authentication method") 
+        else:   
             user = User.create_google_user(
                 email=email,
                 first_name=first_name,
@@ -77,10 +105,7 @@ class GoogleAuthUseCase:
                 google_sub=google_sub,
                 avatar_url=google_user_avatar
             )
-            is_new_user = True
-        else:
-            if user.auth_provider != 'google' or user.google_sub != google_sub:
-                raise UserAlreadyExistsError(f"User with email {email} already exists with a different authentication method")
-
+            user = await self._user_repo.create(user)
+        
         tokens = self._auth_repo.create_tokens(user.id)
         return user, tokens, is_new_user

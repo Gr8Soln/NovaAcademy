@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const setAuth = useAuthStore((s) => s.setAuth);
   const navigate = useNavigate();
 
@@ -33,7 +34,7 @@ export default function LoginPage() {
   };
 
   const handleGoogleSubmit = async (tokenResponse: any) => {
-    setLoading(true);
+    setGoogleLoading(true);
     try {
       const data = (await authApi.google(
         tokenResponse.access_token,
@@ -45,7 +46,7 @@ export default function LoginPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Login failed");
     } finally {
-      setLoading(false);
+      setGoogleLoading(false);
     }
   };
 
@@ -91,7 +92,12 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <Button type="submit" fullWidth loading={loading}>
+        <Button
+          type="submit"
+          fullWidth
+          loading={loading}
+          disabled={googleLoading || loading}
+        >
           Log In
         </Button>
       </form>
@@ -112,6 +118,8 @@ export default function LoginPage() {
         fullWidth
         type="button"
         onClick={() => loginWithGoogle()}
+        loading={googleLoading}
+        disabled={googleLoading || loading}
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24">
           <path

@@ -20,6 +20,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { pages } from "@/lib/constant";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
+import { googleLogout } from "@react-oauth/google";
 
 interface NavItem {
   to: string;
@@ -57,6 +58,7 @@ const DashboardLayout = () => {
 
   const handleLogout = () => {
     logout();
+    googleLogout()
     navigate(pages.home);
   };
 

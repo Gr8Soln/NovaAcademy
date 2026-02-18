@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.adapters.schemas import (AuthResponse, GoogleAuthRequest,
-                                  RegisterRequest, TokenResponse, UserResponse,
-                                  success_response)
-from app.application.use_cases import GoogleAuthUseCase, RegisterUseCase
+                                  LoginRequest, RegisterRequest, TokenResponse,
+                                  UserResponse, success_response)
+from app.application.use_cases import (GoogleAuthUseCase, LoginUseCase,
+                                       RegisterUseCase)
 from app.core.logging import get_logger
 from app.domain.exceptions import UserAlreadyExistsError
 from app.infrastructure.api.dependencies import (get_google_auth_usecase,
+                                                 get_login_usecase,
                                                  get_register_usecase)
 
 router = APIRouter(prefix="/auth", tags=["Auth Endpoints"])
@@ -45,7 +47,39 @@ async def register(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
 
 
-@router.post("/google", status_code=status.HTTP_201_CREATED)
+@router.post("/login", status_code=status.HTTP_200_OK)
+async def login(
+    body: LoginRequest,
+    use_case: LoginUseCase = Depends(get_login_usecase)
+):
+    try:
+        user, tokens = await use_case.execute(body.email, body.password)
+        return success_response(
+            data=AuthResponse(
+                user=UserResponse(
+                    id=user.id,
+                    email=user.email,
+                    first_name=user.first_name,
+                    last_name=user.last_name,
+                    auth_provider=user.auth_provider.value,
+                    avatar_url=user.avatar_url,
+                    is_active=user.is_active,
+                    created_at=user.created_at,
+                    updated_at=user.updated_at,
+                ),
+                tokens=TokenResponse(
+                    access_token=tokens.access_token,
+                    refresh_token=tokens.refresh_token,
+                ),
+            ).model_dump(mode="json"),
+            message="Login successful",
+        )
+        
+    except UserAlreadyExistsError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+
+@router.post("/google", status_code=status.HTTP_200_OK)
 async def google_auth(
     body: GoogleAuthRequest,
     use_case: GoogleAuthUseCase = Depends(get_google_auth_usecase)

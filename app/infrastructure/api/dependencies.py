@@ -4,7 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.adapters.repositories import SQLUserRepository
 from app.adapters.services import JWTAuthService
 from app.application.interfaces import IJwtService, IUserInterface
-from app.application.use_cases import GoogleAuthUseCase, RegisterUseCase
+from app.application.use_cases import (GoogleAuthUseCase, LoginUseCase,
+                                       RegisterUseCase)
 from app.core.config import settings
 from app.infrastructure.db import get_db_session
 
@@ -30,6 +31,11 @@ def get_register_usecase(
 ) -> RegisterUseCase:
     return RegisterUseCase(user_repo, jwt_srv)
 
+def get_login_usecase(
+    user_repo: IUserInterface = Depends(get_user_repository),
+    jwt_srv: IJwtService = Depends(get_jwt_service),
+) -> LoginUseCase:
+    return LoginUseCase(user_repo, jwt_srv)
 
 def get_google_auth_usecase(
     user_repo: IUserInterface = Depends(get_user_repository),

@@ -8,16 +8,14 @@ class DomainException(Exception):
 # ── Auth Exceptions ─────────────────────────────────────────────
 class AuthenticationError(DomainException):
     """Invalid credentials or token."""
-
-
+class InvalidCredentialError(DomainException):
+    """Invalid credentials."""
+class InvalidAuthMethodError(DomainException):
+    """Invalid authentication method."""
 class AuthorizationError(DomainException):
     """User lacks permission for the requested action."""
-
-
 class UserAlreadyExistsError(DomainException):
     """Attempt to register with an email that already exists."""
-
-
 class UserNotFoundError(DomainException):
     """Requested user does not exist."""
 
