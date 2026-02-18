@@ -14,6 +14,7 @@ class RegisterRequest(BaseModel):
 
 class GoogleAuthRequest(BaseModel):
     code: str
+    is_access_token: Optional[bool] = True
 
 class LoginRequest(BaseModel):
     email: EmailStr

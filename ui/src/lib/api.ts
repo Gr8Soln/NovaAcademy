@@ -88,10 +88,10 @@ export const authApi = {
       body: JSON.stringify({ email, full_name, password }),
     }),
 
-  google: (access_token: string) =>
+  google: (accessToken: string, isAccessToken: boolean = false) =>
     request("/auth/google", {
       method: "POST",
-      body: JSON.stringify({ code: access_token }),
+      body: JSON.stringify({ code: accessToken, is_access_token: isAccessToken }),
     }),
 
   login: (email: string, password: string) =>

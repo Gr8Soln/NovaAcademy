@@ -4,11 +4,13 @@ from app.adapters.schemas import (AuthResponse, GoogleAuthRequest,
                                   RegisterRequest, TokenResponse, UserResponse,
                                   success_response)
 from app.application.use_cases import GoogleAuthUseCase, RegisterUseCase
+from app.core.logging import get_logger
 from app.domain.exceptions import UserAlreadyExistsError
 from app.infrastructure.api.dependencies import (get_google_auth_usecase,
                                                  get_register_usecase)
 
 router = APIRouter(prefix="/auth", tags=["Auth Endpoints"])
+logger = get_logger(__name__)
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
@@ -50,7 +52,7 @@ async def google_auth(
 ):
     try:
         await use_case.execute(body.code)
-        user, tokens, is_new_user = await use_case.execute(body.code)
+        user, tokens, is_new_user = await use_case.execute(body.code, body.is_access_token)
         
         return success_response(
             data=AuthResponse(

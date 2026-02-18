@@ -37,6 +37,7 @@ export default function LoginPage() {
     try {
       const data = (await authApi.google(
         tokenResponse.access_token,
+        true,
       )) as AuthResponse;
       setAuth(data.user, data.tokens.access_token, data.tokens.refresh_token);
       toast.success("Welcome back!");
@@ -49,7 +50,7 @@ export default function LoginPage() {
   };
 
   const loginWithGoogle = useGoogleLogin({
-    onSuccess: (tokenResponse) => handleGoogleSubmit(tokenResponse),
+    onSuccess: async (tokenResponse) => await handleGoogleSubmit(tokenResponse),
   });
 
   return (
@@ -60,7 +61,6 @@ export default function LoginPage() {
       <p className="text-sm text-neutral-500 mb-8">
         Log in to continue your learning journey
       </p>
-
       <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           label="Email"
@@ -95,7 +95,6 @@ export default function LoginPage() {
           Log In
         </Button>
       </form>
-
       {/* Divider */}
       <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
@@ -107,7 +106,6 @@ export default function LoginPage() {
           </span>
         </div>
       </div>
-
       {/* Google OAuth */}
       <Button
         variant="outline"
