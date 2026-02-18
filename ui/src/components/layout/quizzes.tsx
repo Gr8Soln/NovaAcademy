@@ -21,7 +21,7 @@ const QuizzesLayout = () => {
               to="/dashboard"
               className="text-xl font-bold text-primary-600"
             >
-              🎓 Gr8Academy
+              🎓 NovaAcademy
             </Link>
             <nav className="hidden sm:flex items-center gap-4">
               <Link
@@ -60,7 +60,7 @@ const QuizzesLayout = () => {
 
       {/* Footer */}
       <footer className="bg-gray-100 border-t py-3 text-center text-xs text-gray-400">
-        &copy; {new Date().getFullYear()} Gr8Academy. All rights reserved.
+        &copy; {new Date().getFullYear()} NovaAcademy. All rights reserved.
       </footer>
     </div>
   );

@@ -25,8 +25,8 @@ import Header from "@/components/layout/header";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/buttons";
 import { Card } from "@/components/ui/card";
-import { useAuthStore } from "@/stores";
 import { pages } from "@/lib/constant";
+import { useAuthStore } from "@/stores";
 
 /* ─── Counter hook ──────────────────────────────────────────── */
 
@@ -135,11 +135,17 @@ const UploadIllustration = () => (
       <p className="text-sm font-medium text-primary-700">Drop files here</p>
     </div>
     {/* Floating doc icons */}
-    <div className="absolute top-3 right-3 bg-white rounded-lg shadow-md p-2 flex items-center gap-2 animate-bounce" style={{ animationDuration: "3s" }}>
+    <div
+      className="absolute top-3 right-3 bg-white rounded-lg shadow-md p-2 flex items-center gap-2 animate-bounce"
+      style={{ animationDuration: "3s" }}
+    >
       <FileText className="h-4 w-4 text-danger-500" />
       <span className="text-xs font-medium text-neutral-700">Biology.pdf</span>
     </div>
-    <div className="absolute bottom-3 left-3 bg-white rounded-lg shadow-md p-2 flex items-center gap-2 animate-bounce" style={{ animationDuration: "3.5s", animationDelay: "0.5s" }}>
+    <div
+      className="absolute bottom-3 left-3 bg-white rounded-lg shadow-md p-2 flex items-center gap-2 animate-bounce"
+      style={{ animationDuration: "3.5s", animationDelay: "0.5s" }}
+    >
       <FileText className="h-4 w-4 text-primary-500" />
       <span className="text-xs font-medium text-neutral-700">Notes.docx</span>
     </div>
@@ -188,14 +194,18 @@ const StudyIllustration = () => (
       <div className="bg-white rounded-xl shadow-sm p-4 transform -rotate-1">
         <div className="flex items-center gap-2 mb-2">
           <Layers className="h-4 w-4 text-success-500" />
-          <span className="text-xs font-semibold text-success-700">Flashcard</span>
+          <span className="text-xs font-semibold text-success-700">
+            Flashcard
+          </span>
         </div>
         <p className="text-sm text-neutral-700">What is mitosis?</p>
       </div>
       <div className="bg-white rounded-xl shadow-sm p-4 transform rotate-1">
         <div className="flex items-center gap-2 mb-2">
           <CheckCircle2 className="h-4 w-4 text-success-500" />
-          <span className="text-xs font-semibold text-success-700">Summary</span>
+          <span className="text-xs font-semibold text-success-700">
+            Summary
+          </span>
         </div>
         <div className="space-y-1">
           <div className="h-2 bg-neutral-200 rounded-full w-full" />
@@ -208,7 +218,9 @@ const StudyIllustration = () => (
     <div className="absolute bottom-4 right-4 bg-white rounded-xl shadow-md p-3 max-w-[160px]">
       <div className="flex items-center gap-1.5 mb-1">
         <MessageSquare className="h-3 w-3 text-primary-500" />
-        <span className="text-[10px] font-medium text-primary-600">AI Tutor</span>
+        <span className="text-[10px] font-medium text-primary-600">
+          AI Tutor
+        </span>
       </div>
       <p className="text-xs text-neutral-600">Great question! Here's what...</p>
     </div>
@@ -397,15 +409,17 @@ function HowItWorksCard({
   return (
     <div
       ref={ref}
-      className={`sticky top-20 lg:top-28 w-full mb-8 lg:mb-12 last:mb-0 transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"
-        }`}
+      className={`sticky top-20 lg:top-28 w-full mb-8 lg:mb-12 last:mb-0 transition-opacity duration-1000 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
       style={{
         zIndex: index + 10,
       }}
     >
       <div
-        className={`${step.bgColor} rounded-2xl shadow-xl overflow-hidden border border-neutral-200/60 transition-transform duration-700 ${isVisible ? "translate-y-0" : "translate-y-8"
-          }`}
+        className={`${step.bgColor} rounded-2xl shadow-xl overflow-hidden border border-neutral-200/60 transition-transform duration-700 ${
+          isVisible ? "translate-y-0" : "translate-y-8"
+        }`}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-0">
           {/* Left column — Text */}
@@ -532,7 +546,7 @@ export default function LandingPage() {
                   <div className="w-3 h-3 rounded-full bg-warning-500" />
                   <div className="w-3 h-3 rounded-full bg-success-500" />
                   <span className="text-sm text-neutral-300 ml-2">
-                    Gr8Academy Dashboard
+                    NovaAcademy Dashboard
                   </span>
                 </div>
 
@@ -575,7 +589,6 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-
 
             {/*  */}
             <div className="flex lg:hidden items-center gap-3 justify-center">
@@ -697,14 +710,15 @@ export default function LandingPage() {
                   <div className="relative">
                     <Avatar name={entry.name} size="sm" />
                     <span
-                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ring-1 ring-white ${i === 0
-                        ? "bg-accent-500 text-white"
-                        : i === 1
-                          ? "bg-neutral-300 text-neutral-800"
-                          : i === 2
-                            ? "bg-accent-700 text-white"
-                            : "bg-neutral-100 text-neutral-600"
-                        }`}
+                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ring-1 ring-white ${
+                        i === 0
+                          ? "bg-accent-500 text-white"
+                          : i === 1
+                            ? "bg-neutral-300 text-neutral-800"
+                            : i === 2
+                              ? "bg-accent-700 text-white"
+                              : "bg-neutral-100 text-neutral-600"
+                      }`}
                     >
                       {i + 1}
                     </span>

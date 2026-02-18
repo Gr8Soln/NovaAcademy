@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "AI-powered personalized study platform"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "Gr8Academy Team" }]
+authors = [{ name = "Emmanuel Ayinde" }]
 
 dependencies = [
     "fastapi>=0.115.0",

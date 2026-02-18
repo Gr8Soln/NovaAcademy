@@ -74,7 +74,7 @@ Dependencies point **inward**: infrastructure → adapters → application → d
 ### 1. Clone & configure
 
 ```bash
-git clone <repo-url> && cd gr8academy
+git clone <repo-url> && cd NovaAcademy
 cp .env.example .env
 # Edit .env with your database credentials, API keys, etc.
 ```

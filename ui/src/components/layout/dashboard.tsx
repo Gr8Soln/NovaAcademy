@@ -17,9 +17,9 @@ import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { Avatar } from "@/components/ui/avatar";
+import { pages } from "@/lib/constant";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
-import { pages } from "@/lib/constant";
 
 interface NavItem {
   to: string;
@@ -74,7 +74,7 @@ const DashboardLayout = () => {
         </div>
         {!sidebarCollapsed && (
           <span className="font-display text-xl font-bold text-primary-900 tracking-tight">
-            Gr8Academy
+            NovaAcademy
           </span>
         )}
       </div>

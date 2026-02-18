@@ -1,11 +1,7 @@
-import {
-  Github,
-  Linkedin,
-  Twitter,
-} from "lucide-react";
+import { Github, Linkedin, Twitter } from "lucide-react";
 
-import { LogoWithName } from "../ui";
 import { displayDescription, socialLinks } from "@/lib/constant";
+import { LogoWithName } from "../ui";
 
 const Footer = () => {
   return (
@@ -109,7 +105,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-primary-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-neutral-500">
-            &copy; {new Date().getFullYear()} Gr8Academy. All rights reserved.
+            &copy; {new Date().getFullYear()} NovaAcademy. All rights reserved.
           </p>
           <p className="text-sm text-neutral-500">
             Made with 🧠 for students everywhere

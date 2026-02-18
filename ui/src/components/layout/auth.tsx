@@ -48,7 +48,7 @@ const AuthLayout = () => {
               <GraduationCap className="h-6 w-6" />
             </div>
             <span className="font-display text-xl font-bold text-primary-900">
-              Gr8Academy
+              NovaAcademy
             </span>
           </Link>
         </header>
@@ -63,7 +63,7 @@ const AuthLayout = () => {
         {/* Footer */}
         <footer className="px-6 py-4 lg:px-8 text-center">
           <p className="text-xs text-neutral-400">
-            &copy; {new Date().getFullYear()} Gr8Academy &mdash; Your Personal
+            &copy; {new Date().getFullYear()} NovaAcademy &mdash; Your Personal
             AI Tutor
           </p>
         </footer>
