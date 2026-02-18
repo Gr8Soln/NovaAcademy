@@ -6,7 +6,7 @@ from app.adapters.services import JWTAuthService
 from app.application.interfaces import IJwtService, IUserInterface
 from app.application.use_cases import RegisterUseCase
 from app.core.config import Settings
-from app.infrastructure.db.session import get_db_session
+from app.infrastructure.db import get_db_session
 
 # ----- Auth Dependencies ---------------------------------
 

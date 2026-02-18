@@ -7,10 +7,10 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.adapters.schemas.response_schema import error_response
+from app.adapters.schemas import error_response, success_response
 from app.core.config import settings
 from app.core.logging import get_logger
-from app.infrastructure.api.routes.auth_router import router as auth_router
+from app.infrastructure.api import auth_router
 
 logger = get_logger(__name__)
 
@@ -22,9 +22,9 @@ async def lifespan(_: FastAPI):
     """Startup / shutdown lifecycle hook."""
     upload_dir = Path(settings.UPLOAD_DIR)
     upload_dir.mkdir(parents=True, exist_ok=True)
-    logger.info("App started")
+    logger.info(f"🟢 {settings.APP_NAME} App started")
     yield
-    logger.info("App shutdown complete")
+    logger.info(f"🔴 {settings.APP_NAME} App stopped")
 
 
 def create_app() -> FastAPI:
@@ -89,7 +89,15 @@ def create_app() -> FastAPI:
 
     @app.get(f"{settings.API_PREFIX}/health")
     async def health():
-        return {"status": "ok", "app": settings.APP_NAME}
+        return success_response(
+            "API is healthy", 
+            data={
+                  "status": "ok", 
+                  "version": "0.1.0", 
+                  "app_name": settings.APP_NAME, 
+                  "debug": settings.DEBUG
+                }
+            )
 
 
     return app

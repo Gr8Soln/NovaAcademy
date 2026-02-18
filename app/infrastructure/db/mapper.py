@@ -1,6 +1,6 @@
 from app.application.dtos import AuthProvider
 from app.domain.entities import User
-from app.infrastructure.db import UserModel
+from app.infrastructure.db.models.user_model import UserModel
 
 # ── User ────────────────────────────────────────────────────────
 
