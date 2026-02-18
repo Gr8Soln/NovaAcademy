@@ -7,6 +7,7 @@ import { pages } from "@/lib/constant";
 import {
   AnalyticsPage,
   ChallengesPage,
+  ConfirmEmailPage,
   DashboardPage,
   DocumentsPage,
   ExamHallPage,
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="register" element={<RegisterPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route path="reset-password" element={<ResetPasswordPage />} />
+          <Route path="confirm-email" element={<ConfirmEmailPage />} />
         </Route>
 
         {/* Dashboard */}

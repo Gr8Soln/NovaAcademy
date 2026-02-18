@@ -6,7 +6,8 @@ export interface User {
   auth_provider: string;
   avatar_url: string | null;
   is_active: boolean;
-  has_password?: boolean;
+  has_password: boolean;
+  is_email_verified: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -1,7 +1,2 @@
-from .email_service import ConsoleEmailService
-from .jwt_auth_service import JWTAuthService
-
-__all__ = [
-    "JWTAuthService",
-    "ConsoleEmailService",
-]
+from .smtp_email_service import *
+from .jwt_auth_service import *

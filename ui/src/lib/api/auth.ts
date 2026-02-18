@@ -1,38 +1,63 @@
+import type { AuthResponse, TokenPair, User } from "@/types";
 import api from "./api";
 
 export const authApi = {
-  register: (email: string, full_name: string, password: string) =>
-    api("/auth/register", {
+  // ── Auth ───────────────────────────────────────────────────────
+
+  register: (email: string, first_name: string, last_name: string, password: string) =>
+    api<AuthResponse>("/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email, full_name, password }),
+      body: JSON.stringify({ email, first_name, last_name, password }),
     }),
 
   login: (email: string, password: string) =>
-    api("/auth/login", {
+    api<AuthResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
 
-  googleLogin: (code: string) =>
-    api("/auth/google", {
+  googleAuth: (code: string, is_access_token = true) =>
+    api<AuthResponse>("/auth/google", {
       method: "POST",
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code, is_access_token }),
     }),
 
-  refresh: (refreshToken: string) =>
-    api("/auth/refresh", {
+  refresh: (refresh_token: string) =>
+    api<TokenPair>("/auth/refresh", {
       method: "POST",
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      body: JSON.stringify({ refresh_token }),
     }),
 
-  me: () => api("/users/me"),
+  forgotPassword: (email: string) =>
+    api<null>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
 
-  updateProfile: (data: {
-    first_name?: string;
-    last_name?: string;
-    email?: string;
-  }) =>
-    api("/users/me", {
+  resetPassword: (token: string, new_password: string) =>
+    api<null>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, new_password }),
+    }),
+
+  confirmEmail: (token: string) =>
+    api<User>("/auth/confirm-email", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    }),
+
+  resendConfirmEmail: (email: string) =>
+    api<null>("/auth/resend-confirm-email", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+
+  // ── User / Profile ─────────────────────────────────────────────
+
+  me: () => api<User>("/users/me"),
+
+  updateProfile: (data: { first_name?: string; last_name?: string }) =>
+    api<User>("/users/me", {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
@@ -40,20 +65,22 @@ export const authApi = {
   uploadAvatar: (file: File) => {
     const form = new FormData();
     form.append("file", file);
-    return api("/users/me/avatar", { method: "POST", body: form });
+    return api<User>("/users/me/avatar", { method: "POST", body: form });
   },
 
-  removeAvatar: () => api("/users/me/avatar", { method: "DELETE" }),
+  removeAvatar: () => api<User>("/users/me/avatar", { method: "DELETE" }),
 
   setPassword: (password: string) =>
-    api("/users/me/password", {
+    api<User>("/users/me/password", {
       method: "POST",
       body: JSON.stringify({ password }),
     }),
 
   changePassword: (current_password: string, new_password: string) =>
-    api("/users/me/password", {
+    api<User>("/users/me/password", {
       method: "PUT",
       body: JSON.stringify({ current_password, new_password }),
     }),
+
+  deactivateAccount: () => api<null>("/users/me", { method: "DELETE" }),
 };

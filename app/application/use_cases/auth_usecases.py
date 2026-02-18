@@ -160,7 +160,8 @@ class ForgotPasswordUseCase:
     async def execute(self, email: str) -> None:
         user = await self._user_repo.get_by_email(email)
         # Always return success to avoid email enumeration
-        if not user or user.auth_provider != "email":
+        if not user:
+        # if not user or user.auth_provider != "email":
             return
 
         token = self._auth_repo.create_password_reset_token(user.id)

@@ -6,9 +6,8 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/buttons";
 import { Checkbox, Input } from "@/components/ui/inputs";
-import { authApi } from "@/lib/api";
+import { authApi } from "@/lib/api/auth";
 import { useAuthStore } from "@/stores";
-import type { AuthResponse } from "@/types";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -22,7 +21,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = (await authApi.login(email, password)) as AuthResponse;
+      const data = await authApi.login(email, password);
       setAuth(data.user, data.tokens.access_token, data.tokens.refresh_token);
       toast.success("Welcome back!");
       navigate("/dashboard");
@@ -36,10 +35,10 @@ export default function LoginPage() {
   const handleGoogleSubmit = async (tokenResponse: any) => {
     setGoogleLoading(true);
     try {
-      const data = (await authApi.google(
+      const data = await authApi.googleAuth(
         tokenResponse.access_token,
         true,
-      )) as AuthResponse;
+      );
       setAuth(data.user, data.tokens.access_token, data.tokens.refresh_token);
       toast.success("Welcome back!");
       navigate("/dashboard");
@@ -85,7 +84,7 @@ export default function LoginPage() {
         <div className="flex items-center justify-between">
           <Checkbox label="Remember me" />
           <Link
-            to="/forgot-password"
+            to="/auth/forgot-password"
             className="text-xs font-medium text-primary-500 hover:text-primary-700 transition-colors"
           >
             Forgot password?
@@ -145,7 +144,7 @@ export default function LoginPage() {
       <p className="mt-6 text-center text-sm text-neutral-500">
         Don&apos;t have an account?{" "}
         <Link
-          to="/register"
+          to="/auth/register"
           className="font-medium text-primary-500 hover:text-primary-700 transition-colors"
         >
           Sign up

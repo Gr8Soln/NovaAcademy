@@ -5,6 +5,7 @@ export const pages = {
   register: "/auth/register",
   forgotPassword: "/auth/forgot-password",
   resetPassword: "/auth/reset-password",
+  confirmEmail: "/auth/confirm-email",
   // Dashboard pages
   dashboard: "/dashboard",
   analytics: "/dashboard/analytics",

@@ -8,7 +8,6 @@ import { Checkbox, Input } from "@/components/ui/inputs";
 import { authApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
-import type { AuthResponse } from "@/types";
 
 function getPasswordStrength(password: string) {
   let score = 0;
@@ -27,7 +26,8 @@ function getPasswordStrength(password: string) {
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -52,13 +52,14 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const data = (await authApi.register(
+      const data = await authApi.register(
         email,
-        fullName,
+        firstName,
+        lastName,
         password,
-      )) as AuthResponse;
+      );
       setAuth(data.user, data.tokens.access_token, data.tokens.refresh_token);
-      toast.success("Account created successfully!");
+      toast.success("Account created! Please check your email to verify your account.");
       navigate("/dashboard");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Registration failed");
@@ -78,11 +79,21 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <Input
-          label="Full Name"
+          label="First Name"
           type="text"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          placeholder="John Doe"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          placeholder="John"
+          icon={<User className="h-4 w-4" />}
+          required
+        />
+
+        <Input
+          label="Last Name"
+          type="text"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          placeholder="Doe"
           icon={<User className="h-4 w-4" />}
           required
         />
@@ -202,7 +213,7 @@ export default function RegisterPage() {
       <p className="mt-6 text-center text-sm text-neutral-500">
         Already have an account?{" "}
         <Link
-          to="/login"
+          to="/auth/login"
           className="font-medium text-primary-500 hover:text-primary-700 transition-colors"
         >
           Log in

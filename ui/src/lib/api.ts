@@ -1,4 +1,5 @@
 import { useAuthStore } from "@/stores";
+import type { AuthResponse, TokenPair, User } from "@/types";
 
 const BASE = import.meta.env.VITE_BASE_API_URL;
 
@@ -82,49 +83,57 @@ export async function requestPaged<T>(
 // ── Auth ─────────────────────────────────────────────────────────
 
 export const authApi = {
-  register: (email: string, full_name: string, password: string) =>
-    request("/auth/register", {
+  register: (
+    email: string,
+    first_name: string,
+    last_name: string,
+    password: string,
+  ) =>
+    request<AuthResponse>("/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email, full_name, password }),
+      body: JSON.stringify({ email, first_name, last_name, password }),
     }),
 
   google: (accessToken: string, isAccessToken: boolean = false) =>
-    request("/auth/google", {
+    request<AuthResponse>("/auth/google", {
       method: "POST",
-      body: JSON.stringify({ code: accessToken, is_access_token: isAccessToken }),
+      body: JSON.stringify({
+        code: accessToken,
+        is_access_token: isAccessToken,
+      }),
     }),
 
   login: (email: string, password: string) =>
-    request("/auth/login", {
+    request<AuthResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
 
   googleLogin: (code: string) =>
-    request("/auth/google", {
+    request<AuthResponse>("/auth/google", {
       method: "POST",
       body: JSON.stringify({ code }),
     }),
 
   refresh: (refreshToken: string) =>
-    request("/auth/refresh", {
+    request<TokenPair>("/auth/refresh", {
       method: "POST",
       body: JSON.stringify({ refresh_token: refreshToken }),
     }),
 
   forgotPassword: (email: string) =>
-    request("/auth/forgot-password", {
+    request<null>("/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify({ email }),
     }),
 
   resetPassword: (token: string, newPassword: string) =>
-    request("/auth/reset-password", {
+    request<null>("/auth/reset-password", {
       method: "POST",
       body: JSON.stringify({ token, new_password: newPassword }),
     }),
 
-  me: () => request("/users/me"),
+  me: () => request<User>("/users/me"),
 };
 
 // ── Documents ────────────────────────────────────────────────────
@@ -315,18 +324,18 @@ export const analyticsApi = {
 // ── Users ────────────────────────────────────────────────────────
 
 export const usersApi = {
-  me: () => request("/users/me"),
+  me: () => request<User>("/users/me"),
 
   updateProfile: (fullName: string, avatarUrl?: string | null) =>
-    request("/users/me", {
+    request<User>("/users/me", {
       method: "PUT",
       body: JSON.stringify({ full_name: fullName, avatar_url: avatarUrl }),
     }),
 
   search: (query = "", offset = 0, limit = 20) =>
-    request(
+    request<User[]>(
       `/users/search?q=${encodeURIComponent(query)}&offset=${offset}&limit=${limit}`,
     ),
 
-  getById: (userId: string) => request(`/users/${userId}`),
+  getById: (userId: string) => request<User>(`/users/${userId}`),
 };

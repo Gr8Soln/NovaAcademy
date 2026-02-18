@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.repositories import SQLUserRepository
-from app.adapters.services import ConsoleEmailService, JWTAuthService
+from app.adapters.services import JWTAuthService, SMTPEmailService
 from app.application.interfaces import (IEmailService, IJwtService,
                                         IUserInterface)
 from app.application.use_cases import (ChangePasswordUseCase,
@@ -45,7 +45,18 @@ async def get_jwt_service() -> IJwtService:
     )
 
 async def get_email_service() -> IEmailService:
-    return ConsoleEmailService()
+    return SMTPEmailService(
+        smtp_host=settings.SMTP_HOST,
+        smtp_port=settings.SMTP_PORT,
+        smtp_username=settings.SMTP_USERNAME,
+        smtp_password=settings.SMTP_PASSWORD,
+        from_email=settings.SMTP_FROM_EMAIL,
+        from_name=settings.APP_NAME,
+        template_dir=settings.EMAIL_TEMPLATE_DIR,
+        base_url=settings.UI_BASE_URL,
+        use_tls=settings.USE_TLS,
+        use_ssl=settings.USE_SSL
+    )
 
 # ----- Auth guard ----------------------------------------
 

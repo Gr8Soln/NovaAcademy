@@ -1,15 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Camera,
-  Check,
-  KeyRound,
-  Loader2,
-  Lock,
-  Mail,
-  Pencil,
-  Trash2,
-  User as UserIcon,
-  X,
+    AlertTriangle,
+    Camera,
+    Check,
+    CheckCircle,
+    KeyRound,
+    Loader2,
+    Lock,
+    Mail,
+    Pencil,
+    Trash2,
+    User as UserIcon,
+    X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -19,6 +21,69 @@ import { Input } from "@/components/ui/inputs";
 import { authApi } from "@/lib/api/auth";
 import { useAuthStore } from "@/stores";
 import type { User } from "@/types";
+
+/* ─── Email verification banner ─────────────────────────────── */
+
+function VerifyEmailBanner({ email }: { email: string }) {
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSend = async () => {
+    setSending(true);
+    setError("");
+    try {
+      await authApi.resendConfirmEmail(email);
+      setSent(true);
+    } catch (e) {
+      setError((e as Error).message || "Failed to send. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <div className="flex items-start gap-3 rounded-xl border border-success-200 bg-success-50 px-4 py-3">
+        <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
+        <div>
+          <p className="text-sm font-semibold text-success-700">Verification email sent!</p>
+          <p className="text-xs text-success-600 mt-0.5">
+            Check your inbox at <span className="font-medium">{email}</span> and click the link to verify your account.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3">
+      <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-warning-600" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-warning-700">Email not verified</p>
+        <p className="text-xs text-warning-600 mt-0.5">
+          Verify your email address to unlock all features.
+        </p>
+        {error && (
+          <p className="text-xs text-danger-500 mt-1">{error}</p>
+        )}
+      </div>
+      <button
+        type="button"
+        disabled={sending}
+        onClick={handleSend}
+        className="flex items-center gap-1.5 rounded-lg bg-warning-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-warning-700 transition-colors disabled:opacity-50 flex-shrink-0"
+      >
+        {sending ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : (
+          <Mail className="h-3.5 w-3.5" />
+        )}
+        {sending ? "Sending…" : "Verify email"}
+      </button>
+    </div>
+  );
+}
 
 /* ─── helpers ───────────────────────────────────────────────── */
 
@@ -56,7 +121,7 @@ function AvatarEditor({ user }: { user: User }) {
   const [file, setFile] = useState<File | null>(null);
 
   const uploadMutation = useMutation({
-    mutationFn: () => authApi.uploadAvatar(file!) as Promise<User>,
+    mutationFn: () => authApi.uploadAvatar(file!),
     onSuccess: (updated) => {
       setAuth(updated, accessToken!, refreshToken!);
       qc.invalidateQueries({ queryKey: ["me"] });
@@ -66,7 +131,7 @@ function AvatarEditor({ user }: { user: User }) {
   });
 
   const removeMutation = useMutation({
-    mutationFn: () => authApi.removeAvatar() as Promise<User>,
+    mutationFn: () => authApi.removeAvatar(),
     onSuccess: (updated) => {
       setAuth(updated, accessToken!, refreshToken!);
       qc.invalidateQueries({ queryKey: ["me"] });
@@ -186,7 +251,7 @@ function ProfileInfoForm({ user }: { user: User }) {
   }, [user]);
 
   const mutation = useMutation({
-    mutationFn: () => authApi.updateProfile(form) as Promise<User>,
+    mutationFn: () => authApi.updateProfile(form),
     onSuccess: (updated) => {
       setAuth(updated, accessToken!, refreshToken!);
       qc.invalidateQueries({ queryKey: ["me"] });
@@ -316,8 +381,8 @@ function PasswordSection({ user }: { user: User }) {
   const mutation = useMutation({
     mutationFn: () =>
       hasPassword
-        ? (authApi.changePassword(form.current, form.next) as Promise<unknown>)
-        : (authApi.setPassword(form.next) as Promise<unknown>),
+        ? authApi.changePassword(form.current, form.next)
+        : authApi.setPassword(form.next),
     onSuccess: () => {
       setSuccess(true);
       setMode("idle");
@@ -523,7 +588,7 @@ export default function ProfilePage() {
 
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ["me"],
-    queryFn: () => authApi.me() as Promise<User>,
+    queryFn: () => authApi.me(),
     initialData: storeUser ?? undefined,
     staleTime: 30_000,
   });
@@ -551,6 +616,9 @@ export default function ProfilePage() {
           Manage your personal information and account security.
         </p>
       </div>
+
+      {/* Email verification banner */}
+      {!user.is_email_verified && <VerifyEmailBanner email={user.email} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Left column */}

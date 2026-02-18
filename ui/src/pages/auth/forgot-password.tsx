@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/buttons";
 import { Input } from "@/components/ui/inputs";
+import { authApi } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -15,8 +16,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      // TODO: Wire up to authApi.forgotPassword(email)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await authApi.forgotPassword(email);
       setSubmitted(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
           <span className="font-medium text-neutral-700">{email}</span>. It may
           take a minute to arrive.
         </p>
-        <Link to="/login">
+        <Link to="/auth/login">
           <Button>Back to Login</Button>
         </Link>
         <p className="mt-4 text-xs text-neutral-400">
@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
       </form>
 
       <Link
-        to="/login"
+        to="/auth/login"
         className="mt-6 flex items-center justify-center gap-1.5 text-sm text-neutral-500 hover:text-primary-600 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />

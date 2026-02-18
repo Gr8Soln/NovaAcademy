@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     ENV: str = "development"  # or "production"
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
     DEBUG: bool = False
+    UI_BASE_URL: str = "http://localhost:5173"
 
     # ── Auth ────────────────────────────────────────────────────
     SECRET_KEY: str = "change-me-in-production"
@@ -45,6 +46,18 @@ class Settings(BaseSettings):
     # ── File storage ────────────────────────────────────────────
     UPLOAD_DIR: str = "./uploads"
 
+    # ── SMTP ────────────────────────────────────────────
+    SMTP_HOST: str = "googlemail.smtp.com"
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = "noreply@novaacademy.com"
+    SMTP_PASSWORD: str = "change-me-in-production"
+    SMTP_FROM_EMAIL: str = "noreply@novaacademy.com"
+    
+    EMAIL_TEMPLATE_DIR: Optional[str] = 'templates'
+    USE_TLS: bool = True
+    USE_SSL: bool = True
+
+    
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/buttons";
 import { Input } from "@/components/ui/inputs";
+import { authApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 function getPasswordStrength(password: string) {
@@ -48,8 +49,7 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     try {
-      // TODO: Wire up to authApi.resetPassword(token, password)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await authApi.resetPassword(token!, password);
       setSuccess(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -72,7 +72,7 @@ export default function ResetPasswordPage() {
           This password reset link is invalid or has expired. Please request a
           new one.
         </p>
-        <Link to="/forgot-password">
+        <Link to="/auth/forgot-password">
           <Button>Request New Link</Button>
         </Link>
       </div>
@@ -93,7 +93,7 @@ export default function ResetPasswordPage() {
           Your password has been successfully reset. You can now log in with
           your new password.
         </p>
-        <Link to="/login">
+        <Link to="/auth/login">
           <Button>Go to Login</Button>
         </Link>
       </div>
@@ -167,7 +167,7 @@ export default function ResetPasswordPage() {
       <p className="mt-6 text-center text-sm text-neutral-500">
         Remember your password?{" "}
         <Link
-          to="/login"
+          to="/auth/login"
           className="font-medium text-primary-500 hover:text-primary-700 transition-colors"
         >
           Log in

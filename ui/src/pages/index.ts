@@ -9,6 +9,7 @@ export const LoginPage = lazy(() => import("./auth/login"));
 export const RegisterPage = lazy(() => import("./auth/register"));
 export const ForgotPasswordPage = lazy(() => import("./auth/forgot-password"));
 export const ResetPasswordPage = lazy(() => import("./auth/reset-password"));
+export const ConfirmEmailPage = lazy(() => import("./auth/confirm-email"));
 
 // ── Dashboard ───────────────────────────────────────────────
 export const DashboardPage = lazy(() => import("./dashboard/dashboard"));

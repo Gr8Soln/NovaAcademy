@@ -21,10 +21,12 @@ const api = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(error.detail || "Request failed");
+    throw new Error(error.detail || error.message || "Request failed");
   }
 
-  return res.json();
+  const body = await res.json();
+  // All backend responses are { status, message, data }. Unwrap automatically.
+  return (body.data ?? body) as T;
 };
 
 export default api;
