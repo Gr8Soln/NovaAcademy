@@ -1,18 +1,13 @@
-import {
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  User,
-  X,
-} from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/buttons";
+import { displayName, pages } from "@/lib/constant";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
-import { displayName, pages } from "@/lib/constant";
+import { googleLogout } from "@react-oauth/google";
 import { LogoWithName } from "../ui";
 
 interface HeaderProps {
@@ -80,7 +75,7 @@ const Header = ({ transparent = false }: HeaderProps) => {
                   className="flex items-center gap-2 rounded-full hover:ring-2 hover:ring-primary-200 transition-all p-0.5"
                 >
                   <Avatar
-                    name={user.full_name}
+                    name={user.first_name}
                     src={user.avatar_url}
                     size="sm"
                   />
@@ -96,7 +91,7 @@ const Header = ({ transparent = false }: HeaderProps) => {
                       Dashboard
                     </Link>
                     <Link
-                      to={pages.analytics}
+                      to={pages.profile}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
                       onClick={() => setProfileOpen(false)}
                     >
@@ -107,6 +102,7 @@ const Header = ({ transparent = false }: HeaderProps) => {
                     <button
                       onClick={() => {
                         logout();
+                        googleLogout();
                         setProfileOpen(false);
                       }}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-danger-500 hover:bg-neutral-50 w-full text-left"
@@ -194,7 +190,10 @@ const Header = ({ transparent = false }: HeaderProps) => {
             <div className="mt-auto flex flex-col gap-3">
               {user ? (
                 <>
-                  <Link to={pages.dashboard} onClick={() => setMobileOpen(false)}>
+                  <Link
+                    to={pages.dashboard}
+                    onClick={() => setMobileOpen(false)}
+                  >
                     <Button variant="primary" fullWidth>
                       Dashboard
                     </Button>
@@ -217,7 +216,10 @@ const Header = ({ transparent = false }: HeaderProps) => {
                       Log In
                     </Button>
                   </Link>
-                  <Link to={pages.register} onClick={() => setMobileOpen(false)}>
+                  <Link
+                    to={pages.register}
+                    onClick={() => setMobileOpen(false)}
+                  >
                     <Button variant="accent" fullWidth>
                       Get Started
                     </Button>

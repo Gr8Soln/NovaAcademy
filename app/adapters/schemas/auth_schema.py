@@ -46,6 +46,14 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class ConfirmEmailRequest(BaseModel):
+    token: str
+
+
+class ResendConfirmEmailRequest(BaseModel):
+    email: EmailStr
+
+
 class UserResponse(BaseModel):
     id: uuid.UUID
     email: str
@@ -54,6 +62,8 @@ class UserResponse(BaseModel):
     auth_provider: str
     avatar_url: Optional[str] = None
     is_active: bool
+    has_password: Optional[bool] = None
+    is_email_verified: Optional[bool] = None
     created_at: datetime
     updated_at: datetime
 

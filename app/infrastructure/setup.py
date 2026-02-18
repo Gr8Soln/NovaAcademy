@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from app.adapters.schemas import error_response, success_response
 from app.core.config import settings
 from app.core.logging import get_logger
-from app.infrastructure.api import auth_router
+from app.infrastructure.api import auth_router, user_router
 
 logger = get_logger(__name__)
 
@@ -86,6 +86,7 @@ def create_app() -> FastAPI:
     # ── Routes ──────────────────────────────────────────────────
 
     app.include_router(auth_router, prefix=settings.API_PREFIX)
+    app.include_router(user_router, prefix=settings.API_PREFIX)
 
     @app.get(f"{settings.API_PREFIX}/health")
     async def health():

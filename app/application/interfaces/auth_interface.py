@@ -41,3 +41,13 @@ class IJwtService(ABC):
     def decode_password_reset_token(self, token: str) -> uuid.UUID:
         """Decode and validate a password reset token, return user_id."""
         ...
+
+    @abstractmethod
+    def create_email_verification_token(self, user_id: uuid.UUID) -> str:
+        """Create a short-lived token for email verification."""
+        ...
+
+    @abstractmethod
+    def decode_email_verification_token(self, token: str) -> uuid.UUID:
+        """Decode and validate an email verification token, return user_id."""
+        ...

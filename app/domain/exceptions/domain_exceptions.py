@@ -19,6 +19,15 @@ class UserAlreadyExistsError(DomainException):
 class UserNotFoundError(DomainException):
     """Requested user does not exist."""
 
+class EmailNotVerifiedError(DomainException):
+    """Account email has not been verified."""
+
+class InvalidTokenError(DomainException):
+    """Token is invalid or has already been used."""
+
+class AccountInactiveError(DomainException):
+    """User account is inactive or deactivated."""
+
 
 
 # ── Document-related exceptions ─────────────────────────────────

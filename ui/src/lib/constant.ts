@@ -15,6 +15,8 @@ export const pages = {
   examHall: "/classroom/exam-hall",
   leaderboard: "/classroom/leaderboard",
   challenges: "/classroom/challenges",
+  // Profile
+  profile: "/profile",
 };
 
 // export const displayName = "NovaAcademy"

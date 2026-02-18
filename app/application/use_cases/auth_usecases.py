@@ -6,19 +6,23 @@ from google.auth.transport import requests
 from google.oauth2 import id_token
 
 from app.application.dtos import TokenPair
-from app.application.interfaces import IJwtService, IUserInterface
+from app.application.interfaces import (IEmailService, IJwtService,
+                                        IUserInterface)
 from app.core.logging import get_logger
 from app.domain.entities import User
-from app.domain.exceptions import (InvalidAuthMethodError,
-                                   InvalidCredentialError,
-                                   UserAlreadyExistsError)
+from app.domain.exceptions import (AccountInactiveError, AuthenticationError,
+                                   EmailNotVerifiedError,
+                                   InvalidAuthMethodError,
+                                   InvalidCredentialError, InvalidTokenError,
+                                   UserAlreadyExistsError, UserNotFoundError)
 
 logger = get_logger(__name__)
 
 class RegisterUseCase:
-    def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService) -> None:
+    def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService, email_svc: IEmailService) -> None:
         self._user_repo = user_repo
         self._auth_repo = auth_repo
+        self._email_svc = email_svc
 
     async def execute(self, email: str, first_name: str, last_name: str, password: str) -> tuple[User, TokenPair]:
         existing = await self._user_repo.get_by_email(email)
@@ -26,8 +30,14 @@ class RegisterUseCase:
             raise UserAlreadyExistsError(f"User with email {email} already exists")
 
         hashed = self._auth_repo.hash_password(password)
-        user = User.create_email_user(email=email, first_name=first_name, last_name=last_name, hashed_password=hashed)
+        user = User.create_email_user(
+            email=email, first_name=first_name, last_name=last_name, hashed_password=hashed
+        )
         user = await self._user_repo.create(user)
+
+        verification_token = self._auth_repo.create_email_verification_token(user.id)
+        await self._email_svc.send_verification_email(user.email, user.first_name, verification_token)
+
         tokens = self._auth_repo.create_tokens(user.id)
         return user, tokens
 
@@ -40,13 +50,19 @@ class LoginUseCase:
     async def execute(self, email: str, password: str) -> tuple[User, TokenPair]:
         user = await self._user_repo.get_by_email(email)
         if not user:
-            raise InvalidCredentialError(f"Incorrect credentials")
+            raise InvalidCredentialError("Incorrect credentials")
 
         if user.auth_provider != 'email' or not user.hashed_password:
-            raise InvalidAuthMethodError(f"This account is registered with a different authentication method")
+            raise InvalidAuthMethodError("This account is registered with a different authentication method")
 
         if not self._auth_repo.verify_password(password, user.hashed_password):
-            raise InvalidCredentialError(f"Incorrect credentials")
+            raise InvalidCredentialError("Incorrect credentials")
+
+        if not user.is_email_verified:
+            raise EmailNotVerifiedError("Please verify your email before logging in")
+
+        if not user.is_active:
+            raise AccountInactiveError("Account has been deactivated")
 
         tokens = self._auth_repo.create_tokens(user.id)
         return user, tokens
@@ -109,3 +125,109 @@ class GoogleAuthUseCase:
         
         tokens = self._auth_repo.create_tokens(user.id)
         return user, tokens, is_new_user
+
+
+# ── Refresh Token ───────────────────────────────────────────────
+
+class RefreshTokenUseCase:
+    def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService) -> None:
+        self._user_repo = user_repo
+        self._auth_repo = auth_repo
+
+    async def execute(self, refresh_token: str) -> TokenPair:
+        try:
+            user_id = self._auth_repo.decode_refresh_token(refresh_token)
+        except AuthenticationError as exc:
+            raise InvalidCredentialError(str(exc)) from exc
+
+        user = await self._user_repo.get_by_id(user_id)
+        if not user:
+            raise UserNotFoundError("User not found")
+        if not user.is_active:
+            raise AccountInactiveError("Account is inactive")
+
+        return self._auth_repo.create_tokens(user.id)
+
+
+# ── Forgot Password ─────────────────────────────────────────────
+
+class ForgotPasswordUseCase:
+    def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService, email_svc: IEmailService) -> None:
+        self._user_repo = user_repo
+        self._auth_repo = auth_repo
+        self._email_svc = email_svc
+
+    async def execute(self, email: str) -> None:
+        user = await self._user_repo.get_by_email(email)
+        # Always return success to avoid email enumeration
+        if not user or user.auth_provider != "email":
+            return
+
+        token = self._auth_repo.create_password_reset_token(user.id)
+        await self._email_svc.send_password_reset_email(user.email, user.first_name, token)
+
+
+# ── Reset Password ──────────────────────────────────────────────
+
+class ResetPasswordUseCase:
+    def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService) -> None:
+        self._user_repo = user_repo
+        self._auth_repo = auth_repo
+
+    async def execute(self, token: str, new_password: str) -> None:
+        try:
+            user_id = self._auth_repo.decode_password_reset_token(token)
+        except AuthenticationError as exc:
+            raise InvalidTokenError("Invalid or expired reset token") from exc
+
+        user = await self._user_repo.get_by_id(user_id)
+        if not user:
+            raise UserNotFoundError("User not found")
+
+        hashed = self._auth_repo.hash_password(new_password)
+        user.set_password(hashed)
+        await self._user_repo.update(user)
+
+
+# ── Confirm Email ───────────────────────────────────────────────
+
+class ConfirmEmailUseCase:
+    def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService) -> None:
+        self._user_repo = user_repo
+        self._auth_repo = auth_repo
+
+    async def execute(self, token: str) -> User:
+        try:
+            user_id = self._auth_repo.decode_email_verification_token(token)
+        except AuthenticationError as exc:
+            raise InvalidTokenError("Invalid or expired verification token") from exc
+
+        user = await self._user_repo.get_by_id(user_id)
+        if not user:
+            raise UserNotFoundError("User not found")
+
+        if user.is_email_verified:
+            return user  # already verified — idempotent
+
+        user.verify_email()
+        return await self._user_repo.update(user)
+
+
+# ── Resend Confirm Email ────────────────────────────────────────
+
+class ResendConfirmEmailUseCase:
+    def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService, email_svc: IEmailService) -> None:
+        self._user_repo = user_repo
+        self._auth_repo = auth_repo
+        self._email_svc = email_svc
+
+    async def execute(self, email: str) -> None:
+        user = await self._user_repo.get_by_email(email)
+        if not user or user.auth_provider != "email":
+            return  # silent — avoid enumeration
+
+        if user.is_email_verified:
+            return  # already verified
+
+        token = self._auth_repo.create_email_verification_token(user.id)
+        await self._email_svc.send_verification_email(user.email, user.first_name, token)

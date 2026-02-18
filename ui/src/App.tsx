@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AuthLayout, DashboardLayout } from "@/components/layout";
 import { PageLoader } from "@/components/ui";
+import { pages } from "@/lib/constant";
 import {
   AnalyticsPage,
   ChallengesPage,
@@ -14,12 +15,12 @@ import {
   LeaderboardPage,
   LoginPage,
   NotFoundPage,
+  ProfilePage,
   RegisterPage,
   ResetPasswordPage,
   StudyPage,
 } from "@/pages";
 import { useAuthStore } from "@/stores";
-import { pages } from "@/lib/constant";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.accessToken);
@@ -81,6 +82,18 @@ export default function App() {
           <Route path="exam-hall" element={<ExamHallPage />} />
           <Route path="leaderboard" element={<LeaderboardPage />} />
           <Route path="challenges" element={<ChallengesPage />} />
+        </Route>
+
+        {/* Profile */}
+        <Route
+          path="profile"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<ProfilePage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

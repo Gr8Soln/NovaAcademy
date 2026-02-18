@@ -13,6 +13,8 @@ class UserModel(Base):
     first_name: Mapped[str] = mapped_column(String(256))
     last_name: Mapped[str] = mapped_column(String(256))
     hashed_password: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
+    has_password: Mapped[Optional[bool]] = mapped_column(default=False)
+    is_email_verified: Mapped[Optional[bool]] = mapped_column(default=False)
     auth_provider: Mapped[str] = mapped_column(String(16), default="email")
     google_sub: Mapped[Optional[str]] = mapped_column(String(256), unique=True, nullable=True, index=True)
     avatar_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)

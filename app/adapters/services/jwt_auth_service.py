@@ -113,3 +113,9 @@ class JWTAuthService(IJwtService):
 
     def decode_password_reset_token(self, token: str) -> uuid.UUID:
         return self._decode_token(token, "password_reset")
+
+    def create_email_verification_token(self, user_id: uuid.UUID) -> str:
+        return self._create_token(user_id, timedelta(hours=24), "email_verification")
+
+    def decode_email_verification_token(self, token: str) -> uuid.UUID:
+        return self._decode_token(token, "email_verification")

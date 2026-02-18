@@ -20,7 +20,13 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
           <App />
-          <Toaster position="top-right" richColors closeButton />
+          <Toaster
+            position="bottom-right"
+            expand
+            richColors
+            offset={{ bottom: 20, right: 20 }}
+            closeButton
+          />
         </GoogleOAuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

@@ -11,6 +11,7 @@ import {
   Shield,
   Swords,
   Trophy,
+  User,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -48,6 +49,9 @@ const navSections: { title?: string; items: NavItem[] }[] = [
     title: "Insights",
     items: [{ to: pages.analytics, label: "Analytics", icon: BarChart3 }],
   },
+  {
+    items: [{ to: pages.profile, label: "Profile", icon: User }],
+  },
 ];
 
 const DashboardLayout = () => {
@@ -58,7 +62,7 @@ const DashboardLayout = () => {
 
   const handleLogout = () => {
     logout();
-    googleLogout()
+    googleLogout();
     navigate(pages.home);
   };
 
@@ -133,7 +137,8 @@ const DashboardLayout = () => {
 
       {/* User section */}
       <div className="border-t border-neutral-200 p-4">
-        <div
+        <Link
+          to={pages.profile}
           className={cn(
             "flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-neutral-50",
             sidebarCollapsed ? "justify-center" : "",
@@ -152,7 +157,7 @@ const DashboardLayout = () => {
               <p className="text-xs text-neutral-500 truncate">{user?.email}</p>
             </div>
           )}
-        </div>
+        </Link>
         {!sidebarCollapsed && (
           <button
             onClick={handleLogout}
@@ -253,7 +258,7 @@ const DashboardLayout = () => {
 
               <div className="h-8 w-px bg-neutral-200 hidden sm:block"></div>
               <Link
-                to={pages.analytics}
+                to={pages.profile}
                 className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 <Avatar

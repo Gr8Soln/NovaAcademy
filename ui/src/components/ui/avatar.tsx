@@ -45,8 +45,9 @@ export interface AvatarProps {
 }
 
 export function Avatar({ name, src, size = "md", className }: AvatarProps) {
-  const initials = getInitials(name || "?");
-  const gradient = gradients[hashName(name) % gradients.length];
+  const safeName = name || "";
+  const initials = getInitials(safeName || "?");
+  const gradient = gradients[hashName(safeName) % gradients.length];
 
   if (src) {
     return (
