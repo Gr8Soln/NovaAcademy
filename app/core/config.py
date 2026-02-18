@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "./uploads"
 
     # ── SMTP ────────────────────────────────────────────
-    SMTP_HOST: str = "googlemail.smtp.com"
+    SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
     SMTP_USERNAME: str = "noreply@novaacademy.com"
     SMTP_PASSWORD: str = "change-me-in-production"
@@ -55,8 +55,7 @@ class Settings(BaseSettings):
     
     EMAIL_TEMPLATE_DIR: Optional[str] = 'templates'
     USE_TLS: bool = True
-    USE_SSL: bool = True
-
+    USE_SSL: bool = False
     
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

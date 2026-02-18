@@ -44,10 +44,12 @@ class SQLUserRepository(IUserInterface):
             model.first_name = user.first_name
             model.last_name = user.last_name
             model.hashed_password = user.hashed_password
+            model.has_password = user.has_password
             model.auth_provider = user.auth_provider.value
             model.google_sub = user.google_sub
             model.avatar_url = user.avatar_url
             model.is_active = user.is_active
+            model.is_email_verified = user.is_email_verified
             model.updated_at = user.updated_at
             await self._session.flush()
             await self._session.refresh(model)
