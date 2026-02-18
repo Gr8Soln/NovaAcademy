@@ -8,6 +8,7 @@ import { Checkbox, Input } from "@/components/ui/inputs";
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/stores";
 import type { AuthResponse } from "@/types";
+import { useGoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -30,6 +31,26 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  const handleGoogleSubmit = async (tokenResponse: any) => {
+    setLoading(true);
+    try {
+      const data = (await authApi.google(
+        tokenResponse.access_token,
+      )) as AuthResponse;
+      setAuth(data.user, data.tokens.access_token, data.tokens.refresh_token);
+      toast.success("Welcome back!");
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: (tokenResponse) => handleGoogleSubmit(tokenResponse),
+  });
 
   return (
     <div>
@@ -88,7 +109,12 @@ export default function LoginPage() {
       </div>
 
       {/* Google OAuth */}
-      <Button variant="outline" fullWidth type="button">
+      <Button
+        variant="outline"
+        fullWidth
+        type="button"
+        onClick={() => loginWithGoogle()}
+      >
         <svg className="h-4 w-4" viewBox="0 0 24 24">
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57a10.8 10.8 0 0 0 3.27-8.1z"

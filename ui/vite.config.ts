@@ -17,6 +17,7 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    allowedHosts: ["localhost", "probably-chief-clam.ngrok-free.app"],
   },
   build: {
     outDir: "dist",

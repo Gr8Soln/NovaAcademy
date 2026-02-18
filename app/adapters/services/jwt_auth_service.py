@@ -17,7 +17,7 @@ class JWTAuthService(IJwtService):
         secret_key: str,
         algorithm: str = "HS256",
         access_token_expire_minutes: int = 30,
-        REFRESH_TOKEN_EXPIRE_MINUTES: int = 7,
+        refresh_token_expire_minutes: int = 7,
         google_client_id: Optional[str] = None,
         google_client_secret: Optional[str] = None,
         google_redirect_uri: Optional[str] = None,
@@ -25,7 +25,7 @@ class JWTAuthService(IJwtService):
         self._secret = secret_key
         self._algorithm = algorithm
         self._access_expire = timedelta(minutes=access_token_expire_minutes)
-        self._refresh_expire = timedelta(days=REFRESH_TOKEN_EXPIRE_MINUTES)
+        self._refresh_expire = timedelta(minutes=refresh_token_expire_minutes)
         self._google_client_id = google_client_id
         self._google_client_secret = google_client_secret
         self._google_redirect_uri = google_redirect_uri
@@ -71,6 +71,7 @@ class JWTAuthService(IJwtService):
     def decode_refresh_token(self, token: str) -> uuid.UUID:
         return self._decode_token(token, "refresh")
 
+
     # ── Google OAuth ────────────────────────────────────────────
 
     async def get_google_user_info(self, code: str) -> GoogleUserInfo:
@@ -103,7 +104,8 @@ class JWTAuthService(IJwtService):
             google_sub=info["id"],
             avatar_url=info.get("picture"),
         )
-
+        
+        
     # ── Password Reset ──────────────────────────────────────────
 
     def create_password_reset_token(self, user_id: uuid.UUID) -> str:
