@@ -210,7 +210,7 @@ export default function ChatMessage({
                 </span>
               </div>
             )}
-            <div className="relative bg-primary-50/80 border border-primary-200/60 px-4 py-2.5 rounded-md shadow-sm">
+            <div className="relative bg-primary-50/80 border border-primary-200/60 px-4 py-2.5 rounded-lg shadow-sm">
               {/* Left accent bar */}
               <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-gradient-to-b from-primary-400 to-accent-400" />
               <div className="pl-1">
@@ -268,20 +268,20 @@ export default function ChatMessage({
         {hovering && (
           <div className="absolute -top-3 left-14 flex items-center gap-0.5 bg-white border border-neutral-200 rounded-lg shadow-lg px-1 py-0.5 z-10">
             <button
-              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
               title="React"
             >
               <Smile className="h-3.5 w-3.5" />
             </button>
             <button
-              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
               title="Reply"
               onClick={() => onReply?.(message)}
             >
               <CornerUpRight className="h-3.5 w-3.5" />
             </button>
             <button
-              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
               title="More"
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
@@ -317,7 +317,7 @@ export default function ChatMessage({
         <div className="flex items-end justify-end gap-2">
           {/* Bubble */}
           <div className="max-w-[70%] flex flex-col items-end">
-            <div className="bg-primary-600 text-white px-4 py-2.5 rounded-md shadow-sm shadow-primary-500/20">
+            <div className="bg-primary-600 text-white px-4 py-2.5 rounded-lg shadow-sm shadow-primary-500/20">
               {message.content && (
                 <p className="text-[13px] leading-relaxed whitespace-pre-wrap break-words text-white">
                   {renderContent(message.content, true)}
@@ -385,20 +385,20 @@ export default function ChatMessage({
         {hovering && (
           <div className="absolute -top-3 right-14 flex items-center gap-0.5 bg-white border border-neutral-200 rounded-lg shadow-lg px-1 py-0.5 z-10">
             <button
-              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
               title="React"
             >
               <Smile className="h-3.5 w-3.5" />
             </button>
             <button
-              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
               title="Reply"
               onClick={() => onReply?.(message)}
             >
               <CornerUpRight className="h-3.5 w-3.5" />
             </button>
             <button
-              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
               title="More"
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
@@ -466,7 +466,7 @@ export default function ChatMessage({
           )}
           <div
             className={cn(
-              "border px-4 py-2.5 rounded-md shadow-sm",
+              "border px-4 py-2.5 rounded-lg shadow-sm",
               palette.bubble,
             )}
           >
@@ -488,7 +488,7 @@ export default function ChatMessage({
               </div>
             )}
             {message.linkPreview && (
-              <div className="mt-2 max-w-sm rounded-md border border-neutral-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group/link">
+              <div className="mt-2 max-w-sm rounded-lg border border-neutral-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group/link">
                 <div className="p-3">
                   <p className="text-[10px] font-semibold text-primary-500 uppercase tracking-wider mb-0.5">
                     {message.linkPreview.siteName || message.linkPreview.url}
@@ -545,20 +545,20 @@ export default function ChatMessage({
       {hovering && (
         <div className="absolute -top-3 left-14 flex items-center gap-0.5 bg-white border border-neutral-200 rounded-lg shadow-lg px-1 py-0.5 z-10">
           <button
-            className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
             title="React"
           >
             <Smile className="h-3.5 w-3.5" />
           </button>
           <button
-            className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
             title="Reply"
             onClick={() => onReply?.(message)}
           >
             <CornerUpRight className="h-3.5 w-3.5" />
           </button>
           <button
-            className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
             title="More"
           >
             <MoreHorizontal className="h-3.5 w-3.5" />
@@ -593,7 +593,7 @@ function AttachmentView({
   switch (attachment.type) {
     case "image":
       return (
-        <div className="max-w-xs rounded-xl overflow-hidden border border-neutral-200 cursor-pointer hover:shadow-md transition-shadow">
+        <div className="max-w-xs rounded-lg overflow-hidden border border-neutral-200 cursor-pointer hover:shadow-md transition-shadow">
           <div className="aspect-video bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">
             {attachment.url ? (
               <img
@@ -617,7 +617,7 @@ function AttachmentView({
 
     case "video":
       return (
-        <div className="max-w-sm rounded-xl overflow-hidden border border-neutral-200 cursor-pointer hover:shadow-md transition-shadow">
+        <div className="max-w-sm rounded-lg overflow-hidden border border-neutral-200 cursor-pointer hover:shadow-md transition-shadow">
           <div className="relative aspect-video bg-gradient-to-br from-neutral-800 to-neutral-900 flex items-center justify-center">
             <div className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
               <Play className="h-5 w-5 text-white ml-0.5" />
@@ -687,7 +687,7 @@ function AttachmentView({
       return (
         <div
           className={cn(
-            "flex items-center gap-3 max-w-sm border rounded-xl p-3 hover:shadow-sm transition-shadow cursor-pointer group/file",
+            "flex items-center gap-3 max-w-sm border rounded-lg p-3 hover:shadow-sm transition-shadow cursor-pointer group/file",
             fileBg,
           )}
         >

@@ -34,8 +34,8 @@ const navSections: { title?: string; items: NavItem[] }[] = [
     title: "Learning",
     items: [
       { to: pages.dashboard, label: "Dashboard", icon: LayoutDashboard },
-      { to: pages.documents, label: "Classroom", icon: BookOpen },
-      { to: pages.examHall, label: "Exam Hall", icon: Shield },
+      { to: pages.analytics, label: "Analytics", icon: BarChart3 },
+      { to: pages.classroom, label: "Classroom", icon: BookOpen },
     ],
   },
   {
@@ -44,10 +44,6 @@ const navSections: { title?: string; items: NavItem[] }[] = [
       { to: pages.challenges, label: "Challenges", icon: Swords },
       { to: pages.leaderboard, label: "Leaderboard", icon: Trophy },
     ],
-  },
-  {
-    title: "Insights",
-    items: [{ to: pages.analytics, label: "Analytics", icon: BarChart3 }],
   },
   {
     items: [{ to: pages.profile, label: "Profile", icon: User }],
