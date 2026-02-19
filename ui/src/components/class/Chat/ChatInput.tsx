@@ -2,11 +2,11 @@ import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { AtSign, Mic, Paperclip, Send, Smile, X } from "lucide-react";
 import {
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-  type KeyboardEvent,
+    useEffect,
+    useRef,
+    useState,
+    type FormEvent,
+    type KeyboardEvent,
 } from "react";
 
 import { cn } from "@/lib/utils";
