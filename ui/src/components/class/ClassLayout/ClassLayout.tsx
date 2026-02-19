@@ -1,21 +1,25 @@
 import {
-    ArrowLeft,
-    BookOpen,
-    ChevronLeft,
-    LayoutDashboard,
-    Library,
-    Menu,
-    MessageSquare,
-    PenTool,
-    Sparkles,
-    Users,
-    X,
+  ArrowLeft,
+  Bell,
+  BookOpen,
+  ChevronLeft,
+  LayoutDashboard,
+  Library,
+  Menu,
+  MessageSquare,
+  PenTool,
+  Search,
+  Sparkles,
+  Users,
+  X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, Outlet, useParams } from "react-router-dom";
 
-import { pages } from "@/lib/constant";
+import { Avatar } from "@/components/ui/avatar";
+import { displayName, pages } from "@/lib/constant";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores";
 
 type TabKey = "overview" | "chat" | "library" | "study" | "quiz";
 
@@ -86,6 +90,7 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
   const { classId } = useParams<{ classId: string }>();
   const navItems = buildNavItems(classId ?? "");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const user = useAuthStore((s) => s.user);
 
   /** Shared sidebar content rendered in both desktop and mobile variants */
   const SidebarInner = ({ onClose }: { onClose?: () => void }) => (
@@ -108,7 +113,9 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
               {classInfo.name}
             </h2>
             <div className="flex items-center gap-2 mt-0.5 text-xs text-neutral-400">
-              <span className="font-mono text-neutral-500">{classInfo.code}</span>
+              <span className="font-mono text-neutral-500">
+                {classInfo.code}
+              </span>
               <span className="text-neutral-200">·</span>
               <div className="flex items-center gap-1">
                 <Users className="h-3 w-3" />
@@ -178,8 +185,8 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
           <span className="text-xs font-bold text-primary-700">NovaAI</span>
         </div>
         <p className="text-[11px] text-primary-600/70 leading-relaxed">
-          Tag <span className="font-semibold text-primary-700">@NovaAI</span>{" "}
-          in chat for instant help with any topic.
+          Tag <span className="font-semibold text-primary-700">@NovaAI</span> in
+          chat for instant help with any topic.
         </p>
       </div>
 
@@ -197,7 +204,9 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
   );
 
   return (
-    <div className={cn("flex h-screen bg-neutral-50 overflow-hidden", className)}>
+    <div
+      className={cn("flex h-screen bg-neutral-50 overflow-hidden", className)}
+    >
       {/* ── Mobile overlay ────────────────────────────── */}
       {mobileOpen && (
         <div
@@ -229,21 +238,46 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
 
       {/* ── Main content area ─────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
-        {/* Mobile top bar */}
-        <div className="flex items-center gap-3 px-4 h-14 bg-white border-b border-neutral-200/60 lg:hidden flex-shrink-0">
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="rounded-xl p-2 -ml-2 text-neutral-500 hover:bg-neutral-100 transition-colors"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            <span className="text-xl">{classInfo.emoji}</span>
-            <h2 className="font-display text-sm font-bold text-neutral-900 truncate">
-              {classInfo.name}
-            </h2>
+        {/* ── Top Navbar ──────────────────────────── */}
+        <header className="flex items-center justify-between px-4 sm:px-6 h-14 bg-white border-b border-neutral-200/60 flex-shrink-0">
+          {/* Left: mobile menu + brand */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="rounded-xl p-2 -ml-2 text-neutral-500 hover:bg-neutral-100 transition-colors lg:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            {/* Brand */}
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-primary-600 to-accent-600 shadow-sm">
+                <Sparkles className="h-3.5 w-3.5 text-white" />
+              </div>
+              <span className="hidden sm:inline text-sm font-bold text-neutral-900 tracking-tight">
+                {displayName}
+              </span>
+            </div>
           </div>
-        </div>
+
+          {/* Right: search, bell, avatar */}
+          <div className="flex items-center gap-1.5">
+            <button className="flex h-8 w-8 items-center justify-center rounded-xl text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors">
+              <Search className="h-4 w-4" />
+            </button>
+            <button className="relative flex h-8 w-8 items-center justify-center rounded-xl text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors">
+              <Bell className="h-4 w-4" />
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-danger-500 ring-2 ring-white" />
+            </button>
+            <div className="ml-1">
+              <Avatar
+                name={user ? `${user.first_name} ${user.last_name}` : "User"}
+                src={user?.avatar_url ?? undefined}
+                size="sm"
+                className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary-400 hover:ring-offset-1 transition-all"
+              />
+            </div>
+          </div>
+        </header>
 
         {/* Page content — each page manages its own overflow */}
         <div className="flex-1 overflow-hidden min-h-0">
@@ -255,4 +289,3 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
 }
 
 export type { TabKey };
-
