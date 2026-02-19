@@ -1,4 +1,4 @@
-import { Clock, PenTool, Trophy } from "lucide-react";
+import { BookOpen, Clock, Play, Search, Trophy } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -7,136 +7,115 @@ import QuizAttempt from "./QuizAttempt";
 import type { QuizQuestion } from "./QuizResult";
 import QuizResult from "./QuizResult";
 
-// ── Mock data ───────────────────────────────────────────────
-interface QuizData {
+interface QuizMeta {
   id: string;
   title: string;
-  questionCount: number;
+  description: string;
+  questionsCount: number;
   duration: string;
-  bestScore: number | null;
+  difficulty: "Easy" | "Medium" | "Hard";
+  bestScore?: number;
   questions: QuizQuestion[];
 }
 
-const mockQuizzes: QuizData[] = [
+const difficultyColors: Record<string, string> = {
+  Easy: "bg-emerald-50 text-emerald-600",
+  Medium: "bg-amber-50 text-amber-600",
+  Hard: "bg-red-50 text-red-600",
+};
+
+const mockQuizzes: QuizMeta[] = [
   {
     id: "q1",
-    title: "ML Fundamentals — Week 1",
-    questionCount: 5,
+    title: "Supervised Learning Basics",
+    description:
+      "Test your understanding of supervised learning algorithms, training processes, and evaluation metrics.",
+    questionsCount: 4,
     duration: "10 min",
-    bestScore: 80,
+    difficulty: "Easy",
+    bestScore: 85,
     questions: [
       {
-        id: "q1-1",
-        question:
-          "Which of the following is an example of supervised learning?",
+        id: "1",
+        question: "What is the primary goal of supervised learning?",
         options: [
-          "Clustering customers by behavior",
-          "Predicting house prices from labeled data",
-          "Reducing dimensionality of a dataset",
-          "Training a robot through trial and error",
+          "Cluster similar data points",
+          "Learn a mapping from inputs to outputs",
+          "Reduce dimensionality",
+          "Generate new data samples",
         ],
         correctIndex: 1,
       },
       {
-        id: "q1-2",
-        question: "What does the learning rate control in gradient descent?",
+        id: "2",
+        question: "Which algorithm is commonly used for classification?",
         options: [
-          "The number of hidden layers",
-          "The size of each training batch",
-          "The step size during parameter updates",
-          "The amount of regularization applied",
+          "K-Means",
+          "PCA",
+          "Logistic Regression",
+          "Autoencoders",
         ],
         correctIndex: 2,
       },
       {
-        id: "q1-3",
-        question: "Overfitting occurs when a model:",
+        id: "3",
+        question: "What does overfitting mean?",
         options: [
-          "Performs well on training data but poorly on test data",
-          "Performs poorly on both training and test data",
-          "Has too few parameters",
-          "Uses too much regularization",
+          "Model performs poorly on all data",
+          "Model learns noise in training data",
+          "Model is too simple",
+          "Model has low bias",
         ],
-        correctIndex: 0,
+        correctIndex: 1,
       },
       {
-        id: "q1-4",
-        question: "Which activation function outputs values between 0 and 1?",
-        options: ["ReLU", "Tanh", "Sigmoid", "Leaky ReLU"],
-        correctIndex: 2,
-      },
-      {
-        id: "q1-5",
-        question: "K-Means is an example of which type of learning?",
-        options: [
-          "Supervised learning",
-          "Unsupervised learning",
-          "Reinforcement learning",
-          "Semi-supervised learning",
-        ],
+        id: "4",
+        question:
+          "Which metric is best for imbalanced classification?",
+        options: ["Accuracy", "F1 Score", "MSE", "R-Squared"],
         correctIndex: 1,
       },
     ],
   },
   {
     id: "q2",
-    title: "Neural Networks Basics",
-    questionCount: 5,
-    duration: "15 min",
-    bestScore: null,
+    title: "Neural Network Architectures",
+    description:
+      "Challenge yourself on CNN, RNN, Transformer architectures and their real-world applications.",
+    questionsCount: 3,
+    duration: "8 min",
+    difficulty: "Hard",
     questions: [
       {
-        id: "q2-1",
-        question: "What is backpropagation used for?",
+        id: "5",
+        question: "What is the purpose of a convolutional layer?",
         options: [
-          "Forward passing input through the network",
-          "Computing gradients to update weights",
-          "Choosing the activation function",
-          "Selecting the number of layers",
+          "Reduce parameters",
+          "Detect spatial features",
+          "Normalize inputs",
+          "Store memory",
         ],
         correctIndex: 1,
       },
       {
-        id: "q2-2",
-        question: "A single perceptron can solve which of the following?",
+        id: "6",
+        question: "What mechanism do Transformers use?",
         options: [
-          "XOR problem",
-          "Linearly separable problems",
-          "Image recognition",
-          "NLP tasks",
+          "Recurrence",
+          "Convolution",
+          "Self-attention",
+          "Pooling",
         ],
-        correctIndex: 1,
+        correctIndex: 2,
       },
       {
-        id: "q2-3",
-        question: "Dropout is used to:",
+        id: "7",
+        question: "RNNs are best suited for:",
         options: [
-          "Speed up training",
-          "Prevent overfitting by randomly deactivating neurons",
-          "Increase the learning rate",
-          "Add more training data",
-        ],
-        correctIndex: 1,
-      },
-      {
-        id: "q2-4",
-        question: "What does a loss function measure?",
-        options: [
-          "The number of training epochs",
-          "The difference between predicted and actual values",
-          "The size of the neural network",
-          "The learning rate schedule",
-        ],
-        correctIndex: 1,
-      },
-      {
-        id: "q2-5",
-        question: "Which layer type is commonly used for image classification?",
-        options: [
-          "Recurrent",
-          "Convolutional",
-          "Fully connected only",
-          "Embedding",
+          "Image classification",
+          "Sequential data",
+          "Tabular data",
+          "Clustering",
         ],
         correctIndex: 1,
       },
@@ -144,52 +123,44 @@ const mockQuizzes: QuizData[] = [
   },
   {
     id: "q3",
-    title: "Data Preprocessing & Feature Engineering",
-    questionCount: 4,
-    duration: "8 min",
+    title: "Data Preprocessing",
+    description:
+      "Explore normalization, encoding, feature selection and data cleaning techniques.",
+    questionsCount: 3,
+    duration: "7 min",
+    difficulty: "Medium",
     bestScore: 100,
     questions: [
       {
-        id: "q3-1",
-        question: "What is feature scaling?",
+        id: "8",
+        question: "What is one-hot encoding used for?",
         options: [
-          "Adding new features to the dataset",
-          "Normalizing feature values to a standard range",
-          "Removing irrelevant features",
-          "Encoding categorical variables",
-        ],
-        correctIndex: 1,
-      },
-      {
-        id: "q3-2",
-        question: "One-hot encoding is used for:",
-        options: [
-          "Scaling numerical features",
-          "Converting categorical variables into binary vectors",
-          "Handling missing values",
-          "Reducing dimensionality",
-        ],
-        correctIndex: 1,
-      },
-      {
-        id: "q3-3",
-        question: "What is imputation?",
-        options: [
-          "Removing outliers from a dataset",
-          "Filling in missing values with estimated ones",
-          "Splitting data into train and test sets",
-          "Encoding text data as numbers",
-        ],
-        correctIndex: 1,
-      },
-      {
-        id: "q3-4",
-        question: "PCA is used for:",
-        options: [
-          "Classification",
+          "Numerical features",
+          "Categorical features",
+          "Missing values",
           "Dimensionality reduction",
-          "Data collection",
-          "Model deployment",
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: "9",
+        question: "Feature scaling is important because:",
+        options: [
+          "It removes outliers",
+          "Algorithms converge faster",
+          "It adds more features",
+          "It labels data",
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: "10",
+        question: "Which handles missing values?",
+        options: [
+          "Gradient descent",
+          "Imputation",
+          "Backpropagation",
+          "Dropout",
         ],
         correctIndex: 1,
       },
@@ -197,117 +168,141 @@ const mockQuizzes: QuizData[] = [
   },
 ];
 
-type View = "list" | "attempt" | "result";
+type ViewState =
+  | { mode: "list" }
+  | { mode: "attempt"; quiz: QuizMeta }
+  | { mode: "result"; quiz: QuizMeta; answers: Record<string, number> };
 
 export default function QuizList() {
-  const [view, setView] = useState<View>("list");
-  const [activeQuiz, setActiveQuiz] = useState<QuizData | null>(null);
-  const [submittedAnswers, setSubmittedAnswers] = useState<
-    Record<string, number>
-  >({});
+  const [view, setView] = useState<ViewState>({ mode: "list" });
+  const [search, setSearch] = useState("");
 
-  const startQuiz = (quiz: QuizData) => {
-    setActiveQuiz(quiz);
-    setSubmittedAnswers({});
-    setView("attempt");
-  };
+  const filteredQuizzes = mockQuizzes.filter((q) =>
+    q.title.toLowerCase().includes(search.toLowerCase()),
+  );
 
-  const handleSubmit = (answers: Record<string, number>) => {
-    setSubmittedAnswers(answers);
-    setView("result");
-  };
-
-  const handleRetry = () => {
-    setSubmittedAnswers({});
-    setView("attempt");
-  };
-
-  const backToList = () => {
-    setView("list");
-    setActiveQuiz(null);
-  };
-
-  // ── Attempt view ──────────────────────────────────────
-  if (view === "attempt" && activeQuiz) {
+  if (view.mode === "attempt") {
     return (
       <div className="space-y-4">
         <button
-          onClick={backToList}
-          className="text-sm text-primary-700 hover:text-primary-600 font-medium"
+          onClick={() => setView({ mode: "list" })}
+          className="text-sm text-primary-600 hover:underline"
         >
           ← Back to quizzes
         </button>
-        <h2 className="font-display text-lg font-semibold text-neutral-900">
-          {activeQuiz.title}
-        </h2>
-        <QuizAttempt questions={activeQuiz.questions} onSubmit={handleSubmit} />
-      </div>
-    );
-  }
-
-  // ── Result view ───────────────────────────────────────
-  if (view === "result" && activeQuiz) {
-    return (
-      <div className="space-y-4">
-        <button
-          onClick={backToList}
-          className="text-sm text-primary-700 hover:text-primary-600 font-medium"
-        >
-          ← Back to quizzes
-        </button>
-        <h2 className="font-display text-lg font-semibold text-neutral-900">
-          {activeQuiz.title} — Results
-        </h2>
-        <QuizResult
-          questions={activeQuiz.questions}
-          answers={submittedAnswers}
-          onRetry={handleRetry}
+        <h2 className="text-lg font-bold text-neutral-900">{view.quiz.title}</h2>
+        <QuizAttempt
+          questions={view.quiz.questions}
+          onSubmit={(answers) =>
+            setView({ mode: "result", quiz: view.quiz, answers })
+          }
         />
       </div>
     );
   }
 
-  // ── List view ─────────────────────────────────────────
-  return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-neutral-900">
-        Available Quizzes
-      </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {mockQuizzes.map((quiz) => (
-          <div
-            key={quiz.id}
-            onClick={() => startQuiz(quiz)}
-            className={cn(
-              "group bg-white rounded-xl border border-neutral-200 p-5",
-              "hover:shadow-md hover:border-primary-200 transition-all cursor-pointer",
-            )}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 text-primary-700">
-                <PenTool className="h-4 w-4" />
-              </div>
-              <h4 className="text-sm font-semibold text-neutral-900 group-hover:text-primary-700 transition-colors">
-                {quiz.title}
-              </h4>
-            </div>
-
-            <div className="flex items-center gap-4 text-xs text-neutral-500">
-              <span>{quiz.questionCount} questions</span>
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {quiz.duration}
-              </div>
-              {quiz.bestScore !== null && (
-                <div className="flex items-center gap-1 text-success-500">
-                  <Trophy className="h-3 w-3" />
-                  Best: {quiz.bestScore}%
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+  if (view.mode === "result") {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setView({ mode: "list" })}
+          className="text-sm text-primary-600 hover:underline"
+        >
+          ← Back to quizzes
+        </button>
+        <QuizResult
+          questions={view.quiz.questions}
+          answers={view.answers}
+          onRetry={() => setView({ mode: "attempt", quiz: view.quiz })}
+        />
       </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-neutral-900">Quizzes</h2>
+          <p className="text-sm text-neutral-500 mt-0.5">
+            {mockQuizzes.length} quizzes available
+          </p>
+        </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          <input
+            type="text"
+            placeholder="Search quizzes…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 pr-4 py-2 text-sm border border-neutral-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 w-60"
+          />
+        </div>
+      </div>
+
+      {/* Quiz cards */}
+      {filteredQuizzes.length === 0 ? (
+        <div className="text-center py-20 text-neutral-400">
+          <p className="text-4xl mb-3">🔍</p>
+          <p className="text-sm">No quizzes found</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredQuizzes.map((quiz) => (
+            <div
+              key={quiz.id}
+              className="group bg-white rounded-2xl border border-neutral-200/60 p-5 hover:shadow-lg hover:shadow-primary-500/5 hover:border-primary-200/60 transition-all duration-200"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white shadow-sm">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <span
+                  className={cn(
+                    "text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full",
+                    difficultyColors[quiz.difficulty],
+                  )}
+                >
+                  {quiz.difficulty}
+                </span>
+              </div>
+
+              <h3 className="font-bold text-neutral-900 text-sm mb-1.5">
+                {quiz.title}
+              </h3>
+              <p className="text-xs text-neutral-500 leading-relaxed mb-4 line-clamp-2">
+                {quiz.description}
+              </p>
+
+              <div className="flex items-center gap-3 text-[11px] text-neutral-400 mb-4">
+                <span className="flex items-center gap-1">
+                  <BookOpen className="h-3.5 w-3.5" />
+                  {quiz.questionsCount} Qs
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  {quiz.duration}
+                </span>
+                {quiz.bestScore !== undefined && (
+                  <span className="flex items-center gap-1 text-amber-500 font-semibold">
+                    <Trophy className="h-3.5 w-3.5" />
+                    {quiz.bestScore}%
+                  </span>
+                )}
+              </div>
+
+              <button
+                onClick={() => setView({ mode: "attempt", quiz })}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary-600 rounded-xl hover:bg-primary-500 transition-all shadow-sm group-hover:shadow-md"
+              >
+                <Play className="h-4 w-4" />
+                Start Quiz
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { CloudUpload } from "lucide-react";
+import { CloudUpload, Sparkles } from "lucide-react";
 import { useCallback, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -36,19 +36,30 @@ export default function UploadFile({ onUpload }: UploadFileProps) {
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
       className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 transition-colors cursor-pointer",
+        "relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-8 transition-all cursor-pointer overflow-hidden",
         isDragging
-          ? "border-primary-500 bg-primary-50"
-          : "border-neutral-200 bg-neutral-50 hover:border-primary-300 hover:bg-primary-50/50",
+          ? "border-primary-500 bg-primary-50 scale-[1.01]"
+          : "border-neutral-200 bg-gradient-to-br from-neutral-50 to-white hover:border-primary-300 hover:bg-primary-50/30 hover:shadow-sm",
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-primary-700">
-        <CloudUpload className="h-6 w-6" />
+      {/* Decorative sparkles */}
+      <Sparkles className="absolute top-4 right-4 h-4 w-4 text-primary-200 opacity-50" />
+      <Sparkles className="absolute bottom-4 left-4 h-3 w-3 text-accent-200 opacity-50" />
+
+      <div
+        className={cn(
+          "flex h-14 w-14 items-center justify-center rounded-2xl transition-all",
+          isDragging
+            ? "bg-primary-600 text-white shadow-lg shadow-primary-600/30 scale-110"
+            : "bg-primary-100 text-primary-600",
+        )}
+      >
+        <CloudUpload className="h-7 w-7" />
       </div>
       <div className="text-center">
-        <p className="text-sm font-medium text-neutral-700">
+        <p className="text-sm font-semibold text-neutral-700">
           Drag & drop files here, or{" "}
-          <label className="text-primary-700 hover:text-primary-600 cursor-pointer font-semibold">
+          <label className="text-primary-600 hover:text-primary-500 cursor-pointer font-bold underline underline-offset-2">
             browse
             <input
               type="file"
@@ -58,8 +69,8 @@ export default function UploadFile({ onUpload }: UploadFileProps) {
             />
           </label>
         </p>
-        <p className="text-xs text-neutral-400 mt-1">
-          PDF, Images, Docs up to 50MB
+        <p className="text-[11px] text-neutral-400 mt-1.5">
+          PDF, Images, Docs, Videos up to 50MB
         </p>
       </div>
     </div>
