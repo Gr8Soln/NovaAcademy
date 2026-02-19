@@ -161,8 +161,9 @@ def get_update_profile_usecase(
 
 def get_upload_avatar_usecase(
     user_repo: IUserInterface = Depends(get_user_repository),
+    storage: IStorageService = Depends(get_storage_service),
 ) -> UploadAvatarUseCase:
-    return UploadAvatarUseCase(user_repo)
+    return UploadAvatarUseCase(user_repo, storage)
 
 def get_remove_avatar_usecase(
     user_repo: IUserInterface = Depends(get_user_repository),

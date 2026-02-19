@@ -98,3 +98,23 @@ class IStorageService(ABC):
             Public URL to access the file
         """
         ...
+
+    @abstractmethod
+    async def upload_avatar(self, file: UploadFile) -> dict:
+        """
+        Upload and optimize a user avatar image.
+        
+        Crops the image to a square, resizes to at most 512×512,
+        and saves it to the avatars subdirectory.
+        
+        Args:
+            file: The uploaded image file
+            
+        Returns:
+            dict with file_id, file_url, file_size, file_extension, mime_type
+            
+        Raises:
+            ValueError: If file type is not a supported image
+            StorageError: If upload fails
+        """
+        ...

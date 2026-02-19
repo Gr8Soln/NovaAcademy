@@ -1,7 +1,10 @@
 """User / profile use cases."""
 import uuid
 
-from app.application.interfaces import IJwtService, IUserInterface
+from fastapi import UploadFile
+
+from app.application.interfaces import (IJwtService, IStorageService,
+                                        IUserInterface)
 from app.core.logging import get_logger
 from app.domain.entities import User
 from app.domain.exceptions import (AccountInactiveError, AuthenticationError,
@@ -54,10 +57,13 @@ class UpdateProfileUseCase:
 # ── Upload Avatar ────────────────────────────────────────────────
 
 class UploadAvatarUseCase:
-    def __init__(self, user_repo: IUserInterface) -> None:
+    def __init__(self, user_repo: IUserInterface, storage: IStorageService) -> None:
         self._user_repo = user_repo
+        self._storage = storage
 
-    async def execute(self, user_id: uuid.UUID, avatar_url: str) -> User:
+    async def execute(self, user_id: uuid.UUID, file: UploadFile) -> User:
+        result = await self._storage.upload_avatar(file)
+        avatar_url = result["file_url"]
         user = await _get_active_user(self._user_repo, user_id)
         user.update_avatar(avatar_url)
         return await self._user_repo.update(user)

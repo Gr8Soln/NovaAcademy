@@ -87,7 +87,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router, prefix=settings.API_PREFIX)
     app.include_router(user_router, prefix=settings.API_PREFIX)
-    app.include_router(file_router, prefix=settings.API_PREFIX)
+    app.include_router(file_router, include_in_schema=False)
 
     @app.get(f"{settings.API_PREFIX}/health")
     async def health():

@@ -1,142 +1,74 @@
-from typing import Annotated
+from pathlib import Path
+from typing import Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
-from app.application.interfaces import IStorageService
-from app.domain.entities import User
-from app.infrastructure.api.dependencies import (get_current_user,
-                                                 get_storage_service)
+from app.core.config import settings
+from app.core.logging import get_logger
 
-router = APIRouter(prefix="/files", tags=["files"])
+router = APIRouter(tags=["Files"])
+logger = get_logger(__name__)
 
 
-@router.post("/images", status_code=status.HTTP_201_CREATED)
-async def upload_image(
-    file: UploadFile = File(...),
-    storage: Annotated[IStorageService, Depends(get_storage_service)] = None,
-    current_user: Annotated[User, Depends(get_current_user)] = None,
-):
+def get_safe_path(requested_path: str, base_directory: str, check_exists: bool = True) -> Optional[Path]:
     """
-    Upload an image file (JPEG, PNG, WebP, GIF).
-    Images are automatically optimized and compressed.
+    Resolve and validate that the requested path is within the base directory.
+    Returns the absolute Path object if valid.
+    Raises HTTPException if invalid or not found.
     """
     try:
-        result = await storage.upload_image(file, optimize=True)
-        return {
-            "status": "success",
-            "message": "Image uploaded successfully",
-            "data": result
-        }
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to upload image: {str(e)}"
-        )
-
-
-@router.post("/documents", status_code=status.HTTP_201_CREATED)
-async def upload_document(
-    file: UploadFile = File(...),
-    storage: Annotated[IStorageService, Depends(get_storage_service)] = None,
-    current_user: Annotated[User, Depends(get_current_user)] = None,
-):
-    """
-    Upload a document file (PDF, DOCX, TXT, CSV, XLSX).
-    Maximum file size: 10MB.
-    """
-    try:
-        result = await storage.upload_document(file)
-        return {
-            "status": "success",
-            "message": "Document uploaded successfully",
-            "data": result
-        }
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to upload document: {str(e)}"
-        )
-
-
-@router.get("/images/{file_id}")
-async def get_image(
-    file_id: str,
-    storage: Annotated[IStorageService, Depends(get_storage_service)] = None,
-):
-    """Retrieve an uploaded image file."""
-    try:
-        # Try common image extensions
-        for ext in ['.jpg', '.png', '.webp', '.gif']:
-            file_path = storage.get_file_path(file_id, ext)
-            import os
-            if os.path.exists(file_path):
-                return FileResponse(file_path)
+        # Resolve base directory to absolute path
+        base_path = Path(base_directory).resolve()
         
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Image not found"
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve image: {str(e)}"
-        )
-
-
-@router.get("/documents/{file_id}")
-async def get_document(
-    file_id: str,
-    storage: Annotated[IStorageService, Depends(get_storage_service)] = None,
-):
-    """Retrieve an uploaded document file."""
-    try:
-        # Try common document extensions
-        for ext in ['.pdf', '.docx', '.doc', '.txt', '.csv', '.xlsx', '.xls']:
-            file_path = storage.get_file_path(file_id, ext)
-            import os
-            if os.path.exists(file_path):
-                return FileResponse(file_path)
+        # requested_path comes from the URL path parameter, which might have forward slashes
+        # even on Windows. Path() handles this, but we should be careful.
+        # Joining base_path with requested_path
+        # Note: If requested_path starts with /, Path.joinpath treats it as absolute, 
+        # so we strip leading slashes.
+        safe_requested = requested_path.lstrip("/").lstrip("\\")
+        target_path = (base_path / safe_requested).resolve()
         
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Document not found"
-        )
+        if not str(target_path).startswith(str(base_path)):
+            logger.warning(f"Directory traversal attempt: {requested_path}")
+            raise HTTPException(status_code=403, detail="Access denied")
+            
+        if check_exists and not target_path.exists():
+            return None
+            
+        return target_path
+
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve document: {str(e)}"
-        )
+        if isinstance(e, HTTPException):
+            raise e
+        logger.error(f"Error resolving path {requested_path}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.delete("/{file_id}")
-async def delete_file(
-    file_id: str,
-    extension: str,
-    storage: Annotated[IStorageService, Depends(get_storage_service)] = None,
-    current_user: Annotated[User, Depends(get_current_user)] = None,
-):
-    """Delete an uploaded file."""
-    try:
-        success = await storage.delete_file(file_id, extension)
-        if not success:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="File not found"
-            )
+@router.get("/files/{file_path:path}")
+async def get_file(file_path: str):
+    """
+    Serve a file from the configured files directory.
+    """
+    target_path = get_safe_path(file_path, settings.UPLOAD_DIR)
+    
+    if not target_path or not target_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
         
-        return {
-            "status": "success",
-            "message": "File deleted successfully"
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete file: {str(e)}"
-        )
+    return FileResponse(path=target_path)
+
+
+@router.get("/avatars/{file_path:path}")
+async def get_avatar(file_path: str):
+    """
+    Serve an avatar file from the configured avatar directory.
+    """
+    target_path = get_safe_path(file_path, f"{settings.UPLOAD_DIR}/avatars")
+    
+    if not target_path or not target_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+        
+    return FileResponse(path=target_path)
+
+
+

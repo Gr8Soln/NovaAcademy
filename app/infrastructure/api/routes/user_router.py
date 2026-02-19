@@ -10,7 +10,6 @@ from app.application.use_cases import (ChangePasswordUseCase,
                                        RemoveAvatarUseCase, SetPasswordUseCase,
                                        UpdateProfileUseCase,
                                        UploadAvatarUseCase)
-from app.core.config import settings
 from app.core.logging import get_logger
 from app.domain.entities import User
 from app.domain.exceptions import InvalidCredentialError
@@ -90,25 +89,16 @@ async def upload_avatar(
             detail=f"Unsupported file type. Allowed: {', '.join(_ALLOWED_IMAGE_TYPES)}",
         )
 
+    # Peek at size without consuming the stream
     contents = await file.read()
     if len(contents) > _MAX_AVATAR_BYTES:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="File too large. Maximum size is 5 MB.",
         )
+    await file.seek(0)
 
-    # Save to UPLOAD_DIR/<user_id>.<ext>
-    ext = (file.filename or "avatar").rsplit(".", 1)[-1].lower() or "jpg"
-    upload_dir = Path(settings.UPLOAD_DIR) / "avatars"
-    upload_dir.mkdir(parents=True, exist_ok=True)
-    file_name = f"{current_user.id}.{ext}"
-    file_path = upload_dir / file_name
-
-    with open(file_path, "wb") as f:
-        f.write(contents)
-
-    avatar_url = f"/uploads/avatars/{file_name}"
-    updated = await use_case.execute(current_user.id, avatar_url)
+    updated = await use_case.execute(current_user.id, file)
     return success_response(
         data=_user_response(updated).model_dump(mode="json"),
         message="Avatar uploaded",
@@ -122,13 +112,24 @@ async def remove_avatar(
     current_user: User = Depends(get_current_user),
     use_case: RemoveAvatarUseCase = Depends(get_remove_avatar_usecase),
 ):
-    # Remove old file if stored locally
-    if current_user.avatar_url and current_user.avatar_url.startswith("/uploads/"):
-        old_path = Path(".") / current_user.avatar_url.lstrip("/")
-        try:
-            old_path.unlink(missing_ok=True)
-        except OSError:
-            pass
+    # Clean up the physical file regardless of how it was uploaded
+    if current_user.avatar_url:
+        old_path: Path | None = None
+        url = current_user.avatar_url
+
+        if "/api/v1/avatar/" in url:
+            # New storage service URL: .../api/v1/avatar/<file_id><ext>
+            filename = url.rsplit("/api/v1/avatar/", 1)[-1]
+            old_path = Path("uploads") / "avatars" / filename
+        elif url.startswith("/uploads/"):
+            # Legacy direct-path URL
+            old_path = Path(".") / url.lstrip("/")
+
+        if old_path:
+            try:
+                old_path.unlink(missing_ok=True)
+            except OSError:
+                pass
 
     updated = await use_case.execute(current_user.id)
     return success_response(

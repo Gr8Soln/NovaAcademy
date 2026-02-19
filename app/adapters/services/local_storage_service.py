@@ -2,9 +2,8 @@ import os
 import uuid
 from io import BytesIO
 from pathlib import Path
-from typing import Optional
 
-from fastapi import HTTPException, UploadFile
+from fastapi import UploadFile
 from PIL import Image
 
 from app.application.interfaces import IStorageService
@@ -52,6 +51,7 @@ class LocalStorageService(IStorageService):
         self.upload_dir = Path(upload_dir)
         self.images_dir = self.upload_dir / "images"
         self.documents_dir = self.upload_dir / "documents"
+        self.avatars_dir = self.upload_dir / "avatars"
         self.base_url = base_url.rstrip('/')
         
         # Create directories
@@ -62,6 +62,7 @@ class LocalStorageService(IStorageService):
         try:
             self.images_dir.mkdir(parents=True, exist_ok=True)
             self.documents_dir.mkdir(parents=True, exist_ok=True)
+            self.avatars_dir.mkdir(parents=True, exist_ok=True)
             logger.info(f"Storage directories ensured: {self.upload_dir}")
         except PermissionError as e:
             logger.error(f"Permission denied creating upload directories: {e}")
@@ -190,8 +191,8 @@ class LocalStorageService(IStorageService):
     async def delete_file(self, file_id: str, extension: str) -> bool:
         """Delete a file from storage."""
         try:
-            # Check in both directories
-            for directory in [self.images_dir, self.documents_dir]:
+            # Check in all directories
+            for directory in [self.images_dir, self.documents_dir, self.avatars_dir]:
                 file_path = directory / f"{file_id}{extension}"
                 if file_path.exists():
                     file_path.unlink()
@@ -207,8 +208,8 @@ class LocalStorageService(IStorageService):
     
     def get_file_path(self, file_id: str, extension: str) -> str:
         """Get the local file path."""
-        # Check in both directories
-        for directory in [self.images_dir, self.documents_dir]:
+        # Check in all directories
+        for directory in [self.images_dir, self.documents_dir, self.avatars_dir]:
             file_path = directory / f"{file_id}{extension}"
             if file_path.exists():
                 return str(file_path)
@@ -220,9 +221,109 @@ class LocalStorageService(IStorageService):
         """Get the public URL for a file."""
         # Determine file type from extension
         if extension in self.ALLOWED_IMAGE_TYPES.values():
-            return f"{self.base_url}/api/v1/files/images/{file_id}{extension}"
+            return f"{self.base_url}/images/{file_id}{extension}"
         else:
-            return f"{self.base_url}/api/v1/files/documents/{file_id}{extension}"
+            return f"{self.base_url}/documents/{file_id}{extension}"
+
+    def get_avatar_url(self, file_id: str, extension: str) -> str:
+        """Get the public URL for an avatar file."""
+        return f"{self.base_url}/avatars/{file_id}{extension}"
+
+    async def upload_avatar(self, file: UploadFile) -> dict:
+        """Upload and optimize a user avatar image (square crop, max 512×512)."""
+        try:
+            if file.content_type not in self.ALLOWED_IMAGE_TYPES:
+                raise ValueError(
+                    f"Unsupported image type: {file.content_type}. "
+                    f"Allowed: {', '.join(self.ALLOWED_IMAGE_TYPES.keys())}"
+                )
+
+            content = await file.read()
+            if not content:
+                raise ValueError("Empty file")
+
+            file_id = str(uuid.uuid4())
+            extension = self.ALLOWED_IMAGE_TYPES[file.content_type]
+
+            content = await self._process_avatar(content, extension)
+
+            file_path = self.avatars_dir / f"{file_id}{extension}"
+            with open(file_path, "wb") as f:
+                f.write(content)
+
+            file_size = os.path.getsize(file_path)
+
+            logger.info(
+                f"Avatar uploaded: {file_id}{extension} "
+                f"({file_size} bytes, original: {file.filename})"
+            )
+
+            return {
+                "file_id": file_id,
+                "file_url": self.get_avatar_url(file_id, extension),
+                "file_size": file_size,
+                "file_extension": extension,
+                "mime_type": file.content_type,
+                "original_name": file.filename,
+            }
+
+        except ValueError:
+            raise
+        except Exception as e:
+            logger.error(f"Failed to upload avatar: {e}")
+            raise StorageError(f"Failed to upload avatar: {str(e)}")
+
+    async def _process_avatar(
+        self,
+        content: bytes,
+        extension: str,
+        size: int = 512,
+    ) -> bytes:
+        """
+        Center-crop image to a square then resize to `size`×`size`.
+
+        Args:
+            content: Raw image bytes
+            extension: File extension (determines save format)
+            size: Target width/height in pixels
+
+        Returns:
+            Processed image bytes
+        """
+        try:
+            img = Image.open(BytesIO(content))
+
+            # --- Center square crop ---
+            w, h = img.size
+            min_dim = min(w, h)
+            left = (w - min_dim) // 2
+            top = (h - min_dim) // 2
+            img = img.crop((left, top, left + min_dim, top + min_dim))
+
+            # --- Resize to target size ---
+            img = img.resize((size, size), Image.Resampling.LANCZOS)
+
+            # --- Flatten alpha for JPEG ---
+            save_format = "JPEG" if extension in (".jpg", ".jpeg") else "PNG"
+            if save_format == "JPEG" and img.mode in ("RGBA", "LA", "P"):
+                background = Image.new("RGB", img.size, (255, 255, 255))
+                if img.mode == "P":
+                    img = img.convert("RGBA")
+                background.paste(img, mask=img.split()[-1] if img.mode == "RGBA" else None)
+                img = background
+
+            output = BytesIO()
+            if save_format == "JPEG":
+                img.save(output, format=save_format, quality=85, optimize=True)
+            else:
+                img.save(output, format=save_format, optimize=True)
+
+            logger.info(f"Avatar processed: {size}×{size} {save_format}")
+            return output.getvalue()
+
+        except Exception as e:
+            logger.error(f"Avatar processing failed: {e}")
+            return content
     
     async def _compress_image(
         self, 
