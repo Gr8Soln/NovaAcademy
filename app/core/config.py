@@ -45,6 +45,9 @@ class Settings(BaseSettings):
 
     # ── File storage ────────────────────────────────────────────
     UPLOAD_DIR: str = "./uploads"
+    MAX_IMAGE_SIZE_KB: int = 2048  # 2MB
+    MAX_DOCUMENT_SIZE_MB: int = 10  # 10MB
+    OPTIMIZE_IMAGES: bool = True
 
     # ── SMTP ────────────────────────────────────────────
     SMTP_HOST: str = "smtp.gmail.com"

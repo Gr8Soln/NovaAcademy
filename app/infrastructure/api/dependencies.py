@@ -5,9 +5,10 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.repositories import SQLUserRepository
-from app.adapters.services import JWTAuthService, SMTPEmailService
+from app.adapters.services import (JWTAuthService, LocalStorageService,
+                                   SMTPEmailService)
 from app.application.interfaces import (IEmailService, IJwtService,
-                                        IUserInterface)
+                                        IStorageService, IUserInterface)
 from app.application.use_cases import (ChangePasswordUseCase,
                                        ConfirmEmailUseCase,
                                        DeactivateAccountUseCase,
@@ -56,6 +57,12 @@ async def get_email_service() -> IEmailService:
         base_url=settings.UI_BASE_URL,
         use_tls=settings.USE_TLS,
         use_ssl=settings.USE_SSL
+    )
+
+async def get_storage_service() -> IStorageService:
+    return LocalStorageService(
+        upload_dir=settings.UPLOAD_DIR,
+        base_url=settings.BASE_URL
     )
 
 # ----- Auth guard ----------------------------------------
