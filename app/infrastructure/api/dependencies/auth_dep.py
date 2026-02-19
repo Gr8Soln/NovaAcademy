@@ -18,7 +18,7 @@ from app.core.config import Settings, get_settings, settings
 from app.domain.entities import User
 from app.domain.exceptions import AccountInactiveError, AuthenticationError
 
-from app.infrastructure.api.dependencies import get_email_service, get_jwt_service, get_user_repository
+from .core_dep import get_email_service, get_jwt_service, get_user_repository
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_PREFIX}/auth/login"

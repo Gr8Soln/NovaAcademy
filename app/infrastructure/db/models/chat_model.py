@@ -10,15 +10,6 @@ from app.infrastructure.db.base import Base
 
 
 class MessageModel(Base):
-    """
-    SQLAlchemy model for messages.
-
-    WHY separate from domain entity:
-    - ORM concerns (tables, columns, relationships) separate from business rules
-    - Domain entity (ChatMessage) has no SQLAlchemy imports
-    - Can swap ORM without changing domain
-    """
-
     __tablename__ = "messages"
 
     group_id: Mapped[uuid.UUID] = mapped_column(
@@ -51,15 +42,6 @@ class MessageModel(Base):
 
 
 class MessageMentionModel(Base):
-    """
-    SQLAlchemy model for message mentions (@tags).
-
-    Separate table for:
-    - Efficient queries: "all messages where I was mentioned"
-    - Normalization
-    - Easy indexing
-    """
-
     __tablename__ = "message_mentions"
 
     message_id: Mapped[uuid.UUID] = mapped_column(

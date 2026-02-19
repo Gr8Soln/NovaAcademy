@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +21,9 @@ from app.application.use_cases import (DeleteChatMessageUseCase,
                                        SendChatMessageUseCase)
 from app.core.config import Settings, get_settings
 from app.infrastructure.db import get_db_session
-from app.infrastructure.ws.connection_manager import ConnectionManager
+
+if TYPE_CHECKING:
+    from app.infrastructure.ws.connection_manager import ConnectionManager
 
 _pubsub_instance: RedisPubSubService | None = None
 _presence_instance: RedisPresenceService | None = None
@@ -64,11 +70,14 @@ async def get_chat_cache_service(
 
 
 async def get_connection_manager() -> ConnectionManager:
+    from app.infrastructure.ws.connection_manager import \
+        ConnectionManager as CM
+
     global _connection_manager
 
     if _connection_manager is None:
         pubsub = await get_chat_pubsub_service()
-        _connection_manager = ConnectionManager(pubsub)
+        _connection_manager = CM(pubsub)
 
     return _connection_manager
 
@@ -95,10 +104,6 @@ async def get_chat_notification_service(
     """Get notification service."""
     return PushNotificationService()
 
-
-# =============================================================================
-# USE CASES (New instance per request)
-# =============================================================================
 
 
 async def get_chat_send_message_use_case(
