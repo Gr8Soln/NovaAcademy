@@ -24,8 +24,8 @@ import {
 import { Button } from "@/components/ui/buttons";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SectionLoader } from "@/components/ui/loaders";
-import { useAuthStore } from "@/stores";
 import { pages } from "@/lib/constant";
+import { useAuthStore } from "@/stores";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -63,7 +63,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 flex flex-col justify-center">
           <h1 className="font-display text-3xl font-bold text-primary-900">
-            Welcome back, {user?.full_name?.split(" ")[1]}! 👋
+            Welcome back, {user?.first_name}! 👋
           </h1>
           <p className="text-neutral-500 mt-2">
             You're on a roll. Keep up the momentum!

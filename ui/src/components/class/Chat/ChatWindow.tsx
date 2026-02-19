@@ -29,6 +29,14 @@ const mockMembers = [
 
 const initialMessages: MessageData[] = [
   {
+    id: "sep-today",
+    type: "date_separator",
+    dateLabel: "Today",
+    content: "",
+    sender: { id: "system", name: "System" },
+    timestamp: "",
+  },
+  {
     id: "m1",
     content:
       "Welcome to ML-101 General! 🎉 I'm @NovaAI, your AI study assistant. Tag me anytime you need help with course material, explanations, or practice questions.",
@@ -252,15 +260,6 @@ export default function ChatWindow() {
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto py-4 space-y-1">
-          {/* Date separator */}
-          <div className="flex items-center gap-3 px-5 py-2">
-            <div className="flex-1 h-px bg-neutral-200" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 px-2">
-              Today
-            </span>
-            <div className="flex-1 h-px bg-neutral-200" />
-          </div>
-
           {messages.map((msg) => (
             <ChatMessage
               key={msg.id}

@@ -202,7 +202,7 @@ export default function LeaderboardPage() {
                 {myRank.rank}
               </div>
               <div className="flex items-center gap-3">
-                <Avatar name={user.full_name} size="sm" />
+                <Avatar name={`${user.first_name} ${user.last_name}`} size="sm" />
                 <div>
                   <p className="text-sm font-semibold text-neutral-900">You</p>
                   <p className="text-xs text-neutral-500">

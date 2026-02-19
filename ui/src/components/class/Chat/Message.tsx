@@ -1,15 +1,15 @@
 import {
-  Bot,
-  Check,
-  CheckCheck,
-  CornerUpRight,
-  Download,
-  FileText,
-  MoreHorizontal,
-  Pause,
-  Play,
-  Smile,
-  Sparkles,
+    Bot,
+    Check,
+    CheckCheck,
+    CornerUpRight,
+    Download,
+    FileText,
+    MoreHorizontal,
+    Pause,
+    Play,
+    Smile,
+    Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -58,6 +58,10 @@ export interface LinkPreview {
 
 export interface MessageData {
   id: string;
+  /** undefined for normal messages; "date_separator" for date dividers */
+  type?: "date_separator";
+  /** Used when type === "date_separator", e.g. "Today", "Yesterday", "Feb 15" */
+  dateLabel?: string;
   content: string;
   sender: MessageSender;
   timestamp: string;
@@ -68,6 +72,32 @@ export interface MessageData {
   isEdited?: boolean;
   linkPreview?: LinkPreview;
   status?: "sent" | "delivered" | "read";
+}
+
+/* ── Color palettes ────────────────────────── */
+/** Deterministic hash of a string → unsigned 32-bit integer */
+function hashName(str: string): number {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = (((h << 5) + h) ^ str.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+/** Light palette used for other-user message bubbles */
+const SENDER_PALETTES = [
+  { bubble: "bg-violet-50 border-violet-200/70", text: "text-neutral-800" },
+  { bubble: "bg-emerald-50 border-emerald-200/70", text: "text-neutral-800" },
+  { bubble: "bg-amber-50 border-amber-200/70", text: "text-neutral-800" },
+  { bubble: "bg-rose-50 border-rose-200/70", text: "text-neutral-800" },
+  { bubble: "bg-sky-50 border-sky-200/70", text: "text-neutral-800" },
+  { bubble: "bg-indigo-50 border-indigo-200/70", text: "text-neutral-800" },
+  { bubble: "bg-teal-50 border-teal-200/70", text: "text-neutral-800" },
+  { bubble: "bg-fuchsia-50 border-fuchsia-200/70", text: "text-neutral-800" },
+] as const;
+
+function getSenderPalette(name: string) {
+  return SENDER_PALETTES[hashName(name) % SENDER_PALETTES.length];
 }
 
 /* ── Helpers ───────────────────────────────── */
@@ -122,90 +152,121 @@ export default function ChatMessage({
   const [hovering, setHovering] = useState(false);
   const isAI = message.sender.role === "ai";
 
-  /* ── AI / system messages — centered card ── */
+  /* ── Date separator ─────────────────────── */
+  if (message.type === "date_separator") {
+    return (
+      <div className="flex items-center gap-3 px-5 py-3 my-1 select-none">
+        <div className="flex-1 h-px bg-neutral-200" />
+        <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 px-1.5">
+          {message.dateLabel ?? "Today"}
+        </span>
+        <div className="flex-1 h-px bg-neutral-200" />
+      </div>
+    );
+  }
+
+  /* ── AI messages — left-aligned, app-color bubble ── */
   if (isAI) {
     return (
       <div
-        className="px-4 sm:px-6 py-3 group relative"
+        className="group relative px-4 sm:px-5 py-1.5"
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
       >
         {/* Reply reference */}
         {message.replyTo && (
-          <div className="mx-auto max-w-2xl mb-2 flex items-center gap-2 pl-3 border-l-2 border-primary-300">
+          <div className="flex items-center gap-2 mb-1 ml-11 pl-3 border-l-2 border-primary-200 max-w-xs">
             <span className="text-[11px] font-semibold text-primary-600 truncate">
               {message.replyTo.senderName}
             </span>
-            <span className="text-[11px] text-neutral-400 truncate flex-1">
+            <span className="text-[11px] text-neutral-400 truncate">
               {message.replyTo.content}
             </span>
           </div>
         )}
 
-        <div className="mx-auto max-w-2xl">
-          {/* AI header */}
-          <div className="flex items-center gap-2 mb-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-accent-500 shadow-sm flex-shrink-0">
-              <Bot className="h-3.5 w-3.5 text-white" />
-            </div>
-            <span className="text-[13px] font-bold text-primary-700">
-              NovaAI
-            </span>
-            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-primary-100 to-accent-100 text-primary-700 flex items-center gap-0.5">
-              <Sparkles className="h-2.5 w-2.5" />
-              AI
-            </span>
-            <span className="text-[11px] text-neutral-400 ml-auto">
-              {message.timestamp}
-            </span>
+        <div className="flex items-end gap-2">
+          {/* Bot avatar */}
+          <div className="flex-shrink-0 mb-5 w-8">
+            {showAvatar ? (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-accent-500 shadow-sm ring-2 ring-primary-100">
+                <Bot className="h-3.5 w-3.5 text-white" />
+              </div>
+            ) : (
+              <div className="h-8 w-8" />
+            )}
           </div>
 
-          {/* AI bubble */}
-          <div className="relative bg-gradient-to-br from-primary-50 via-accent-50/30 to-primary-50 border border-primary-100/60 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
-            <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl bg-gradient-to-b from-primary-400 to-accent-400" />
-            <div className="pl-1">
-              {message.content && (
-                <p className="text-[13px] text-neutral-800 leading-relaxed whitespace-pre-wrap break-words">
-                  {renderContent(message.content)}
-                </p>
-              )}
-              {message.attachments && message.attachments.length > 0 && (
-                <div className="mt-2 space-y-2">
-                  {message.attachments.map((att) => (
-                    <AttachmentView key={att.id} attachment={att} />
-                  ))}
-                </div>
+          {/* Bubble */}
+          <div className="max-w-[72%] flex flex-col items-start">
+            {showAvatar && (
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-[12px] font-bold text-primary-700">
+                  NovaAI
+                </span>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-primary-100 to-accent-100 text-primary-700 flex items-center gap-0.5">
+                  <Sparkles className="h-2.5 w-2.5" />
+                  AI
+                </span>
+              </div>
+            )}
+            <div className="relative bg-primary-50/80 border border-primary-200/60 px-4 py-2.5 rounded-2xl rounded-tl-sm shadow-sm">
+              {/* Left accent bar */}
+              <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-gradient-to-b from-primary-400 to-accent-400" />
+              <div className="pl-1">
+                {message.content && (
+                  <p className="text-[13px] text-neutral-800 leading-relaxed whitespace-pre-wrap break-words">
+                    {renderContent(message.content)}
+                  </p>
+                )}
+                {message.attachments && message.attachments.length > 0 && (
+                  <div className="mt-2 space-y-2">
+                    {message.attachments.map((att) => (
+                      <AttachmentView key={att.id} attachment={att} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* Time */}
+            <div className="flex items-center gap-1 mt-0.5 pl-0.5">
+              <span className="text-[10px] text-neutral-400">
+                {message.timestamp}
+              </span>
+              {message.isEdited && (
+                <span className="text-[10px] text-neutral-400 italic">
+                  · edited
+                </span>
               )}
             </div>
-          </div>
-
-          {/* Reactions */}
-          {message.reactions && message.reactions.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2 pl-1">
-              {message.reactions.map((r, i) => (
-                <button
-                  key={i}
-                  className={cn(
-                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-all",
-                    r.reacted
-                      ? "bg-primary-50 border-primary-200 text-primary-700"
-                      : "bg-white border-neutral-200 text-neutral-600 hover:border-primary-200 hover:bg-primary-50",
-                  )}
-                >
-                  <span>{r.emoji}</span>
-                  <span className="font-medium text-[10px]">{r.count}</span>
+            {/* Reactions */}
+            {message.reactions && message.reactions.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {message.reactions.map((r, i) => (
+                  <button
+                    key={i}
+                    className={cn(
+                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-all",
+                      r.reacted
+                        ? "bg-primary-50 border-primary-200 text-primary-700"
+                        : "bg-white border-neutral-200 text-neutral-600 hover:border-primary-200 hover:bg-primary-50",
+                    )}
+                  >
+                    <span>{r.emoji}</span>
+                    <span className="font-medium text-[10px]">{r.count}</span>
+                  </button>
+                ))}
+                <button className="inline-flex items-center justify-center h-6 w-6 rounded-full border border-neutral-200 text-neutral-400 hover:border-primary-200 hover:text-primary-500 transition-all">
+                  <Smile className="h-3 w-3" />
                 </button>
-              ))}
-              <button className="inline-flex items-center justify-center h-6 w-6 rounded-full border border-neutral-200 text-neutral-400 hover:border-primary-200 hover:text-primary-500 transition-all">
-                <Smile className="h-3 w-3" />
-              </button>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Hover action bar */}
         {hovering && (
-          <div className="absolute -top-3 right-6 flex items-center gap-0.5 bg-white border border-neutral-200 rounded-lg shadow-lg px-1 py-0.5 z-10">
+          <div className="absolute -top-3 left-14 flex items-center gap-0.5 bg-white border border-neutral-200 rounded-lg shadow-lg px-1 py-0.5 z-10">
             <button
               className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
               title="React"
@@ -349,6 +410,8 @@ export default function ChatMessage({
   }
 
   /* ── Others' messages — left-aligned bubble ── */
+  const palette = getSenderPalette(message.sender.name);
+
   return (
     <div
       className="group relative px-4 sm:px-5 py-1.5"
@@ -401,9 +464,19 @@ export default function ChatMessage({
               )}
             </div>
           )}
-          <div className="bg-white border border-neutral-200/80 px-4 py-2.5 rounded-2xl rounded-tl-sm shadow-sm">
+          <div
+            className={cn(
+              "border px-4 py-2.5 rounded-2xl rounded-tl-sm shadow-sm",
+              palette.bubble,
+            )}
+          >
             {message.content && (
-              <p className="text-[13px] text-neutral-800 leading-relaxed whitespace-pre-wrap break-words">
+              <p
+                className={cn(
+                  "text-[13px] leading-relaxed whitespace-pre-wrap break-words",
+                  palette.text,
+                )}
+              >
                 {renderContent(message.content)}
               </p>
             )}
