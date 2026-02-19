@@ -26,5 +26,16 @@ export const ExamHallPage = lazy(() => import("./exam/exam-hall"));
 export const LeaderboardPage = lazy(() => import("./compete/leaderboard"));
 export const ChallengesPage = lazy(() => import("./compete/challenges"));
 
+// ── Classroom ───────────────────────────────────────────────
+export const ClassroomPage = lazy(() => import("./classroom/classroom"));
+export const ClassPage = lazy(() => import("./classroom/class"));
+export const ClassOverviewPage = lazy(
+  () => import("./classroom/class-overview"),
+);
+export const ClassChatPage = lazy(() => import("./classroom/class-chat"));
+export const ClassLibraryPage = lazy(() => import("./classroom/class-library"));
+export const ClassStudyPage = lazy(() => import("./classroom/class-study"));
+export const ClassQuizPage = lazy(() => import("./classroom/class-quiz"));
+
 // ── Profile ─────────────────────────────────────────────────
 export const ProfilePage = lazy(() => import("./profile/profile"));

@@ -7,6 +7,13 @@ import { pages } from "@/lib/constant";
 import {
   AnalyticsPage,
   ChallengesPage,
+  ClassChatPage,
+  ClassLibraryPage,
+  ClassOverviewPage,
+  ClassPage,
+  ClassQuizPage,
+  ClassroomPage,
+  ClassStudyPage,
   ConfirmEmailPage,
   DashboardPage,
   DocumentsPage,
@@ -79,11 +86,28 @@ export default function App() {
             </ProtectedRoute>
           }
         >
+          <Route index element={<ClassroomPage />} />
           <Route path="documents" element={<DocumentsPage />} />
           <Route path="study/:documentId" element={<StudyPage />} />
           <Route path="exam-hall" element={<ExamHallPage />} />
           <Route path="leaderboard" element={<LeaderboardPage />} />
           <Route path="challenges" element={<ChallengesPage />} />
+        </Route>
+
+        {/* Class detail — nested routes for each section */}
+        <Route
+          path="class/:classId"
+          element={
+            <ProtectedRoute>
+              <ClassPage />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<ClassOverviewPage />} />
+          <Route path="chat" element={<ClassChatPage />} />
+          <Route path="library" element={<ClassLibraryPage />} />
+          <Route path="study" element={<ClassStudyPage />} />
+          <Route path="quiz" element={<ClassQuizPage />} />
         </Route>
 
         {/* Profile */}

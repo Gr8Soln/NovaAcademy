@@ -11,6 +11,11 @@ export const pages = {
   analytics: "/dashboard/analytics",
   // Classroom pages
   classroom: "/classroom",
+  classPage: "/class/:classId",
+  classChat: "/class/:classId/chat",
+  classLibrary: "/class/:classId/library",
+  classStudy: "/class/:classId/study",
+  classQuiz: "/class/:classId/quiz",
   documents: "/classroom/documents",
   study: "/classroom/study/:documentId",
   examHall: "/classroom/exam-hall",
