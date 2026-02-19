@@ -311,7 +311,6 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
       {/* ── Main content area ─────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         {/* ── Top Navbar ──────────────────────────── */}
-        {/* Top bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-neutral-200 bg-white/70 backdrop-blur">
           <div className="w-full max-w-[1400px] flex items-center justify-between mx-auto px-4 sm:px-6 lg:px-8">
             <button
@@ -339,7 +338,6 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
             <div className="flex-1" />
 
             <div className="flex items-center gap-3 sm:gap-4">
-             
               <Link
                 to={pages.profile}
                 className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity"

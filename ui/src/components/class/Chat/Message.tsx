@@ -210,7 +210,7 @@ export default function ChatMessage({
                 </span>
               </div>
             )}
-            <div className="relative bg-primary-50/80 border border-primary-200/60 px-4 py-2.5 rounded-2xl rounded-tl-sm shadow-sm">
+            <div className="relative bg-primary-50/80 border border-primary-200/60 px-4 py-2.5 rounded-md shadow-sm">
               {/* Left accent bar */}
               <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-gradient-to-b from-primary-400 to-accent-400" />
               <div className="pl-1">
@@ -317,7 +317,7 @@ export default function ChatMessage({
         <div className="flex items-end justify-end gap-2">
           {/* Bubble */}
           <div className="max-w-[70%] flex flex-col items-end">
-            <div className="bg-primary-600 text-white px-4 py-2.5 rounded-2xl rounded-br-sm shadow-sm shadow-primary-500/20">
+            <div className="bg-primary-600 text-white px-4 py-2.5 rounded-md shadow-sm shadow-primary-500/20">
               {message.content && (
                 <p className="text-[13px] leading-relaxed whitespace-pre-wrap break-words text-white">
                   {renderContent(message.content, true)}
@@ -466,7 +466,7 @@ export default function ChatMessage({
           )}
           <div
             className={cn(
-              "border px-4 py-2.5 rounded-2xl rounded-tl-sm shadow-sm",
+              "border px-4 py-2.5 rounded-md shadow-sm",
               palette.bubble,
             )}
           >
@@ -488,7 +488,7 @@ export default function ChatMessage({
               </div>
             )}
             {message.linkPreview && (
-              <div className="mt-2 max-w-sm rounded-xl border border-neutral-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group/link">
+              <div className="mt-2 max-w-sm rounded-md border border-neutral-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group/link">
                 <div className="p-3">
                   <p className="text-[10px] font-semibold text-primary-500 uppercase tracking-wider mb-0.5">
                     {message.linkPreview.siteName || message.linkPreview.url}
