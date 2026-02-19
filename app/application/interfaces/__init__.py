@@ -1,11 +1,7 @@
-from .auth_interface import IJwtService
-from .email_interface import IEmailService
-from .storage_interface import IStorageService
-from .user_interface import IUserInterface
+from .auth_interface import *
+from .email_interface import *
+from .storage_interface import *
+from .user_interface import *
+from .chat_interface import *
+from .notification_interface import *
 
-__all__ = [
-    "IUserInterface",
-    "IJwtService",
-    "IEmailService",
-    "IStorageService",
-]

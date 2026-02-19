@@ -1,19 +1,109 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from uuid import UUID, uuid4
-from enum import Enum
 from typing import Optional
+from uuid import UUID, uuid4
 
-
-class GroupRole(Enum):
-    """Role of a member in a group."""
-    OWNER = "owner"      # Created the group
-    ADMIN = "admin"      # Can manage members, delete messages
-    MEMBER = "member"    # Regular member
+from app.application.dtos import ChatGroupRole, MessageType
 
 
 @dataclass
-class GroupMember:
+class ChatMemberMention:
+    user_id: UUID
+    username: str
+    start_index: int  # Position in message text
+    end_index: int
+    
+    def __post_init__(self):
+        if self.start_index >= self.end_index:
+            raise ValueError("start_index must be less than end_index")
+
+
+@dataclass
+class ChatMessage:
+    group_id: UUID
+    sender_id: UUID
+    content: str
+    message_type: MessageType = MessageType.TEXT
+    id: UUID = field(default_factory=uuid4)
+    mentions: list[ChatMemberMention] = field(default_factory=list)
+    created_at: datetime = field(default_factory=datetime.utcnow)
+    edited_at: Optional[datetime] = None
+    is_deleted: bool = False
+    reply_to_id: Optional[UUID] = None  # For threaded replies
+    metadata: dict = field(default_factory=dict)  # For file URLs, image URLs, etc.
+    
+    def __post_init__(self):
+        if self.message_type != MessageType.SYSTEM:
+            if not self.content and not self.metadata:
+                raise ValueError("ChatMessage must have content or metadata")
+        
+        # BUSINESS RULE: Max 50 mentions per message
+        if len(self.mentions) > 50:
+            raise ValueError("Cannot mention more than 50 users in one message")
+    
+    def edit(self, new_content: str, editor_id: UUID) -> None:
+        """
+        Edit message content.
+        
+        BUSINESS RULE: Can only edit your own messages.
+        """
+        if self.sender_id != editor_id:
+            raise PermissionError("Cannot edit another user's message")
+        
+        if self.is_deleted:
+            raise ValueError("Cannot edit a deleted message")
+        
+        self.content = new_content
+        self.edited_at = datetime.utcnow()
+    
+    def delete(self, deleter_id: UUID, is_admin: bool = False) -> None:
+        """
+        Soft delete a message.
+        
+        BUSINESS RULE: Can delete your own message or admin can delete any.
+        """
+        if self.sender_id != deleter_id and not is_admin:
+            raise PermissionError("Cannot delete another user's message")
+        
+        self.is_deleted = True
+        self.content = "[ChatMessage deleted]"
+    
+    def add_mention(self, user_id: UUID, username: str, start: int, end: int) -> None:
+        """Add a mention to the message."""
+        mention = ChatMemberMention(
+            user_id=user_id,
+            username=username,
+            start_index=start,
+            end_index=end,
+        )
+        self.mentions.append(mention)
+    
+    @property
+    def is_edited(self) -> bool:
+        """Check if message was edited."""
+        return self.edited_at is not None
+    
+    
+@dataclass
+class SendChatMessageInput:
+    """Input for sending a message."""
+    group_id: UUID
+    sender_id: UUID
+    content: str
+    message_type: MessageType = MessageType.TEXT
+    reply_to_id: Optional[UUID] = None
+    metadata: dict | None = None
+
+
+@dataclass
+class SendChatMessageOutput:
+    """Output after sending a message."""
+    message: ChatMessage
+    mentioned_user_ids: list[UUID]
+
+
+@dataclass
+class ChatGroupMember:
     """
     Represents a user's membership in a group.
     
@@ -24,30 +114,30 @@ class GroupMember:
     """
     user_id: UUID
     username: str
-    role: GroupRole = GroupRole.MEMBER
+    role: ChatGroupRole = ChatGroupRole.MEMBER
     joined_at: datetime = field(default_factory=datetime.utcnow)
     last_read_at: Optional[datetime] = None  # For unread count
     is_muted: bool = False  # User muted notifications
     
     def promote_to_admin(self) -> None:
         """Promote member to admin."""
-        if self.role == GroupRole.OWNER:
+        if self.role == ChatGroupRole.OWNER:
             raise ValueError("Owner cannot be promoted")
-        self.role = GroupRole.ADMIN
+        self.role = ChatGroupRole.ADMIN
     
     def demote_to_member(self) -> None:
         """Demote admin to member."""
-        if self.role == GroupRole.OWNER:
+        if self.role == ChatGroupRole.OWNER:
             raise ValueError("Cannot demote the owner")
-        self.role = GroupRole.MEMBER
+        self.role = ChatGroupRole.MEMBER
     
     def is_admin_or_owner(self) -> bool:
         """Check if member has admin privileges."""
-        return self.role in (GroupRole.ADMIN, GroupRole.OWNER)
+        return self.role in (ChatGroupRole.ADMIN, ChatGroupRole.OWNER)
 
 
 @dataclass
-class Group:
+class ChatGroup:
     """
     Chat group entity.
     
@@ -61,25 +151,22 @@ class Group:
     created_by: UUID
     id: UUID = field(default_factory=uuid4)
     description: str = ""
-    members: list[GroupMember] = field(default_factory=list)
+    members: list[ChatGroupMember] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.utcnow)
     avatar_url: Optional[str] = None
     is_private: bool = False  # Private groups require invite
     max_members: int = 1000
     
     def __post_init__(self):
-        # BUSINESS RULE: Name cannot be empty
         if not self.name or not self.name.strip():
-            raise ValueError("Group name cannot be empty")
+            raise ValueError("ChatGroup name cannot be empty")
         
-        # BUSINESS RULE: Must have an owner on creation
         if not self.members:
-            # Add creator as owner
             self.members.append(
-                GroupMember(
+                ChatGroupMember(
                     user_id=self.created_by,
                     username="",  # Will be populated by use case
-                    role=GroupRole.OWNER,
+                    role=ChatGroupRole.OWNER,
                 )
             )
     
@@ -87,7 +174,7 @@ class Group:
         self, 
         user_id: UUID, 
         username: str, 
-        role: GroupRole = GroupRole.MEMBER
+        role: ChatGroupRole = ChatGroupRole.MEMBER
     ) -> None:
         """
         Add a new member to the group.
@@ -100,9 +187,9 @@ class Group:
         
         # Check max members
         if len(self.members) >= self.max_members:
-            raise ValueError(f"Group has reached maximum of {self.max_members} members")
+            raise ValueError(f"ChatGroup has reached maximum of {self.max_members} members")
         
-        member = GroupMember(
+        member = ChatGroupMember(
             user_id=user_id,
             username=username,
             role=role,
@@ -131,8 +218,8 @@ class Group:
             raise PermissionError("Only admins can remove members")
         
         # BUSINESS RULE: Cannot remove owner
-        if member.role == GroupRole.OWNER:
-            owners_count = sum(1 for m in self.members if m.role == GroupRole.OWNER)
+        if member.role == ChatGroupRole.OWNER:
+            owners_count = sum(1 for m in self.members if m.role == ChatGroupRole.OWNER)
             if owners_count == 1:
                 raise ValueError("Cannot remove the last owner. Transfer ownership first.")
         
@@ -145,7 +232,7 @@ class Group:
     ) -> None:
         """Transfer ownership to another member."""
         current_owner = self.get_member(current_owner_id)
-        if not current_owner or current_owner.role != GroupRole.OWNER:
+        if not current_owner or current_owner.role != ChatGroupRole.OWNER:
             raise PermissionError("Only the owner can transfer ownership")
         
         new_owner = self.get_member(new_owner_id)
@@ -154,12 +241,12 @@ class Group:
         
         # Transfer ownership
         current_owner.demote_to_member()
-        new_owner.role = GroupRole.OWNER
+        new_owner.role = ChatGroupRole.OWNER
     
     def promote_member(self, user_id: UUID, promoter_id: UUID) -> None:
         """Promote a member to admin."""
         promoter = self.get_member(promoter_id)
-        if not promoter or promoter.role != GroupRole.OWNER:
+        if not promoter or promoter.role != ChatGroupRole.OWNER:
             raise PermissionError("Only the owner can promote members")
         
         member = self.get_member(user_id)
@@ -171,7 +258,7 @@ class Group:
     def demote_member(self, user_id: UUID, demoter_id: UUID) -> None:
         """Demote an admin to member."""
         demoter = self.get_member(demoter_id)
-        if not demoter or demoter.role != GroupRole.OWNER:
+        if not demoter or demoter.role != ChatGroupRole.OWNER:
             raise PermissionError("Only the owner can demote members")
         
         member = self.get_member(user_id)
@@ -190,7 +277,7 @@ class Group:
         """Check if a user is a member of this group."""
         return any(m.user_id == user_id for m in self.members)
     
-    def get_member(self, user_id: UUID) -> Optional[GroupMember]:
+    def get_member(self, user_id: UUID) -> Optional[ChatGroupMember]:
         """Get a member by user ID."""
         return next((m for m in self.members if m.user_id == user_id), None)
     
@@ -203,5 +290,6 @@ class Group:
         return [
             m.user_id 
             for m in self.members 
-            if m.role in (GroupRole.ADMIN, GroupRole.OWNER)
+            if m.role in (ChatGroupRole.ADMIN, ChatGroupRole.OWNER)
         ]
+        

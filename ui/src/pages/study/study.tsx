@@ -16,12 +16,17 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Link, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/buttons";
-import { Card, CardContent, CardHeader, CardTitle as UiCardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle as UiCardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/inputs";
 import { SectionLoader } from "@/components/ui/loaders";
 
@@ -44,7 +49,8 @@ export default function StudyPage() {
   }, [stream.text, stream.isStreaming]);
 
   if (isLoading) return <SectionLoader />;
-  if (!document) return <div className="p-8 text-center">Document not found</div>;
+  if (!document)
+    return <div className="p-8 text-center">Document not found</div>;
 
   const handleAsk = () => {
     if (!question.trim()) return;
@@ -58,13 +64,15 @@ export default function StudyPage() {
 
   return (
     <div className="h-[calc(100vh-6rem)] -my-4 flex flex-col lg:flex-row gap-6 overflow-hidden">
-
       {/* COLUMN 1: Document Viewer (Main - 50%) */}
       <div className="flex-1 flex flex-col bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden min-h-[400px]">
         {/* Header */}
         <div className="h-14 border-b border-neutral-200 flex items-center justify-between px-4 bg-neutral-50/50">
           <div className="flex items-center gap-3">
-            <Link to="/documents" className="p-1.5 rounded-md hover:bg-neutral-100 text-neutral-500 transition-colors">
+            <Link
+              to="/documents"
+              className="p-1.5 rounded-md hover:bg-neutral-100 text-neutral-500 transition-colors"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Link>
             <div className="flex items-center gap-2">
@@ -72,7 +80,9 @@ export default function StudyPage() {
                 <FileText className="h-4 w-4" />
               </div>
               <div>
-                <h1 className="text-sm font-semibold text-neutral-900 truncate max-w-[200px]">{document.title}</h1>
+                <h1 className="text-sm font-semibold text-neutral-900 truncate max-w-[200px]">
+                  {document.title}
+                </h1>
                 <p className="text-[10px] text-neutral-500">PDF • 12 Pages</p>
               </div>
             </div>
@@ -89,7 +99,9 @@ export default function StudyPage() {
           <div className="text-center p-8">
             <FileText className="h-16 w-16 text-neutral-300 mx-auto mb-4" />
             <p className="text-neutral-500 font-medium">Document Preview</p>
-            <p className="text-sm text-neutral-400 mt-1">PDF viewer integration would go here.</p>
+            <p className="text-sm text-neutral-400 mt-1">
+              PDF viewer integration would go here.
+            </p>
           </div>
           {/* Overlay for "Deep Focus" feel */}
           <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent to-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -111,13 +123,14 @@ export default function StudyPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-neutral-50/30">
-          {/* Welcome Message */}
+          {/* Welcome ChatMessage */}
           <div className="flex gap-3">
             <div className="h-8 w-8 rounded-full bg-accent-100 flex items-center justify-center flex-shrink-0">
               <Sparkles className="h-4 w-4 text-accent-600" />
             </div>
             <div className="bg-white border boundary-neutral-200 p-3 rounded-2xl rounded-tl-none text-sm text-neutral-700 shadow-sm">
-              Hi! I'm your AI study companion. Ask me anything about this document!
+              Hi! I'm your AI study companion. Ask me anything about this
+              document!
             </div>
           </div>
 
@@ -129,12 +142,14 @@ export default function StudyPage() {
               </div>
               <div className="bg-white border border-neutral-200 p-3 rounded-2xl rounded-tl-none text-sm text-neutral-700 shadow-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:text-neutral-800">
                 <ReactMarkdown>{stream.text}</ReactMarkdown>
-                {stream.isStreaming && <span className="inline-block w-1.5 h-3 bg-accent-500 animate-pulse ml-1" />}
+                {stream.isStreaming && (
+                  <span className="inline-block w-1.5 h-3 bg-accent-500 animate-pulse ml-1" />
+                )}
               </div>
             </div>
           )}
 
-          {/* Error Message */}
+          {/* Error ChatMessage */}
           {stream.error && (
             <div className="p-3 bg-danger-50 text-danger-700 text-sm rounded-lg border border-danger-100">
               {stream.error}
@@ -197,14 +212,18 @@ export default function StudyPage() {
             <div className="w-full bg-neutral-100 rounded-full h-2 overflow-hidden">
               <div className="h-full bg-primary-500 w-[42%] rounded-full" />
             </div>
-            <p className="text-xs text-neutral-400 mt-2">Keep reading to improve mastery.</p>
+            <p className="text-xs text-neutral-400 mt-2">
+              Keep reading to improve mastery.
+            </p>
           </CardContent>
         </Card>
 
         {/* Tools */}
         <Card className="flex-1">
           <CardHeader className="pb-2">
-            <UiCardTitle className="text-sm font-medium text-neutral-500">Tools</UiCardTitle>
+            <UiCardTitle className="text-sm font-medium text-neutral-500">
+              Tools
+            </UiCardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <button className="w-full flex items-center justify-between p-3 rounded-lg border border-neutral-100 hover:border-primary-200 hover:bg-primary-50 transition-all group">
@@ -213,8 +232,12 @@ export default function StudyPage() {
                   <Zap className="h-4 w-4" />
                 </div>
                 <div className="text-left">
-                  <div className="text-sm font-semibold text-neutral-900 group-hover:text-primary-700">Flashcards</div>
-                  <div className="text-[10px] text-neutral-400">20 cards available</div>
+                  <div className="text-sm font-semibold text-neutral-900 group-hover:text-primary-700">
+                    Flashcards
+                  </div>
+                  <div className="text-[10px] text-neutral-400">
+                    20 cards available
+                  </div>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-neutral-300 group-hover:text-primary-400" />
@@ -226,8 +249,12 @@ export default function StudyPage() {
                   <BookOpen className="h-4 w-4" />
                 </div>
                 <div className="text-left">
-                  <div className="text-sm font-semibold text-neutral-900 group-hover:text-primary-700">Quiz Me</div>
-                  <div className="text-[10px] text-neutral-400">Test your knowledge</div>
+                  <div className="text-sm font-semibold text-neutral-900 group-hover:text-primary-700">
+                    Quiz Me
+                  </div>
+                  <div className="text-[10px] text-neutral-400">
+                    Test your knowledge
+                  </div>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-neutral-300 group-hover:text-primary-400" />
@@ -235,7 +262,6 @@ export default function StudyPage() {
           </CardContent>
         </Card>
       </div>
-
     </div>
   );
 }

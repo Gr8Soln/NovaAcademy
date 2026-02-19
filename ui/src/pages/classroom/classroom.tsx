@@ -90,7 +90,7 @@ export default function ClassroomPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg border border-primary-700 text-primary-700 hover:bg-primary-50 transition-colors"
           >
             <Users className="h-4 w-4" />
-            Create Group
+            Create ChatGroup
           </button>
         </div>
       </div>
@@ -154,16 +154,16 @@ export default function ClassroomPage() {
         </form>
       </Modal>
 
-      {/* ── Create Group Modal ───────────────────────────── */}
+      {/* ── Create ChatGroup Modal ───────────────────────────── */}
       <Modal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="Create a Group"
+        title="Create a ChatGroup"
       >
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Group Name
+              ChatGroup Name
             </label>
             <input
               type="text"
@@ -171,7 +171,7 @@ export default function ClassroomPage() {
               onChange={(e) =>
                 setNewGroup((g) => ({ ...g, name: e.target.value }))
               }
-              placeholder="e.g., CS 301 Study Group"
+              placeholder="e.g., CS 301 Study ChatGroup"
               className={cn(
                 "w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white transition-all",
                 "focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:outline-none",
@@ -229,7 +229,7 @@ export default function ClassroomPage() {
               disabled={!newGroup.name.trim() || !newGroup.subject.trim()}
               className="px-5 py-2 text-sm font-semibold text-white bg-primary-700 hover:bg-primary-600 disabled:opacity-50 disabled:pointer-events-none rounded-lg transition-colors"
             >
-              Create Group
+              Create ChatGroup
             </button>
           </div>
         </form>

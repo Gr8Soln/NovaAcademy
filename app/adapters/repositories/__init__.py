@@ -1,5 +1,3 @@
-from .sql_user_repo import SQLUserRepository
+from .sql_user_repo import *
+from .sql_chat_repo import *
 
-__all__ = [
-    "SQLUserRepository"
-]

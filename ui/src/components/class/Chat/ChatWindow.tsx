@@ -2,7 +2,7 @@ import { Bot } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import ChatInput from "./ChatInput";
-import Message, { type MessageData } from "./Message";
+import ChatMessage, { MessageData } from "./Message";
 
 // ── Mock data ───────────────────────────────────────────────
 const initialMessages: MessageData[] = [
@@ -98,7 +98,7 @@ export default function ChatWindow() {
         className="flex-1 overflow-y-auto divide-y divide-neutral-100"
       >
         {messages.map((msg) => (
-          <Message key={msg.id} message={msg} />
+          <ChatMessage key={msg.id} message={msg} />
         ))}
       </div>
 

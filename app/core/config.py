@@ -60,6 +60,28 @@ class Settings(BaseSettings):
     USE_TLS: bool = True
     USE_SSL: bool = False
     
+    WS_HEARTBEAT_INTERVAL: int = 30  # seconds
+    WS_PRESENCE_TTL: int = 300  # seconds (5 minutes)
+    WS_MAX_CONNECTIONS: int = 5000
+    
+    # Cache Settings
+    CACHE_GROUP_TTL: int = 3600  # 1 hour
+    CACHE_MESSAGE_TTL: int = 300  # 5 minutes
+    
+    # Rate Limiting
+    RATE_LIMIT_MESSAGES_PER_MINUTE: int = 60
+    RATE_LIMIT_API_PER_MINUTE: int = 120
+    
+    # Notification Settings
+    ENABLE_MENTION_NOTIFICATIONS: bool = True
+    ENABLE_EMAIL_NOTIFICATIONS: bool = False
+    
+    # Business Rules (Configurable limits)
+    MAX_GROUP_MEMBERS: int = 1000
+    MAX_MESSAGE_LENGTH: int = 10000
+    MAX_MENTIONS_PER_MESSAGE: int = 50
+    MESSAGE_RETENTION_DAYS: int = 0  # 0 = forever
+    
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 

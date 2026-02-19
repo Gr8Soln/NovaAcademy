@@ -13,7 +13,7 @@ interface MessageProps {
   message: MessageData;
 }
 
-export default function Message({ message }: MessageProps) {
+export default function ChatMessage({ message }: MessageProps) {
   const isAI = message.sender === "ai";
 
   return (
