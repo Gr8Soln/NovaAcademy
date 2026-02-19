@@ -1,24 +1,23 @@
 import {
-    ArrowLeft,
-    Bell,
-    BookOpen,
-    ChevronLeft,
-    ChevronRight,
-    LayoutDashboard,
-    Library,
-    Menu,
-    MessageSquare,
-    PenTool,
-    Search,
-    Sparkles,
-    Users,
-    X,
+  ArrowLeft,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  LayoutDashboard,
+  Library,
+  Menu,
+  MessageSquare,
+  PenTool,
+  Search,
+  Sparkles,
+  Users,
+  X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, Outlet, useParams } from "react-router-dom";
 
 import { Avatar } from "@/components/ui/avatar";
-import { displayName, pages } from "@/lib/constant";
+import { pages } from "@/lib/constant";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
 
@@ -290,7 +289,7 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
       {/* ── Desktop sidebar (static flex child, hidden on mobile) ── */}
       <aside
         className={cn(
-          "hidden lg:flex flex-shrink-0 flex-col bg-white border-r border-neutral-200/60 h-screen sticky top-0 relative transition-all duration-300 ease-in-out",
+          "hidden lg:flex flex-shrink-0 flex-col bg-white border-r border-neutral-200/60 h-screen top-0 relative transition-all duration-300 ease-in-out",
           sidebarCollapsed ? "w-[64px]" : "w-[260px]",
         )}
       >
@@ -312,42 +311,46 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
       {/* ── Main content area ─────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         {/* ── Top Navbar ──────────────────────────── */}
-        <header className="flex items-center justify-between px-4 sm:px-6 h-14 bg-white border-b border-neutral-200/60 flex-shrink-0">
-          {/* Left: mobile menu + brand */}
-          <div className="flex items-center gap-3">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-neutral-200 bg-white/70 backdrop-blur">
+          <div className="w-full max-w-[1400px] flex items-center justify-between mx-auto px-4 sm:px-6 lg:px-8">
             <button
               onClick={() => setMobileOpen(true)}
-              className="rounded-xl p-2 -ml-2 text-neutral-500 hover:bg-neutral-100 transition-colors lg:hidden"
+              className="rounded-md p-2 text-neutral-500 hover:bg-neutral-100 lg:hidden"
             >
               <Menu className="h-5 w-5" />
             </button>
-            {/* Brand */}
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-primary-600 to-accent-600 shadow-sm">
-                <Sparkles className="h-3.5 w-3.5 text-white" />
+
+            {/* Search Bar */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-neutral-100/50 rounded-lg border border-transparent focus-within:border-primary-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-100 transition-all w-full max-w-md">
+              <div className="flex-1 flex items-center gap-2 ">
+                <Search className="h-4 w-4 text-neutral-400" />
+                <input
+                  type="text"
+                  placeholder="Search for documents, students, or topics..."
+                  className="bg-transparent border-none focus:outline-none text-sm text-neutral-700 placeholder:text-neutral-400 w-full"
+                />
               </div>
-              <span className="hidden sm:inline text-sm font-bold text-neutral-900 tracking-tight">
-                {displayName}
+              <span className="hidden lg:inline-flex items-center rounded border border-neutral-200 bg-white p-1 font-mono text-[9px] font-medium text-neutral-500">
+                Ctrl K
               </span>
             </div>
-          </div>
 
-          {/* Right: search, bell, avatar */}
-          <div className="flex items-center gap-1.5">
-            <button className="flex h-8 w-8 items-center justify-center rounded-xl text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors">
-              <Search className="h-4 w-4" />
-            </button>
-            <button className="relative flex h-8 w-8 items-center justify-center rounded-xl text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors">
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-danger-500 ring-2 ring-white" />
-            </button>
-            <div className="ml-1">
-              <Avatar
-                name={user ? `${user.first_name} ${user.last_name}` : "User"}
-                src={user?.avatar_url ?? undefined}
-                size="sm"
-                className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary-400 hover:ring-offset-1 transition-all"
-              />
+            <div className="flex-1" />
+
+            <div className="flex items-center gap-3 sm:gap-4">
+             
+              <Link
+                to={pages.profile}
+                className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity"
+              >
+                <Avatar
+                  src={user?.avatar_url ?? undefined}
+                  name={user?.first_name ?? "User"}
+                  size="sm"
+                  className="ring-2 ring-white shadow-sm"
+                />
+              </Link>
             </div>
           </div>
         </header>
@@ -362,4 +365,3 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
 }
 
 export type { TabKey };
-

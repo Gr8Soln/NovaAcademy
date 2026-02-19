@@ -70,21 +70,46 @@ const announcementColor = {
   assignment: "border-l-accent-500 bg-accent-50/30",
 };
 
+/* ── Hero card gradient palette (mirrors ClassroomCard) ─── */
+const HERO_GRADIENTS = [
+  "from-violet-900 via-violet-800 to-indigo-700",
+  "from-emerald-900 via-emerald-800 to-teal-700",
+  "from-amber-900 via-amber-800 to-orange-700",
+  "from-rose-900 via-rose-800 to-pink-700",
+  "from-sky-900 via-sky-800 to-blue-700",
+  "from-teal-900 via-teal-800 to-cyan-700",
+  "from-fuchsia-900 via-fuchsia-800 to-purple-700",
+  "from-blue-900 via-blue-800 to-indigo-700",
+] as const;
+
+function hashName(str: string): number {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = (((h << 5) + h) ^ str.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+function getHeroGradient(name: string) {
+  return HERO_GRADIENTS[hashName(name) % HERO_GRADIENTS.length];
+}
+
 /** Overview page — shown at /class/:classId */
 export default function ClassOverview() {
   const { classId } = useParams<{ classId: string }>();
   const navigate = useNavigate();
 
   const goTo = (section: string) => navigate(`/class/${classId}/${section}`);
+  const heroGradient = getHeroGradient(classInfo.name);
 
   return (
     <div className="h-full overflow-y-auto">
-    <div className="p-4 md:p-6 lg:p-8 max-w-[1200px] mx-auto">
+    <div className="p-4 md:p-6 lg:p-8 max-w-[1400px] mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* ── Left column (2/3) ──────────────────────────── */}
         <div className="lg:col-span-2 space-y-5">
           {/* Class hero card */}
-          <div className="relative bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 text-white rounded-2xl p-6 md:p-8 overflow-hidden">
+          <div className={cn("relative bg-gradient-to-br text-white rounded-2xl p-6 md:p-8 overflow-hidden", heroGradient)}>
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
@@ -95,27 +120,27 @@ export default function ClassOverview() {
                   <GraduationCap className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="font-display text-xl font-bold leading-tight">{classInfo.name}</h2>
-                  <p className="text-sm text-primary-200">{classInfo.instructor}</p>
+                  <h2 className="font-display text-xl font-bold leading-tight text-white">{classInfo.name}</h2>
+                  <p className="text-sm text-white/70">{classInfo.instructor}</p>
                 </div>
               </div>
 
-              <p className="text-sm text-primary-100/80 leading-relaxed mb-6 max-w-lg">
+              <p className="text-sm text-white/75 leading-relaxed mb-6 max-w-lg">
                 {classInfo.description}
               </p>
 
               <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-                <div className="flex items-center gap-1.5 text-primary-200">
+                <div className="flex items-center gap-1.5 text-white/70">
                   <Users className="h-4 w-4" />
                   <span>{classInfo.memberCount} students</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-primary-200">
+                <div className="flex items-center gap-1.5 text-white/70">
                   <Clock className="h-4 w-4" />
                   <span>{classInfo.schedule}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-primary-200">
+                <div className="flex items-center gap-1.5 text-white/70">
                   <Calendar className="h-4 w-4" />
-                  <span>Next: {classInfo.nextClass}</span>
+                  <span className="text-white font-semibold">Next:</span> <span>{classInfo.nextClass}</span>
                 </div>
               </div>
             </div>
