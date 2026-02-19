@@ -1,13 +1,13 @@
 import {
-  Camera,
-  Crown,
-  Edit3,
-  FileText,
-  Image,
-  Link2,
-  Search,
-  Shield,
-  X,
+    Camera,
+    Crown,
+    Edit3,
+    FileText,
+    Image,
+    Link2,
+    Search,
+    Shield,
+    X,
 } from "lucide-react";
 import { useState } from "react";
 
