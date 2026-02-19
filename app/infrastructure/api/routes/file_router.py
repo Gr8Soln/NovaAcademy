@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 
 from app.application.interfaces import IStorageService
-from app.domain.entities import UserEntity
+from app.domain.entities import User
 from app.infrastructure.api.dependencies import (get_current_user,
                                                  get_storage_service)
 
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/files", tags=["files"])
 async def upload_image(
     file: UploadFile = File(...),
     storage: Annotated[IStorageService, Depends(get_storage_service)] = None,
-    current_user: Annotated[UserEntity, Depends(get_current_user)] = None,
+    current_user: Annotated[User, Depends(get_current_user)] = None,
 ):
     """
     Upload an image file (JPEG, PNG, WebP, GIF).
@@ -41,7 +41,7 @@ async def upload_image(
 async def upload_document(
     file: UploadFile = File(...),
     storage: Annotated[IStorageService, Depends(get_storage_service)] = None,
-    current_user: Annotated[UserEntity, Depends(get_current_user)] = None,
+    current_user: Annotated[User, Depends(get_current_user)] = None,
 ):
     """
     Upload a document file (PDF, DOCX, TXT, CSV, XLSX).
@@ -118,7 +118,7 @@ async def delete_file(
     file_id: str,
     extension: str,
     storage: Annotated[IStorageService, Depends(get_storage_service)] = None,
-    current_user: Annotated[UserEntity, Depends(get_current_user)] = None,
+    current_user: Annotated[User, Depends(get_current_user)] = None,
 ):
     """Delete an uploaded file."""
     try:
