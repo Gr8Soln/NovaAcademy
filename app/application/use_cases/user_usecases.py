@@ -9,10 +9,8 @@ from app.core.logging import get_logger
 from app.domain.entities import User
 from app.domain.exceptions import (AccountInactiveError, AuthenticationError,
                                    InvalidCredentialError,
-                                   InvalidUsernameError,
-                                   UsernameCooldownError,
-                                   UsernameUnavailableError,
-                                   UserNotFoundError)
+                                   InvalidUsernameError, UsernameCooldownError,
+                                   UsernameUnavailableError, UserNotFoundError)
 
 logger = get_logger(__name__)
 

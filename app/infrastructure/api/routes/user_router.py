@@ -13,8 +13,8 @@ from app.application.use_cases import (ChangePasswordUseCase,
                                        UploadAvatarUseCase)
 from app.core.logging import get_logger
 from app.domain.entities import User
-from app.domain.exceptions import (InvalidCredentialError, InvalidUsernameError,
-                                   UsernameCooldownError,
+from app.domain.exceptions import (InvalidCredentialError,
+                                   InvalidUsernameError, UsernameCooldownError,
                                    UsernameUnavailableError)
 from app.infrastructure.api.dependencies import (
     get_change_password_usecase, get_current_user,
