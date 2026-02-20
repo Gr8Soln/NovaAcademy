@@ -284,90 +284,79 @@ export default function ClassroomCard({
           </div>
         </div>
 
-        {/* CTA button */}
-        {isMember ? (
-          <div className="mt-3.5 space-y-2">
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); navigate(`/class/${classroom.code}`); }}
-              className={cn(
-                "w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors",
-                "bg-neutral-100 hover:bg-neutral-200 text-neutral-700",
-              )}
-            >
-              Continue
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-
-            {/* Leave class */}
-            {leaveState === "idle" && (
+        {/* CTA row */}
+        <div className="mt-3.5 flex gap-2">
+          {isMember ? (
+            <>
+              {/* Continue */}
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); setLeaveState("confirming"); }}
-                className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] font-medium text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                onClick={(e) => { e.stopPropagation(); navigate(`/class/${classroom.code}`); }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors"
               >
-                <LogOut className="h-3 w-3" />
-                Leave class
+                Continue
+                <ArrowRight className="h-3.5 w-3.5" />
               </button>
-            )}
 
-            {leaveState === "confirming" && (
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1.5 justify-center"
+              {/* Leave */}
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setLeaveModal(true); }}
+                className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-xs font-medium text-neutral-400 hover:text-red-500 hover:bg-red-50 border border-neutral-200 hover:border-red-200 transition-colors"
+                title="Leave class"
               >
-                <span className="text-[11px] text-neutral-500 mr-0.5">Leave this class?</span>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); leaveClass(); }}
-                  className="px-2.5 py-1 text-[11px] font-semibold bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-                >
-                  Yes, leave
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setLeaveState("idle"); }}
-                  className="px-2.5 py-1 text-[11px] font-medium bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-
-            {leaveState === "pending" && (
-              <div className="flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-neutral-400">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Leaving…
-              </div>
-            )}
-          </div>
-        ) : joinState === "requested" ? (
-          <div className="mt-3.5 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700">
-            Request sent
-          </div>
-        ) : joinState === "joined" ? (
-          <div className="mt-3.5 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-green-50 text-green-700">
-            Joined!
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); joinClass(); }}
-            disabled={joinState === "pending"}
-            className={cn(
-              "mt-3.5 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors",
-              "bg-primary-700 hover:bg-primary-600 text-white disabled:opacity-60",
-            )}
-          >
-            {joinState === "pending" ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
+                <LogOut className="h-3.5 w-3.5" />
+                Leave
+              </button>
+            </>
+          ) : joinState === "requested" ? (
+            <div className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700">
+              Request sent
+            </div>
+          ) : joinState === "joined" ? (
+            <div className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-green-50 text-green-700">
+              Joined!
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setJoinModal(true); }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-primary-700 hover:bg-primary-600 text-white transition-colors"
+            >
               <UserPlus className="h-3.5 w-3.5" />
-            )}
-            {joinState === "pending" ? "Joining…" : "Join Class"}
-          </button>
-        )}
+              Join Class
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* ── Join confirm modal ─────────────────── */}
+      <ConfirmModal
+        open={joinModal}
+        onClose={() => { if (joinState !== "pending") setJoinModal(false); }}
+        title={`Join "${classroom.name}"?`}
+        body={
+          classroom.memberCount > 0
+            ? `You'll be joining a class with ${classroom.memberCount} member${classroom.memberCount !== 1 ? "s" : ""}.`
+            : "You'll be the first member of this class."
+        }
+        confirmLabel="Join Class"
+        confirmClass="text-white bg-primary-700 hover:bg-primary-600"
+        onConfirm={() => joinClass()}
+        isPending={joinState === "pending"}
+      />
+
+      {/* ── Leave confirm modal ────────────────── */}
+      <ConfirmModal
+        open={leaveModal}
+        onClose={() => { if (!leavePending) setLeaveModal(false); }}
+        title={`Leave "${classroom.name}"?`}
+        body="You'll lose access to this class and its content. You can rejoin later if it's public."
+        confirmLabel="Yes, leave"
+        confirmClass="text-white bg-red-500 hover:bg-red-600"
+        onConfirm={() => leaveClass()}
+        isPending={leavePending}
+      />
     </div>
   );
 }
