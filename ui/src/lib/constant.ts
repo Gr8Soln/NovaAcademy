@@ -6,7 +6,7 @@ export const pages = {
   forgotPassword: "/auth/forgot-password",
   resetPassword: "/auth/reset-password",
   confirmEmail: "/auth/confirm-email",
-  
+
   // Dashboard pages
   dashboard: "/dashboard",
   analytics: "/dashboard/analytics",
@@ -24,7 +24,7 @@ export const pages = {
   examHall: "/classroom/exam-hall",
   leaderboard: "/classroom/leaderboard",
   challenges: "/classroom/challenges",
-  
+
   // Profile
   profile: "/profile",
 };

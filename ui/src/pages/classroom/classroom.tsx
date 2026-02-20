@@ -12,8 +12,8 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import ClassroomList from "@/components/classroom/ClassroomList";
-import { chatApi } from "@/lib/api/chat";
 import { authApi } from "@/lib/api/auth";
+import { chatApi } from "@/lib/api/chat";
 import { cn } from "@/lib/utils";
 import type { User } from "@/types";
 
@@ -78,9 +78,7 @@ function CreateClassModal({
     return () => clearTimeout(t);
   }, [memberSearch]);
 
-  const { data: searchResults = [], isFetching: searching } = useQuery<
-    User[]
-  >({
+  const { data: searchResults = [], isFetching: searching } = useQuery<User[]>({
     queryKey: ["userSearch", debouncedQ],
     queryFn: () => authApi.searchUsers(debouncedQ) as Promise<User[]>,
     enabled: debouncedQ.length >= 1,
@@ -472,7 +470,10 @@ export default function ClassroomPage() {
       </Modal>
 
       {/* ── Create Class Modal ───────────────────────────── */}
-      <CreateClassModal open={createOpen} onClose={() => setCreateOpen(false)} />
+      <CreateClassModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+      />
     </div>
   );
 }

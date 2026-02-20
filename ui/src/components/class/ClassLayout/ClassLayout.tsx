@@ -21,7 +21,13 @@ import { pages } from "@/lib/constant";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
 
-type TabKey = "overview" | "chat" | "library" | "study" | "quiz" | "participants";
+type TabKey =
+  | "overview"
+  | "chat"
+  | "library"
+  | "study"
+  | "quiz"
+  | "participants";
 
 interface NavItem {
   key: TabKey;

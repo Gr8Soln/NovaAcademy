@@ -1,8 +1,4 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
   ChevronDown,
@@ -173,13 +169,7 @@ function MemberRow({
 
 // ── Edit class info panel ────────────────────────────────────
 
-function EditClassPanel({
-  group,
-  groupId,
-}: {
-  group: Group;
-  groupId: string;
-}) {
+function EditClassPanel({ group, groupId }: { group: Group; groupId: string }) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(group.name);
@@ -296,12 +286,9 @@ function AddMemberPanel({ groupId }: { groupId: string }) {
     return () => clearTimeout(t);
   }, [q]);
 
-  const { data: searchResults, isFetching: searching } = useQuery<
-    User[]
-  >({
+  const { data: searchResults, isFetching: searching } = useQuery<User[]>({
     queryKey: ["userSearch", debouncedQ],
-    queryFn: () =>
-      authApi.searchUsers(debouncedQ) as Promise<User[]>,
+    queryFn: () => authApi.searchUsers(debouncedQ) as Promise<User[]>,
     enabled: debouncedQ.length >= 1,
   });
 
@@ -418,8 +405,7 @@ export default function ClassMembersPage() {
     isError,
   } = useQuery<Group>({
     queryKey: ["group", classId],
-    queryFn: () =>
-      chatApi.getGroup(classId!) as Promise<Group>,
+    queryFn: () => chatApi.getGroup(classId!) as Promise<Group>,
     enabled: !!classId,
   });
 
@@ -472,9 +458,7 @@ export default function ClassMembersPage() {
           </p>
         </div>
 
-        {isOwner && (
-          <EditClassPanel group={group} groupId={classId!} />
-        )}
+        {isOwner && <EditClassPanel group={group} groupId={classId!} />}
       </div>
 
       {/* Add member (admin/owner) */}
