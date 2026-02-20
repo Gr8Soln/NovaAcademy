@@ -16,6 +16,7 @@ import ClassroomList from "@/components/classroom/ClassroomList";
 import { authApi } from "@/lib/api/auth";
 import { classApi } from "@/lib/api/chat";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores";
 import type { ClassRoom, User } from "@/types";
 
 // ── Modal shell ─────────────────────────────────────────────
@@ -408,6 +409,7 @@ function CreateClassModal({
 // ── Page ─────────────────────────────────────────────────────
 export default function ClassroomPage() {
   const queryClient = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
   const [joinOpen, setJoinOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [joinCode, setJoinCode] = useState("");
@@ -423,6 +425,9 @@ export default function ClassroomPage() {
   }, [searchQuery]);
 
   function classToCard(c: ClassRoom): ClassroomCardData {
+    const isMember = currentUser
+      ? c.members.some((m) => m.user_id === currentUser.id)
+      : false;
     return {
       id: c.id,
       code: c.code,
@@ -431,6 +436,7 @@ export default function ClassroomPage() {
       memberCount: c.member_count,
       progress: 0,
       subject: "Classroom",
+      isMember,
     };
   }
 
@@ -479,7 +485,7 @@ export default function ClassroomPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-[1400px] mx-auto space-y-6">
+    <div className="py-4 md:py-6 lg:py-8 max-w-[1400px] space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -600,7 +606,7 @@ export default function ClassroomPage() {
               placeholder="Enter the 7-character class code"
               maxLength={7}
               className={cn(
-                "w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white transition-all font-mono tracking-widest text-center text-lg",
+                "w-full border border-neutral-200 rounded-lg px-4 py-2.5 bg-white transition-all font-mono tracking-widest text-lg",
                 "focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:outline-none",
                 "placeholder:text-neutral-400 placeholder:font-sans placeholder:tracking-normal placeholder:text-sm",
               )}

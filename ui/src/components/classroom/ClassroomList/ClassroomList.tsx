@@ -15,6 +15,7 @@ function classToCard(c: ClassRoom): ClassroomCardData {
     memberCount: c.member_count,
     progress: 0,
     subject: "Classroom",
+    isMember: true, // own classes are always joined
   };
 }
 

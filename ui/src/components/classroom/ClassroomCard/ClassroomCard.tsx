@@ -1,7 +1,11 @@
-import { TrendingUp, Users } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ArrowRight, Loader2, LogOut, TrendingUp, UserPlus, Users } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { classApi } from "@/lib/api/chat";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores";
 
 export interface ClassroomCardData {
   id: string;
@@ -12,6 +16,8 @@ export interface ClassroomCardData {
   progress: number; // 0-100
   subject: string;
   color?: string;
+  /** Whether the current user is already a member of this class */
+  isMember?: boolean;
 }
 
 interface ClassroomCardProps {
@@ -83,19 +89,124 @@ function getCardGradient(name: string) {
   return CARD_GRADIENTS[hashName(name) % CARD_GRADIENTS.length];
 }
 
+/* ── Shared confirm modal ────────────────────── */
+function ConfirmModal({
+  open,
+  onClose,
+  title,
+  body,
+  confirmLabel,
+  confirmClass,
+  onConfirm,
+  isPending,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  body: React.ReactNode;
+  confirmLabel: string;
+  confirmClass: string;
+  onConfirm: () => void;
+  isPending: boolean;
+}) {
+  if (!open) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl border border-neutral-100 w-full max-w-sm mx-4 overflow-hidden animate-in fade-in-0 zoom-in-95">
+        <div className="px-5 pt-5 pb-4">
+          <h3 className="font-display text-base font-semibold text-neutral-900 mb-1.5">{title}</h3>
+          <div className="text-sm text-neutral-500 leading-relaxed">{body}</div>
+        </div>
+        <div className="flex gap-2 justify-end px-5 py-3 bg-neutral-50 border-t border-neutral-100">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isPending}
+            className="px-4 py-2 text-sm font-medium text-neutral-600 bg-white border border-neutral-200 hover:bg-neutral-50 rounded-xl transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isPending}
+            className={cn(
+              "inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl transition-colors disabled:opacity-50",
+              confirmClass,
+            )}
+          >
+            {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            {isPending ? "Please wait…" : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ClassroomCard({
   classroom,
   className,
 }: ClassroomCardProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
   const g = getCardGradient(classroom.name);
+
+  // isMember defaults to true so existing "My Classes" cards always show Continue
+  const isMember = classroom.isMember !== false;
+
+  const [joinModal, setJoinModal] = useState(false);
+  const [leaveModal, setLeaveModal] = useState(false);
+  const [joinState, setJoinState] = useState<"idle" | "pending" | "joined" | "requested">("idle");
+  const [leavePending, setLeavePending] = useState(false);
+
+  const { mutate: joinClass } = useMutation({
+    mutationFn: () => classApi.joinClass(classroom.code),
+    onMutate: () => setJoinState("pending"),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["classrooms"] });
+      queryClient.invalidateQueries({ queryKey: ["classSearch"] });
+      setJoinModal(false);
+      if (result.joined) {
+        setJoinState("joined");
+        setTimeout(() => navigate(`/class/${classroom.code}`), 600);
+      } else {
+        setJoinState("requested");
+      }
+    },
+    onError: () => { setJoinState("idle"); setJoinModal(false); },
+  });
+
+  const { mutate: leaveClass } = useMutation({
+    mutationFn: () => classApi.removeMember(classroom.code, currentUser!.id),
+    onMutate: () => setLeavePending(true),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["classrooms"] });
+      queryClient.invalidateQueries({ queryKey: ["classSearch"] });
+      setLeaveModal(false);
+      setLeavePending(false);
+    },
+    onError: () => { setLeavePending(false); setLeaveModal(false); },
+  });
+
+  function handleCardClick() {
+    if (isMember) navigate(`/class/${classroom.code}`);
+  }
 
   return (
     <div
-      onClick={() => navigate(`/class/${classroom.code}`)}
+      onClick={handleCardClick}
       className={cn(
         "group relative bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden",
-        "hover:shadow-lg hover:border-neutral-300 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer",
+        isMember
+          ? "hover:shadow-lg hover:border-neutral-300 hover:-translate-y-0.5 cursor-pointer"
+          : "hover:shadow-md hover:border-neutral-300",
+        "transition-all duration-200",
         className,
       )}
     >
@@ -172,6 +283,90 @@ export default function ClassroomCard({
             <span>Active</span>
           </div>
         </div>
+
+        {/* CTA button */}
+        {isMember ? (
+          <div className="mt-3.5 space-y-2">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); navigate(`/class/${classroom.code}`); }}
+              className={cn(
+                "w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors",
+                "bg-neutral-100 hover:bg-neutral-200 text-neutral-700",
+              )}
+            >
+              Continue
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+
+            {/* Leave class */}
+            {leaveState === "idle" && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setLeaveState("confirming"); }}
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] font-medium text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="h-3 w-3" />
+                Leave class
+              </button>
+            )}
+
+            {leaveState === "confirming" && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-1.5 justify-center"
+              >
+                <span className="text-[11px] text-neutral-500 mr-0.5">Leave this class?</span>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); leaveClass(); }}
+                  className="px-2.5 py-1 text-[11px] font-semibold bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                >
+                  Yes, leave
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setLeaveState("idle"); }}
+                  className="px-2.5 py-1 text-[11px] font-medium bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {leaveState === "pending" && (
+              <div className="flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-neutral-400">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Leaving…
+              </div>
+            )}
+          </div>
+        ) : joinState === "requested" ? (
+          <div className="mt-3.5 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700">
+            Request sent
+          </div>
+        ) : joinState === "joined" ? (
+          <div className="mt-3.5 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-green-50 text-green-700">
+            Joined!
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); joinClass(); }}
+            disabled={joinState === "pending"}
+            className={cn(
+              "mt-3.5 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors",
+              "bg-primary-700 hover:bg-primary-600 text-white disabled:opacity-60",
+            )}
+          >
+            {joinState === "pending" ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <UserPlus className="h-3.5 w-3.5" />
+            )}
+            {joinState === "pending" ? "Joining…" : "Join Class"}
+          </button>
+        )}
       </div>
     </div>
   );
