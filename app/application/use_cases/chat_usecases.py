@@ -338,26 +338,32 @@ class SearchchatMessagesUseCase:
 
 
 # =============================================================================
-# GROUP MANAGEMENT USE CASES
+# GROUP MANAGEMENT USE CASES  (renamed: Group → Class)
 # =============================================================================
 
 from app.application.interfaces import IUserInterface
-from app.domain.entities import User
+from app.domain.entities import ClassJoinRequest, User, generate_class_code
 
 
-class CreateGroupUseCase:
-    """Create a new class/group and optionally add initial members."""
+class CreateClassUseCase:
+    """Create a new class and optionally add initial members."""
 
-    def __init__(self, group_repo: IChatGroupInterface, user_repo: IUserInterface):
+    def __init__(
+        self,
+        group_repo: IChatGroupInterface,
+        user_repo: IUserInterface,
+        storage: "IStorageService | None" = None,
+    ):
         self._group_repo = group_repo
         self._user_repo = user_repo
+        self._storage = storage
 
     async def execute(
         self,
         creator_id: UUID,
         name: str,
         description: str = "",
-        avatar_url: Optional[str] = None,
+        avatar_file=None,
         is_private: bool = False,
         initial_member_usernames: list[str] | None = None,
     ) -> ChatGroup:
@@ -365,8 +371,19 @@ class CreateGroupUseCase:
         if not creator:
             raise ValueError("Creator not found")
 
+        # Ensure unique code
+        code = generate_class_code()
+        while await self._group_repo.get_by_code(code):
+            code = generate_class_code()
+
+        avatar_url: str | None = None
+        if avatar_file and self._storage:
+            result = await self._storage.upload_image(avatar_file)
+            avatar_url = result["file_url"]
+
         group = ChatGroup(
             name=name,
+            code=code,
             description=description,
             created_by=creator_id,
             avatar_url=avatar_url,
@@ -384,8 +401,8 @@ class CreateGroupUseCase:
         return await self._group_repo.save(group)
 
 
-class GetUserGroupsUseCase:
-    """Return all groups the caller belongs to."""
+class GetUserClassesUseCase:
+    """Return all classes the caller belongs to."""
 
     def __init__(self, group_repo: IChatGroupInterface):
         self._group_repo = group_repo
@@ -394,67 +411,73 @@ class GetUserGroupsUseCase:
         return await self._group_repo.get_user_groups(user_id)
 
 
-class GetGroupUseCase:
-    """Return a single group (caller must be a member)."""
+class GetClassUseCase:
+    """Return a single class by code (caller must be a member)."""
 
     def __init__(self, group_repo: IChatGroupInterface):
         self._group_repo = group_repo
 
-    async def execute(self, group_id: UUID, user_id: UUID) -> ChatGroup:
-        group = await self._group_repo.get_by_id(group_id)
+    async def execute(self, class_code: str, user_id: UUID) -> ChatGroup:
+        group = await self._group_repo.get_by_code(class_code)
         if not group:
-            raise ValueError("Group not found")
+            raise ValueError("Class not found")
         if not group.is_member(user_id):
-            raise PermissionError("You are not a member of this group")
+            raise PermissionError("You are not a member of this class")
         return group
 
 
-class UpdateGroupUseCase:
-    """Update group metadata – owner or admin only."""
+class UpdateClassUseCase:
+    """Update class metadata – owner or admin only."""
 
-    def __init__(self, group_repo: IChatGroupInterface):
+    def __init__(
+        self,
+        group_repo: IChatGroupInterface,
+        storage: "IStorageService | None" = None,
+    ):
         self._group_repo = group_repo
+        self._storage = storage
 
     async def execute(
         self,
-        group_id: UUID,
+        class_code: str,
         editor_id: UUID,
         name: Optional[str] = None,
         description: Optional[str] = None,
-        avatar_url: Optional[str] = None,
+        avatar_file=None,
         is_private: Optional[bool] = None,
     ) -> ChatGroup:
-        group = await self._group_repo.get_by_id(group_id)
+        group = await self._group_repo.get_by_code(class_code)
         if not group:
-            raise ValueError("Group not found")
+            raise ValueError("Class not found")
 
         member = group.get_member(editor_id)
         if not member or not member.is_admin_or_owner():
-            raise PermissionError("Only admins or the owner can update the group")
+            raise PermissionError("Only admins or the owner can update the class")
 
         if name is not None:
             group.name = name.strip()
         if description is not None:
             group.description = description
-        if avatar_url is not None:
-            group.avatar_url = avatar_url
+        if avatar_file and self._storage:
+            result = await self._storage.upload_image(avatar_file)
+            group.avatar_url = result["file_url"]
         if is_private is not None:
             group.is_private = is_private
 
         return await self._group_repo.save(group)
 
 
-class AddGroupMemberUseCase:
-    """Add a user to a group by username – owner or admin only."""
+class AddClassMemberUseCase:
+    """Add a user to a class by username – owner or admin only."""
 
     def __init__(self, group_repo: IChatGroupInterface, user_repo: IUserInterface):
         self._group_repo = group_repo
         self._user_repo = user_repo
 
-    async def execute(self, group_id: UUID, adder_id: UUID, username: str) -> ChatGroup:
-        group = await self._group_repo.get_by_id(group_id)
+    async def execute(self, class_code: str, adder_id: UUID, username: str) -> ChatGroup:
+        group = await self._group_repo.get_by_code(class_code)
         if not group:
-            raise ValueError("Group not found")
+            raise ValueError("Class not found")
 
         adder = group.get_member(adder_id)
         if not adder or not adder.is_admin_or_owner():
@@ -469,33 +492,33 @@ class AddGroupMemberUseCase:
         return await self._group_repo.save(group)
 
 
-class RemoveGroupMemberUseCase:
-    """Remove a member from a group – owner or admin only (or self-leave)."""
+class RemoveClassMemberUseCase:
+    """Remove a member from a class – owner or admin only (or self-leave)."""
 
     def __init__(self, group_repo: IChatGroupInterface):
         self._group_repo = group_repo
 
-    async def execute(self, group_id: UUID, remover_id: UUID, target_user_id: UUID) -> ChatGroup:
-        group = await self._group_repo.get_by_id(group_id)
+    async def execute(self, class_code: str, remover_id: UUID, target_user_id: UUID) -> ChatGroup:
+        group = await self._group_repo.get_by_code(class_code)
         if not group:
-            raise ValueError("Group not found")
+            raise ValueError("Class not found")
 
         group.remove_member(target_user_id, remover_id)
         return await self._group_repo.save(group)
 
 
-class ChangeGroupMemberRoleUseCase:
+class ChangeClassMemberRoleUseCase:
     """Promote or demote a member – owner only."""
 
     def __init__(self, group_repo: IChatGroupInterface):
         self._group_repo = group_repo
 
     async def execute(
-        self, group_id: UUID, owner_id: UUID, target_user_id: UUID, new_role: str
+        self, class_code: str, owner_id: UUID, target_user_id: UUID, new_role: str
     ) -> ChatGroup:
-        group = await self._group_repo.get_by_id(group_id)
+        group = await self._group_repo.get_by_code(class_code)
         if not group:
-            raise ValueError("Group not found")
+            raise ValueError("Class not found")
 
         if new_role == "admin":
             group.promote_member(target_user_id, owner_id)
@@ -507,19 +530,140 @@ class ChangeGroupMemberRoleUseCase:
         return await self._group_repo.save(group)
 
 
-class DeleteGroupUseCase:
-    """Delete a group – owner only."""
+class DeleteClassUseCase:
+    """Delete a class – owner only."""
 
     def __init__(self, group_repo: IChatGroupInterface):
         self._group_repo = group_repo
 
-    async def execute(self, group_id: UUID, user_id: UUID) -> None:
-        group = await self._group_repo.get_by_id(group_id)
+    async def execute(self, class_code: str, user_id: UUID) -> None:
+        group = await self._group_repo.get_by_code(class_code)
         if not group:
-            raise ValueError("Group not found")
+            raise ValueError("Class not found")
 
         member = group.get_member(user_id)
         if not member or member.role.value != "owner":
-            raise PermissionError("Only the owner can delete the group")
+            raise PermissionError("Only the owner can delete the class")
 
-        await self._group_repo.delete(group_id)
+        await self._group_repo.delete(group.id)
+
+
+# =============================================================================
+# SEARCH & JOIN USE CASES
+# =============================================================================
+
+
+class SearchClassesUseCase:
+    """Search public (non-private) classes by name/description."""
+
+    def __init__(self, group_repo: IChatGroupInterface):
+        self._group_repo = group_repo
+
+    async def execute(self, query: str, limit: int = 20) -> list[ChatGroup]:
+        return await self._group_repo.search_public(query=query, limit=limit)
+
+
+class JoinClassUseCase:
+    """
+    Join a class by code.
+    - Public class → added immediately
+    - Private class → creates a pending join request
+    """
+
+    def __init__(self, group_repo: IChatGroupInterface, user_repo: IUserInterface):
+        self._group_repo = group_repo
+        self._user_repo = user_repo
+
+    async def execute(
+        self, class_code: str, user_id: UUID
+    ) -> dict:
+        """Returns {'joined': True/False, 'join_request': JoinRequest | None}"""
+        group = await self._group_repo.get_by_code(class_code)
+        if not group:
+            raise ValueError("Class not found")
+
+        if group.is_member(user_id):
+            raise ValueError("You are already a member of this class")
+
+        user = await self._user_repo.get_by_id(user_id)
+        if not user:
+            raise ValueError("User not found")
+
+        username = user.username or user.email.split("@")[0]
+
+        if not group.is_private:
+            # Public class → join immediately
+            group.add_member(user_id, username)
+            await self._group_repo.save(group)
+            return {"joined": True, "join_request": None}
+        else:
+            # Private class → create join request
+            if await self._group_repo.has_pending_request(group.id, user_id):
+                raise ValueError("You already have a pending join request")
+
+            join_request = ClassJoinRequest(
+                class_id=group.id,
+                user_id=user_id,
+                username=username,
+            )
+            saved = await self._group_repo.save_join_request(join_request)
+            return {"joined": False, "join_request": saved}
+
+
+class GetJoinRequestsUseCase:
+    """Get all pending join requests for a class – admin/owner only."""
+
+    def __init__(self, group_repo: IChatGroupInterface):
+        self._group_repo = group_repo
+
+    async def execute(self, class_code: str, user_id: UUID) -> list[ClassJoinRequest]:
+        group = await self._group_repo.get_by_code(class_code)
+        if not group:
+            raise ValueError("Class not found")
+
+        member = group.get_member(user_id)
+        if not member or not member.is_admin_or_owner():
+            raise PermissionError("Only admins or the owner can view join requests")
+
+        return await self._group_repo.get_join_requests(group.id)
+
+
+class HandleJoinRequestUseCase:
+    """Accept or reject a join request – admin/owner only."""
+
+    def __init__(self, group_repo: IChatGroupInterface):
+        self._group_repo = group_repo
+
+    async def execute(
+        self,
+        class_code: str,
+        request_id: UUID,
+        handler_id: UUID,
+        action: str,  # "accept" or "reject"
+    ) -> ClassJoinRequest:
+        group = await self._group_repo.get_by_code(class_code)
+        if not group:
+            raise ValueError("Class not found")
+
+        member = group.get_member(handler_id)
+        if not member or not member.is_admin_or_owner():
+            raise PermissionError("Only admins or the owner can handle join requests")
+
+        join_request = await self._group_repo.get_join_request_by_id(request_id)
+        if not join_request:
+            raise ValueError("Join request not found")
+
+        if join_request.class_id != group.id:
+            raise ValueError("Join request does not belong to this class")
+
+        if action == "accept":
+            join_request.accept()
+            # Add user to the group
+            group.add_member(join_request.user_id, join_request.username)
+            await self._group_repo.save(group)
+        elif action == "reject":
+            join_request.reject()
+        else:
+            raise ValueError("Action must be 'accept' or 'reject'")
+
+        return await self._group_repo.save_join_request(join_request)

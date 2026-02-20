@@ -25,25 +25,42 @@ export interface AuthResponse {
   tokens: TokenPair;
 }
 
-export type GroupRole = "owner" | "admin" | "member";
+export type ClassRole = "owner" | "admin" | "member";
 
-export interface GroupMember {
+export interface ClassMember {
   user_id: string;
   username: string;
-  role: GroupRole;
+  role: ClassRole;
   joined_at: string;
 }
 
-export interface Group {
+export interface ClassRoom {
   id: string;
+  code: string;
   name: string;
   description: string | null;
   avatar_url: string | null;
   is_private: boolean;
   created_by: string;
   member_count: number;
-  members: GroupMember[];
+  members: ClassMember[];
   created_at: string;
+}
+
+export type JoinRequestStatus = "pending" | "accepted" | "rejected";
+
+export interface JoinRequest {
+  id: string;
+  class_id: string;
+  user_id: string;
+  username: string;
+  status: JoinRequestStatus;
+  created_at: string;
+}
+
+export interface JoinClassResult {
+  joined: boolean;
+  join_request?: JoinRequest;
 }
 
 export interface UserSearchResult {

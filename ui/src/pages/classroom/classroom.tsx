@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
-  ImageIcon,
   Loader2,
   Plus,
   Search,
+  Upload,
   UserPlus,
   Users,
   X,
@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 
 import ClassroomList from "@/components/classroom/ClassroomList";
 import { authApi } from "@/lib/api/auth";
-import { chatApi } from "@/lib/api/chat";
+import { classApi } from "@/lib/api/chat";
 import { cn } from "@/lib/utils";
 import type { User } from "@/types";
 
@@ -63,13 +63,15 @@ function CreateClassModal({
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isPrivate, setIsPrivate] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Debounced search
   const [debouncedQ, setDebouncedQ] = useState("");
@@ -88,16 +90,16 @@ function CreateClassModal({
     (u) => !selectedMembers.some((m) => m.id === u.id),
   );
 
-  const { mutate: createGroup, isPending } = useMutation({
+  const { mutate: createClass, isPending } = useMutation({
     mutationFn: () =>
-      chatApi.createGroup({
+      classApi.createClass({
         name: name.trim(),
         description: description.trim() || undefined,
-        avatar_url: avatarUrl.trim() || undefined,
         is_private: isPrivate,
         initial_member_usernames: selectedMembers
           .map((m) => m.username)
           .filter(Boolean) as string[],
+        image: imageFile ?? undefined,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["classrooms"] });
@@ -108,12 +110,28 @@ function CreateClassModal({
   function handleClose() {
     setName("");
     setDescription("");
-    setAvatarUrl("");
+    setImageFile(null);
+    setImagePreview(null);
     setIsPrivate(false);
     setMemberSearch("");
     setSelectedMembers([]);
     setShowDropdown(false);
     onClose();
+  }
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function addMember(user: User) {
@@ -150,7 +168,7 @@ function CreateClassModal({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (canSubmit) createGroup();
+          if (canSubmit) createClass();
         }}
         className="space-y-4"
       >
@@ -194,26 +212,47 @@ function CreateClassModal({
           />
         </div>
 
-        {/* Cover image URL (optional) */}
+        {/* Cover image upload (optional) */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-            Cover Image URL{" "}
+            Cover Image{" "}
             <span className="text-neutral-400 font-normal">(optional)</span>
           </label>
-          <div className="relative">
-            <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-            <input
-              type="url"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://example.com/image.png"
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+          />
+          {imagePreview ? (
+            <div className="relative inline-block">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="h-24 w-24 rounded-xl object-cover border border-neutral-200"
+              />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center rounded-full bg-red-500 text-white shadow-sm hover:bg-red-600 transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
               className={cn(
-                "w-full pl-9 pr-4 border border-neutral-200 rounded-lg py-2.5 text-sm bg-white transition-all",
-                "focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:outline-none",
-                "placeholder:text-neutral-400",
+                "w-full flex items-center justify-center gap-2 py-6 border-2 border-dashed border-neutral-200 rounded-xl",
+                "text-sm text-neutral-400 hover:border-primary-300 hover:text-primary-600 transition-colors",
               )}
-            />
-          </div>
+            >
+              <Upload className="h-5 w-5" />
+              Click to upload an image
+            </button>
+          )}
         </div>
 
         {/* Privacy toggle */}
@@ -367,16 +406,43 @@ function CreateClassModal({
 
 // ── Page ─────────────────────────────────────────────────────
 export default function ClassroomPage() {
+  const queryClient = useQueryClient();
   const [joinOpen, setJoinOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [joinCode, setJoinCode] = useState("");
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [joinSuccess, setJoinSuccess] = useState<string | null>(null);
+
+  const { mutate: joinClass, isPending: joining } = useMutation({
+    mutationFn: (code: string) => classApi.joinClass(code),
+    onSuccess: (result) => {
+      if (result.joined) {
+        setJoinSuccess("You have joined the class!");
+        queryClient.invalidateQueries({ queryKey: ["classrooms"] });
+      } else {
+        setJoinSuccess(
+          "Your join request has been sent. An admin will review it shortly.",
+        );
+      }
+      setJoinError(null);
+      setJoinCode("");
+      setTimeout(() => {
+        setJoinOpen(false);
+        setJoinSuccess(null);
+      }, 2500);
+    },
+    onError: (err: Error) => {
+      setJoinError(err.message);
+      setJoinSuccess(null);
+    },
+  });
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: implement join by code
-    alert(`Joining class with code: ${joinCode}`);
-    setJoinCode("");
-    setJoinOpen(false);
+    if (!joinCode.trim()) return;
+    setJoinError(null);
+    setJoinSuccess(null);
+    joinClass(joinCode.trim());
   };
 
   return (
@@ -426,7 +492,11 @@ export default function ClassroomPage() {
       {/* ── Join Class Modal ─────────────────────────────── */}
       <Modal
         open={joinOpen}
-        onClose={() => setJoinOpen(false)}
+        onClose={() => {
+          setJoinOpen(false);
+          setJoinError(null);
+          setJoinSuccess(null);
+        }}
         title="Join a Class"
       >
         <form onSubmit={handleJoin} className="space-y-4">
@@ -438,18 +508,31 @@ export default function ClassroomPage() {
               type="text"
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value)}
-              placeholder="Enter the class invite code"
+              placeholder="Enter the 7-character class code"
+              maxLength={7}
               className={cn(
-                "w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white transition-all",
+                "w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white transition-all font-mono tracking-widest text-center text-lg",
                 "focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:outline-none",
-                "placeholder:text-neutral-400",
+                "placeholder:text-neutral-400 placeholder:font-sans placeholder:tracking-normal placeholder:text-sm",
               )}
               autoFocus
             />
             <p className="text-xs text-neutral-400 mt-1.5">
-              Ask your instructor or group admin for the code.
+              Ask your instructor or class admin for the code.
             </p>
           </div>
+
+          {joinError && (
+            <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg">
+              {joinError}
+            </p>
+          )}
+          {joinSuccess && (
+            <p className="text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+              {joinSuccess}
+            </p>
+          )}
+
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
@@ -460,10 +543,11 @@ export default function ClassroomPage() {
             </button>
             <button
               type="submit"
-              disabled={!joinCode.trim()}
-              className="px-5 py-2 text-sm font-semibold text-white bg-primary-700 hover:bg-primary-600 disabled:opacity-50 disabled:pointer-events-none rounded-lg transition-colors"
+              disabled={!joinCode.trim() || joining}
+              className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-primary-700 hover:bg-primary-600 disabled:opacity-50 disabled:pointer-events-none rounded-lg transition-colors"
             >
-              Join
+              {joining && <Loader2 className="h-4 w-4 animate-spin" />}
+              {joining ? "Joining…" : "Join"}
             </button>
           </div>
         </form>

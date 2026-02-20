@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from app.domain.entities import ChatGroup, ChatMessage
+from app.domain.entities import ChatGroup, ChatMessage, ClassJoinRequest
 
 
 class IChatMessageInterface(ABC):    
@@ -88,6 +88,36 @@ class IChatGroupInterface(ABC):
     @abstractmethod
     async def is_member(self, group_id: UUID, user_id: UUID) -> bool:
         """Check if a user is a member of a group."""
+        ...
+
+    @abstractmethod
+    async def get_by_code(self, code: str) -> Optional[ChatGroup]:
+        """Get a group by its unique class code."""
+        ...
+
+    @abstractmethod
+    async def search_public(self, query: str, limit: int = 20) -> list[ChatGroup]:
+        """Search public (non-private) classes by name or description."""
+        ...
+
+    @abstractmethod
+    async def save_join_request(self, request: ClassJoinRequest) -> ClassJoinRequest:
+        """Persist a join request."""
+        ...
+
+    @abstractmethod
+    async def get_join_requests(self, group_id: UUID) -> list[ClassJoinRequest]:
+        """Get all pending join requests for a group."""
+        ...
+
+    @abstractmethod
+    async def get_join_request_by_id(self, request_id: UUID) -> Optional[ClassJoinRequest]:
+        """Get a join request by ID."""
+        ...
+
+    @abstractmethod
+    async def has_pending_request(self, group_id: UUID, user_id: UUID) -> bool:
+        """Check if user already has a pending join request for this group."""
         ...
 
 

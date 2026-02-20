@@ -3,15 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import ClassroomCard, {
   type ClassroomCardData,
 } from "@/components/classroom/ClassroomCard";
-import { chatApi } from "@/lib/api/chat";
-import type { Group } from "@/types";
+import { classApi } from "@/lib/api/chat";
+import type { ClassRoom } from "@/types";
 
-function groupToCard(g: Group): ClassroomCardData {
+function classToCard(c: ClassRoom): ClassroomCardData {
   return {
-    id: g.id,
-    name: g.name,
-    description: g.description ?? "",
-    memberCount: g.member_count,
+    id: c.id,
+    code: c.code,
+    name: c.name,
+    description: c.description ?? "",
+    memberCount: c.member_count,
     progress: 0,
     subject: "Classroom",
   };
@@ -24,17 +25,17 @@ interface ClassroomListProps {
 
 export default function ClassroomList({ classrooms }: ClassroomListProps) {
   const {
-    data: groups,
+    data: classes,
     isLoading,
     isError,
-  } = useQuery<Group[]>({
+  } = useQuery<ClassRoom[]>({
     queryKey: ["classrooms"],
-    queryFn: () => chatApi.getMyGroups() as Promise<Group[]>,
+    queryFn: () => classApi.getMyClasses() as Promise<ClassRoom[]>,
     enabled: !classrooms,
   });
 
   const items: ClassroomCardData[] =
-    classrooms ?? (groups ?? []).map(groupToCard);
+    classrooms ?? (classes ?? []).map(classToCard);
 
   if (isLoading) {
     return (

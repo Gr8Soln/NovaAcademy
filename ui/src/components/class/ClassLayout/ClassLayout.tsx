@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   BookOpen,
@@ -17,9 +18,11 @@ import { useState } from "react";
 import { Link, NavLink, Outlet, useParams } from "react-router-dom";
 
 import { Avatar } from "@/components/ui/avatar";
+import { classApi } from "@/lib/api/chat";
 import { pages } from "@/lib/constant";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
+import type { ClassRoom } from "@/types";
 
 type TabKey =
   | "overview"
@@ -87,24 +90,30 @@ function buildNavItems(classId: string): NavItem[] {
   ];
 }
 
-// Mock class info for sidebar
-const classInfo = {
-  name: "Intro to Machine Learning",
-  code: "ML-101",
-  memberCount: 34,
-  emoji: "🤖",
-};
-
 interface ClassLayoutProps {
   className?: string;
 }
 
 export default function ClassLayout({ className }: ClassLayoutProps) {
-  const { classId } = useParams<{ classId: string }>();
-  const navItems = buildNavItems(classId ?? "");
+  const { classId: classCode } = useParams<{ classId: string }>();
+  const navItems = buildNavItems(classCode ?? "");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const user = useAuthStore((s) => s.user);
+
+  const { data: classRoom } = useQuery<ClassRoom>({
+    queryKey: ["class", classCode],
+    queryFn: () => classApi.getClass(classCode!) as Promise<ClassRoom>,
+    enabled: !!classCode,
+  });
+
+  const classInfo = {
+    name: classRoom?.name ?? "Loading…",
+    code: classRoom?.code ?? "…",
+    memberCount: classRoom?.member_count ?? 0,
+    emoji: classRoom?.avatar_url ? "" : "📚",
+    avatarUrl: classRoom?.avatar_url ?? null,
+  };
 
   /** Shared sidebar content rendered in both desktop and mobile variants */
   const SidebarInner = ({
@@ -140,9 +149,17 @@ export default function ClassLayout({ className }: ClassLayoutProps) {
           <Link
             to={pages.classroom}
             title={collapsed ? "Back to Classes" : undefined}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-2xl shadow-lg shadow-primary-500/25 ring-2 ring-primary-500/10 flex-shrink-0"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-2xl shadow-lg shadow-primary-500/25 ring-2 ring-primary-500/10 flex-shrink-0 overflow-hidden"
           >
-            {classInfo.emoji}
+            {classInfo.avatarUrl ? (
+              <img
+                src={classInfo.avatarUrl}
+                alt=""
+                className="h-11 w-11 object-cover"
+              />
+            ) : (
+              classInfo.emoji
+            )}
           </Link>
           {!collapsed && (
             <div className="flex-1 min-w-0">

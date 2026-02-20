@@ -13,12 +13,12 @@ export const pages = {
 
   // Classroom pages
   classroom: "/classroom",
-  classPage: "/class/:classId",
-  classChat: "/class/:classId/chat",
-  classLibrary: "/class/:classId/library",
-  classStudy: "/class/:classId/study",
-  classQuiz: "/class/:classId/quiz",
-  classParticipants: "/class/:classId/participants",
+  classPage: "/class/:classCode",
+  classChat: "/class/:classCode/chat",
+  classLibrary: "/class/:classCode/library",
+  classStudy: "/class/:classCode/study",
+  classQuiz: "/class/:classCode/quiz",
+  classParticipants: "/class/:classCode/participants",
   documents: "/classroom/documents",
   study: "/classroom/study/:documentId",
   examHall: "/classroom/exam-hall",

@@ -10,9 +10,11 @@ from app.application.dtos import MessageType
 from app.application.interfaces import (IChatGroupInterface,
                                         IChatMessageInterface)
 from app.domain.entities import (ChatGroup, ChatGroupMember, ChatGroupRole,
-                                 ChatMemberMention, ChatMessage)
+                                 ChatMemberMention, ChatMessage,
+                                 ClassJoinRequest, JoinRequestStatus)
 from app.infrastructure.db import (GroupMemberModel, GroupModel,
-                                   MessageMentionModel, MessageModel)
+                                   JoinRequestModel, MessageMentionModel,
+                                   MessageModel)
 
 
 class SQLChatMessageRepository(IChatMessageInterface):
@@ -234,6 +236,7 @@ class SQLChatGroupRepository(IChatGroupInterface):
             model = GroupModel(
                 id=group.id,
                 name=group.name,
+                code=group.code,
                 description=group.description,
                 created_by=group.created_by,
                 created_at=group.created_at,
@@ -329,6 +332,7 @@ class SQLChatGroupRepository(IChatGroupInterface):
         return ChatGroup(
             id=model.id,
             name=model.name,
+            code=model.code,
             description=model.description or "",
             created_by=model.created_by,
             created_at=model.created_at,
@@ -336,4 +340,111 @@ class SQLChatGroupRepository(IChatGroupInterface):
             is_private=model.is_private,
             max_members=model.max_members,
             members=members,
+        )
+
+    # ── New methods for class code / search / join requests ──────
+
+    async def get_by_code(self, code: str) -> Optional[ChatGroup]:
+        """Get a group by its unique class code."""
+        result = await self._session.execute(
+            select(GroupModel)
+            .options(selectinload(GroupModel.members))
+            .where(GroupModel.code == code)
+        )
+        model = result.scalar_one_or_none()
+        if not model:
+            return None
+        return self._to_entity(model)
+
+    async def search_public(self, query: str, limit: int = 20) -> list[ChatGroup]:
+        """Search public (non-private) classes by name or description."""
+        from sqlalchemy import or_
+
+        result = await self._session.execute(
+            select(GroupModel)
+            .options(selectinload(GroupModel.members))
+            .where(
+                and_(
+                    GroupModel.is_private == False,  # noqa: E712
+                    or_(
+                        GroupModel.name.ilike(f"%{query}%"),
+                        GroupModel.code.ilike(f"%{query}%"),
+                        GroupModel.description.ilike(f"%{query}%"),
+                    ),
+                )
+            )
+            .order_by(GroupModel.created_at.desc())
+            .limit(limit)
+        )
+        models = result.scalars().all()
+        return [self._to_entity(m) for m in models]
+
+    async def save_join_request(self, request: ClassJoinRequest) -> ClassJoinRequest:
+        """Persist a join request."""
+        model = JoinRequestModel(
+            id=request.id,
+            group_id=request.class_id,
+            user_id=request.user_id,
+            username=request.username,
+            status=request.status.value,
+            created_at=request.created_at,
+        )
+        result = await self._session.execute(
+            select(JoinRequestModel).where(JoinRequestModel.id == request.id)
+        )
+        existing = result.scalar_one_or_none()
+        if existing:
+            existing.status = request.status.value
+        else:
+            self._session.add(model)
+        await self._session.flush()
+        return request
+
+    async def get_join_requests(self, group_id: UUID) -> list[ClassJoinRequest]:
+        """Get all pending join requests for a group."""
+        result = await self._session.execute(
+            select(JoinRequestModel)
+            .where(
+                and_(
+                    JoinRequestModel.group_id == group_id,
+                    JoinRequestModel.status == "pending",
+                )
+            )
+            .order_by(JoinRequestModel.created_at.asc())
+        )
+        models = result.scalars().all()
+        return [self._join_request_to_entity(m) for m in models]
+
+    async def get_join_request_by_id(self, request_id: UUID) -> Optional[ClassJoinRequest]:
+        """Get a join request by ID."""
+        result = await self._session.execute(
+            select(JoinRequestModel).where(JoinRequestModel.id == request_id)
+        )
+        model = result.scalar_one_or_none()
+        if not model:
+            return None
+        return self._join_request_to_entity(model)
+
+    async def has_pending_request(self, group_id: UUID, user_id: UUID) -> bool:
+        """Check if user already has a pending join request for this group."""
+        result = await self._session.execute(
+            select(JoinRequestModel).where(
+                and_(
+                    JoinRequestModel.group_id == group_id,
+                    JoinRequestModel.user_id == user_id,
+                    JoinRequestModel.status == "pending",
+                )
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
+    @staticmethod
+    def _join_request_to_entity(model: JoinRequestModel) -> ClassJoinRequest:
+        return ClassJoinRequest(
+            id=model.id,
+            class_id=model.group_id,
+            user_id=model.user_id,
+            username=model.username,
+            status=JoinRequestStatus(model.status),
+            created_at=model.created_at,
         )

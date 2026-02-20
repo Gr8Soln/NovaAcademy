@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 
 export interface ClassroomCardData {
   id: string;
+  code: string;
   name: string;
   description: string;
   memberCount: number;
@@ -91,7 +92,7 @@ export default function ClassroomCard({
 
   return (
     <div
-      onClick={() => navigate(`/class/${classroom.id}`)}
+      onClick={() => navigate(`/class/${classroom.code}`)}
       className={cn(
         "group relative bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden",
         "hover:shadow-lg hover:border-neutral-300 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer",
@@ -135,7 +136,12 @@ export default function ClassroomCard({
             <span className="text-[11px] font-semibold text-neutral-500">
               Progress
             </span>
-            <span className={cn("text-[11px] font-bold px-1.5 py-0.5 rounded-full", g.badge)}>
+            <span
+              className={cn(
+                "text-[11px] font-bold px-1.5 py-0.5 rounded-full",
+                g.badge,
+              )}
+            >
               {classroom.progress}%
             </span>
           </div>
@@ -146,7 +152,10 @@ export default function ClassroomCard({
             )}
           >
             <div
-              className={cn("h-full rounded-full transition-all duration-500", g.progress)}
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                g.progress,
+              )}
               style={{ width: `${classroom.progress}%` }}
             />
           </div>
@@ -167,4 +176,3 @@ export default function ClassroomCard({
     </div>
   );
 }
-

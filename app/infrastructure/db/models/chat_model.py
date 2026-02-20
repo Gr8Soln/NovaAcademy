@@ -62,6 +62,9 @@ class GroupModel(Base):
     __tablename__ = "groups"
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    code: Mapped[str] = mapped_column(
+        String(7), nullable=False, unique=True, index=True
+    )
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_by: Mapped[uuid.UUID] = mapped_column(nullable=False)
     avatar_url: Mapped[Optional[str]] = mapped_column(
@@ -77,6 +80,9 @@ class GroupModel(Base):
         back_populates="group", cascade="all, delete-orphan"
     )
     messages: Mapped[list["MessageModel"]] = relationship(
+        back_populates="group", cascade="all, delete-orphan"
+    )
+    join_requests: Mapped[list["JoinRequestModel"]] = relationship(
         back_populates="group", cascade="all, delete-orphan"
     )
 
@@ -109,4 +115,22 @@ class GroupMemberModel(Base):
     __table_args__ = (
         # UniqueConstraint("group_id", "user_id", name="uq_group_user"),
     )
+
+
+class JoinRequestModel(Base):
+    """SQLAlchemy model for class join requests."""
+
+    __tablename__ = "join_requests"
+
+    group_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("groups.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
+    username: Mapped[str] = mapped_column(String(100), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="pending"
+    )  # pending, accepted, rejected
+
+    # Relationships
+    group: Mapped["GroupModel"] = relationship(back_populates="join_requests")
 

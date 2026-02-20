@@ -1,9 +1,46 @@
+import random
+import string
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
 
 from app.application.dtos import ChatGroupRole, MessageType
+
+_CODE_CHARS = string.ascii_letters + string.digits  # A-Z, a-z, 0-9
+
+
+def generate_class_code(length: int = 7) -> str:
+    """Generate a random class code of uppercase/lowercase letters and digits."""
+    return "".join(random.choices(_CODE_CHARS, k=length))
+
+
+class JoinRequestStatus(str, Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+
+
+@dataclass
+class ClassJoinRequest:
+    """A request from a user to join a private class."""
+    class_id: UUID
+    user_id: UUID
+    username: str
+    id: UUID = field(default_factory=uuid4)
+    status: JoinRequestStatus = JoinRequestStatus.PENDING
+    created_at: datetime = field(default_factory=datetime.utcnow)
+
+    def accept(self) -> None:
+        if self.status != JoinRequestStatus.PENDING:
+            raise ValueError("Can only accept a pending request")
+        self.status = JoinRequestStatus.ACCEPTED
+
+    def reject(self) -> None:
+        if self.status != JoinRequestStatus.PENDING:
+            raise ValueError("Can only reject a pending request")
+        self.status = JoinRequestStatus.REJECTED
 
 
 @dataclass
@@ -150,6 +187,7 @@ class ChatGroup:
     name: str
     created_by: UUID
     id: UUID = field(default_factory=uuid4)
+    code: str = field(default_factory=generate_class_code)
     description: str = ""
     members: list[ChatGroupMember] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.utcnow)

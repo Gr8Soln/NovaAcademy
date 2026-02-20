@@ -1,62 +1,109 @@
-import type { Group } from "@/types";
+import type { ClassRoom, JoinClassResult, JoinRequest } from "@/types";
 import api from "./api";
 
-export interface CreateGroupPayload {
+export interface CreateClassPayload {
   name: string;
   description?: string;
-  avatar_url?: string;
   is_private?: boolean;
   initial_member_usernames?: string[];
+  image?: File;
 }
 
-export interface UpdateGroupPayload {
+export interface UpdateClassPayload {
   name?: string;
   description?: string;
-  avatar_url?: string;
   is_private?: boolean;
+  image?: File;
 }
 
-export const chatApi = {
-  // ── Groups ─────────────────────────────────────────────────────
+function buildClassFormData(
+  payload: CreateClassPayload | UpdateClassPayload,
+): FormData {
+  const fd = new FormData();
+  if (payload.name !== undefined) fd.append("name", payload.name);
+  if (payload.description !== undefined)
+    fd.append("description", payload.description);
+  if (payload.is_private !== undefined)
+    fd.append("is_private", String(payload.is_private));
+  if (
+    "initial_member_usernames" in payload &&
+    payload.initial_member_usernames?.length
+  ) {
+    fd.append(
+      "initial_member_usernames",
+      payload.initial_member_usernames.join(","),
+    );
+  }
+  if (payload.image) fd.append("image", payload.image);
+  return fd;
+}
 
-  createGroup: (payload: CreateGroupPayload) =>
-    api<Group>("/chat/groups", {
+export const classApi = {
+  // ── Class CRUD ─────────────────────────────────────────────────
+
+  createClass: (payload: CreateClassPayload) =>
+    api<ClassRoom>("/class", {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: buildClassFormData(payload),
     }),
 
-  getMyGroups: () => api<Group[]>("/chat/groups"),
+  getMyClasses: () => api<ClassRoom[]>("/class"),
 
-  getGroup: (groupId: string) => api<Group>(`/chat/groups/${groupId}`),
+  searchClasses: (query: string, limit = 20) =>
+    api<ClassRoom[]>(
+      `/class/search?q=${encodeURIComponent(query)}&limit=${limit}`,
+    ),
 
-  updateGroup: (groupId: string, payload: UpdateGroupPayload) =>
-    api<Group>(`/chat/groups/${groupId}`, {
+  getClass: (classCode: string) => api<ClassRoom>(`/class/${classCode}`),
+
+  updateClass: (classCode: string, payload: UpdateClassPayload) =>
+    api<ClassRoom>(`/class/${classCode}`, {
       method: "PUT",
-      body: JSON.stringify(payload),
+      body: buildClassFormData(payload),
     }),
 
-  deleteGroup: (groupId: string) =>
-    api<null>(`/chat/groups/${groupId}`, { method: "DELETE" }),
+  deleteClass: (classCode: string) =>
+    api<null>(`/class/${classCode}`, { method: "DELETE" }),
 
-  // ── Members ────────────────────────────────────────────────────
+  // ── Join ───────────────────────────────────────────────────────
 
-  addMember: (groupId: string, username: string) =>
-    api<Group>(`/chat/groups/${groupId}/members`, {
+  joinClass: (classCode: string) =>
+    api<JoinClassResult>(`/class/${classCode}/join`, { method: "POST" }),
+
+  // ── Join Requests ──────────────────────────────────────────────
+
+  getJoinRequests: (classCode: string) =>
+    api<JoinRequest[]>(`/class/${classCode}/join-requests`),
+
+  handleJoinRequest: (
+    classCode: string,
+    requestId: string,
+    action: "accept" | "reject",
+  ) =>
+    api<JoinRequest>(`/class/${classCode}/join-requests/${requestId}`, {
+      method: "PUT",
+      body: JSON.stringify({ action }),
+    }),
+
+  // ── Participants ───────────────────────────────────────────────
+
+  addMember: (classCode: string, username: string) =>
+    api<ClassRoom>(`/class/${classCode}/participants`, {
       method: "POST",
       body: JSON.stringify({ username }),
     }),
 
-  removeMember: (groupId: string, targetUserId: string) =>
-    api<null>(`/chat/groups/${groupId}/members/${targetUserId}`, {
+  removeMember: (classCode: string, targetUserId: string) =>
+    api<null>(`/class/${classCode}/participants/${targetUserId}`, {
       method: "DELETE",
     }),
 
   changeMemberRole: (
-    groupId: string,
+    classCode: string,
     targetUserId: string,
     role: "admin" | "member",
   ) =>
-    api<Group>(`/chat/groups/${groupId}/members/${targetUserId}/role`, {
+    api<ClassRoom>(`/class/${classCode}/participants/${targetUserId}/role`, {
       method: "PUT",
       body: JSON.stringify({ role }),
     }),

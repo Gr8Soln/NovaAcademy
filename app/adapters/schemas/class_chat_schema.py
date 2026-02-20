@@ -33,42 +33,32 @@ class EditMessageRequest(BaseModel):
     content: str
 
 
-# ── Groups ──────────────────────────────────────────────────
+# ── Classes (formerly Groups) ───────────────────────────────
 
-class CreateGroupRequest(BaseModel):
-    """Request to create a class/group."""
-    name: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = Field(None, max_length=1000)
-    avatar_url: Optional[str] = None
-    is_private: bool = False
-    # Usernames of people to add at creation time (optional)
-    initial_member_usernames: list[str] = Field(default_factory=list)
-
-
-class UpdateGroupRequest(BaseModel):
-    """Request to update group metadata (owner / admin only)."""
+class UpdateClassRequest(BaseModel):
+    """Request to update class metadata (owner / admin only)."""
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=1000)
-    avatar_url: Optional[str] = None
     is_private: Optional[bool] = None
 
 
-class GroupMemberResponse(BaseModel):
+class ClassMemberResponse(BaseModel):
     user_id: UUID
     username: str
     role: str          # owner | admin | member
     joined_at: datetime
 
 
-class GroupResponse(BaseModel):
+class ClassResponse(BaseModel):
     id: UUID
+    code: str
     name: str
     description: str
     avatar_url: Optional[str]
     is_private: bool
     created_by: UUID
     member_count: int
-    members: list[GroupMemberResponse]
+    members: list[ClassMemberResponse]
     created_at: datetime
 
 
@@ -80,3 +70,19 @@ class AddMemberRequest(BaseModel):
 class ChangeMemberRoleRequest(BaseModel):
     """Promote or demote a member."""
     role: str = Field(..., pattern="^(admin|member)$")
+
+
+# ── Join Requests ───────────────────────────────────────────
+
+class JoinRequestResponse(BaseModel):
+    id: UUID
+    class_id: UUID
+    user_id: UUID
+    username: str
+    status: str
+    created_at: datetime
+
+
+class HandleJoinRequestRequest(BaseModel):
+    """Accept or reject a join request."""
+    action: str = Field(..., pattern="^(accept|reject)$")

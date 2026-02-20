@@ -2,28 +2,38 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
   ChevronDown,
+  ClipboardCopy,
   Crown,
   Loader2,
   MoreVertical,
   Pencil,
   Search,
   Shield,
+  Upload,
+  UserCheck,
   UserMinus,
   UserPlus,
   Users2,
+  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { authApi } from "@/lib/api/auth";
-import { chatApi } from "@/lib/api/chat";
+import { classApi } from "@/lib/api/chat";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
-import type { Group, GroupMember, GroupRole, User } from "@/types";
+import type {
+  ClassMember,
+  ClassRole,
+  ClassRoom,
+  JoinRequest,
+  User,
+} from "@/types";
 
 // ── Role badge ───────────────────────────────────────────────
 
-function RoleBadge({ role }: { role: GroupRole }) {
+function RoleBadge({ role }: { role: ClassRole }) {
   if (role === "owner")
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
@@ -51,12 +61,12 @@ function MemberRow({
   member,
   isOwner,
   currentUserId,
-  groupId,
+  classCode,
 }: {
-  member: GroupMember;
+  member: ClassMember;
   isOwner: boolean;
   currentUserId: string;
-  groupId: string;
+  classCode: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -74,17 +84,17 @@ function MemberRow({
 
   const { mutate: changeRole, isPending: changingRole } = useMutation({
     mutationFn: (role: "admin" | "member") =>
-      chatApi.changeMemberRole(groupId, member.user_id, role),
+      classApi.changeMemberRole(classCode, member.user_id, role),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["class", classCode] });
       setMenuOpen(false);
     },
   });
 
   const { mutate: removeMember, isPending: removing } = useMutation({
-    mutationFn: () => chatApi.removeMember(groupId, member.user_id),
+    mutationFn: () => classApi.removeMember(classCode, member.user_id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["class", classCode] });
       setMenuOpen(false);
     },
   });
@@ -169,28 +179,47 @@ function MemberRow({
 
 // ── Edit class info panel ────────────────────────────────────
 
-function EditClassPanel({ group, groupId }: { group: Group; groupId: string }) {
+function EditClassPanel({
+  classRoom,
+  classCode,
+}: {
+  classRoom: ClassRoom;
+  classCode: string;
+}) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(group.name);
-  const [description, setDescription] = useState(group.description ?? "");
-  const [avatarUrl, setAvatarUrl] = useState(group.avatar_url ?? "");
-  const [isPrivate, setIsPrivate] = useState(group.is_private);
+  const [name, setName] = useState(classRoom.name);
+  const [description, setDescription] = useState(classRoom.description ?? "");
+  const [isPrivate, setIsPrivate] = useState(classRoom.is_private);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { mutate: updateGroup, isPending } = useMutation({
+  const { mutate: updateClass, isPending } = useMutation({
     mutationFn: () =>
-      chatApi.updateGroup(groupId, {
+      classApi.updateClass(classCode, {
         name: name.trim(),
         description: description.trim() || undefined,
-        avatar_url: avatarUrl.trim() || undefined,
         is_private: isPrivate,
+        image: imageFile ?? undefined,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["class", classCode] });
       queryClient.invalidateQueries({ queryKey: ["classrooms"] });
       setEditing(false);
+      setImageFile(null);
+      setImagePreview(null);
     },
   });
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }
 
   if (!editing) {
     return (
@@ -221,13 +250,47 @@ function EditClassPanel({ group, groupId }: { group: Group; groupId: string }) {
         rows={2}
         className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm bg-white resize-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:outline-none"
       />
-      <input
-        type="url"
-        value={avatarUrl}
-        onChange={(e) => setAvatarUrl(e.target.value)}
-        placeholder="Cover image URL (optional)"
-        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:outline-none"
-      />
+
+      {/* Image upload */}
+      <div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="hidden"
+        />
+        {imagePreview ? (
+          <div className="relative inline-block">
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="h-16 w-16 rounded-lg object-cover border border-neutral-200"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setImageFile(null);
+                setImagePreview(null);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+              }}
+              className="absolute -top-1.5 -right-1.5 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex items-center gap-1.5 text-xs text-neutral-500 hover:text-primary-600 transition-colors"
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Upload new image
+          </button>
+        )}
+      </div>
+
       <label className="flex items-center gap-2 cursor-pointer select-none">
         <div
           className={cn(
@@ -255,7 +318,7 @@ function EditClassPanel({ group, groupId }: { group: Group; groupId: string }) {
         </button>
         <button
           type="button"
-          onClick={() => updateGroup()}
+          onClick={() => updateClass()}
           disabled={!name.trim() || isPending}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary-700 hover:bg-primary-600 disabled:opacity-50 rounded-lg transition-colors"
         >
@@ -271,9 +334,98 @@ function EditClassPanel({ group, groupId }: { group: Group; groupId: string }) {
   );
 }
 
+// ── Join requests panel ──────────────────────────────────────
+
+function JoinRequestsPanel({ classCode }: { classCode: string }) {
+  const queryClient = useQueryClient();
+
+  const { data: requests = [], isLoading } = useQuery<JoinRequest[]>({
+    queryKey: ["joinRequests", classCode],
+    queryFn: () =>
+      classApi.getJoinRequests(classCode) as Promise<JoinRequest[]>,
+  });
+
+  const { mutate: handleRequest, isPending } = useMutation({
+    mutationFn: ({
+      requestId,
+      action,
+    }: {
+      requestId: string;
+      action: "accept" | "reject";
+    }) => classApi.handleJoinRequest(classCode, requestId, action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["joinRequests", classCode] });
+      queryClient.invalidateQueries({ queryKey: ["class", classCode] });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-6">
+        <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
+      </div>
+    );
+  }
+
+  if (requests.length === 0) {
+    return (
+      <p className="text-sm text-neutral-400 px-4 py-4 text-center">
+        No pending join requests.
+      </p>
+    );
+  }
+
+  return (
+    <div className="divide-y divide-neutral-50">
+      {requests.map((req) => (
+        <div
+          key={req.id}
+          className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors"
+        >
+          <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+            <span className="text-sm font-semibold text-amber-700">
+              {req.username[0]?.toUpperCase() ?? "?"}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-neutral-900 truncate">
+              @{req.username}
+            </p>
+            <p className="text-xs text-neutral-400">
+              Requested {new Date(req.created_at).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() =>
+                handleRequest({ requestId: req.id, action: "accept" })
+              }
+              disabled={isPending}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-green-600 hover:bg-green-500 disabled:opacity-50 rounded-lg transition-colors"
+            >
+              <UserCheck className="h-3.5 w-3.5" />
+              Accept
+            </button>
+            <button
+              onClick={() =>
+                handleRequest({ requestId: req.id, action: "reject" })
+              }
+              disabled={isPending}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 disabled:opacity-50 rounded-lg transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+              Reject
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Add member panel ─────────────────────────────────────────
 
-function AddMemberPanel({ groupId }: { groupId: string }) {
+function AddMemberPanel({ classCode }: { classCode: string }) {
   const queryClient = useQueryClient();
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
@@ -293,9 +445,9 @@ function AddMemberPanel({ groupId }: { groupId: string }) {
   });
 
   const { mutate: addMember, isPending: adding } = useMutation({
-    mutationFn: (username: string) => chatApi.addMember(groupId, username),
+    mutationFn: (username: string) => classApi.addMember(classCode, username),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["class", classCode] });
       setQ("");
       setDebouncedQ("");
       setShowDropdown(false);
@@ -396,17 +548,18 @@ function AddMemberPanel({ groupId }: { groupId: string }) {
 // ── Page ─────────────────────────────────────────────────────
 
 export default function ClassMembersPage() {
-  const { classId } = useParams<{ classId: string }>();
+  const { classId: classCode } = useParams<{ classId: string }>();
   const currentUser = useAuthStore((s) => s.user);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   const {
-    data: group,
+    data: classRoom,
     isLoading,
     isError,
-  } = useQuery<Group>({
-    queryKey: ["group", classId],
-    queryFn: () => chatApi.getGroup(classId!) as Promise<Group>,
-    enabled: !!classId,
+  } = useQuery<ClassRoom>({
+    queryKey: ["class", classCode],
+    queryFn: () => classApi.getClass(classCode!) as Promise<ClassRoom>,
+    enabled: !!classCode,
   });
 
   if (isLoading) {
@@ -417,7 +570,7 @@ export default function ClassMembersPage() {
     );
   }
 
-  if (isError || !group) {
+  if (isError || !classRoom) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-sm text-red-500">Failed to load participants.</p>
@@ -425,21 +578,28 @@ export default function ClassMembersPage() {
     );
   }
 
-  const currentMember = group.members.find(
+  const currentMember = classRoom.members.find(
     (m) => m.user_id === currentUser?.id,
   );
   const isOwner = currentMember?.role === "owner";
   const isAdmin = currentMember?.role === "admin" || isOwner;
 
   // Sort: owner → admin → member
-  const roleOrder: Record<GroupRole, number> = {
+  const roleOrder: Record<ClassRole, number> = {
     owner: 0,
     admin: 1,
     member: 2,
   };
-  const sorted = [...group.members].sort(
+  const sorted = [...classRoom.members].sort(
     (a, b) => roleOrder[a.role] - roleOrder[b.role],
   );
+
+  function copyClassCode() {
+    if (!classRoom) return;
+    navigator.clipboard.writeText(classRoom.code);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  }
 
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
@@ -453,13 +613,67 @@ export default function ClassMembersPage() {
             </h1>
           </div>
           <p className="text-sm text-neutral-500">
-            {group.member_count} member{group.member_count !== 1 ? "s" : ""} in{" "}
-            <span className="font-medium text-neutral-700">{group.name}</span>
+            {classRoom.member_count} member
+            {classRoom.member_count !== 1 ? "s" : ""} in{" "}
+            <span className="font-medium text-neutral-700">
+              {classRoom.name}
+            </span>
           </p>
         </div>
 
-        {isOwner && <EditClassPanel group={group} groupId={classId!} />}
+        {isOwner && (
+          <EditClassPanel classRoom={classRoom} classCode={classCode!} />
+        )}
       </div>
+
+      {/* Class code card */}
+      <div className="bg-gradient-to-r from-primary-50 to-accent-50 rounded-2xl border border-primary-100/50 p-4 flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-primary-600 mb-0.5">
+            Class Code
+          </p>
+          <p className="font-mono text-lg font-bold text-primary-800 tracking-widest">
+            {classRoom.code}
+          </p>
+          <p className="text-[11px] text-primary-500/70 mt-0.5">
+            Share this code to invite others
+          </p>
+        </div>
+        <button
+          onClick={copyClassCode}
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all",
+            codeCopied
+              ? "bg-green-100 text-green-700"
+              : "bg-white text-primary-700 hover:bg-primary-100 border border-primary-200",
+          )}
+        >
+          {codeCopied ? (
+            <>
+              <Check className="h-3.5 w-3.5" />
+              Copied!
+            </>
+          ) : (
+            <>
+              <ClipboardCopy className="h-3.5 w-3.5" />
+              Copy
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Join requests (admin/owner only) */}
+      {isAdmin && (
+        <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
+          <div className="px-4 py-3 border-b border-neutral-100 flex items-center gap-2">
+            <UserCheck className="h-4 w-4 text-amber-500" />
+            <span className="text-sm font-semibold text-neutral-700">
+              Join Requests
+            </span>
+          </div>
+          <JoinRequestsPanel classCode={classCode!} />
+        </div>
+      )}
 
       {/* Add member (admin/owner) */}
       {isAdmin && (
@@ -468,7 +682,7 @@ export default function ClassMembersPage() {
             <UserPlus className="h-4 w-4" />
             Add a participant
           </p>
-          <AddMemberPanel groupId={classId!} />
+          <AddMemberPanel classCode={classCode!} />
         </div>
       )}
 
@@ -488,7 +702,7 @@ export default function ClassMembersPage() {
               member={member}
               isOwner={isOwner}
               currentUserId={currentUser?.id ?? ""}
-              groupId={classId!}
+              classCode={classCode!}
             />
           ))}
         </div>
