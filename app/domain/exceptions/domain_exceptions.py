@@ -29,6 +29,17 @@ class AccountInactiveError(DomainException):
     """User account is inactive or deactivated."""
 
 
+class InvalidUsernameError(DomainException):
+    """Username does not meet validation rules."""
+
+
+class UsernameUnavailableError(DomainException):
+    """Chosen username is already taken."""
+
+
+class UsernameCooldownError(DomainException):
+    """Username was recently changed; must wait 7 days before changing again."""
+
 
 # ── Document-related exceptions ─────────────────────────────────
 class DocumentNotFoundError(DomainException):

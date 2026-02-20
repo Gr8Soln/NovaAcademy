@@ -8,7 +8,11 @@ from app.application.interfaces import (IJwtService, IStorageService,
 from app.core.logging import get_logger
 from app.domain.entities import User
 from app.domain.exceptions import (AccountInactiveError, AuthenticationError,
-                                   InvalidCredentialError, UserNotFoundError)
+                                   InvalidCredentialError,
+                                   InvalidUsernameError,
+                                   UsernameCooldownError,
+                                   UsernameUnavailableError,
+                                   UserNotFoundError)
 
 logger = get_logger(__name__)
 
@@ -132,3 +136,36 @@ class DeactivateAccountUseCase:
         user = await _get_active_user(self._user_repo, user_id)
         user.is_active = False
         await self._user_repo.update(user)
+
+
+# ── Update Username ─────────────────────────────────────────────
+
+class UpdateUsernameUseCase:
+    def __init__(self, user_repo: IUserInterface) -> None:
+        self._user_repo = user_repo
+
+    async def execute(self, user_id: uuid.UUID, new_username: str) -> User:
+        # Validate format
+        if not User.validate_username(new_username):
+            raise InvalidUsernameError(
+                "Username must be 3–15 characters, contain only letters, digits, "
+                "or underscores, and must not start with a digit."
+            )
+
+        user = await _get_active_user(self._user_repo, user_id)
+
+        # Cooldown check
+        if not user.can_change_username():
+            raise UsernameCooldownError(
+                "Username can only be changed once every 7 days."
+            )
+
+        # Uniqueness check (case-insensitive)
+        existing = await self._user_repo.get_by_username(new_username.lower())
+        if existing and existing.id != user_id:
+            raise UsernameUnavailableError(
+                f"Username '{new_username}' is already taken."
+            )
+
+        user.update_username(new_username.lower())
+        return await self._user_repo.update(user)

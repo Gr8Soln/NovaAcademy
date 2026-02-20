@@ -36,6 +36,13 @@ class SQLUserRepository(IUserInterface):
         model = result.scalar_one_or_none()
         return user_model_to_entity(model) if model else None
 
+    async def get_by_username(self, username: str) -> Optional[User]:
+        result = await self._session.execute(
+            select(UserModel).where(UserModel.username == username)
+        )
+        model = result.scalar_one_or_none()
+        return user_model_to_entity(model) if model else None
+
     async def update(self, user: User) -> User:
         result = await self._session.execute(select(UserModel).where(UserModel.id == user.id))
         model = result.scalar_one_or_none()
@@ -43,6 +50,8 @@ class SQLUserRepository(IUserInterface):
             model.email = user.email
             model.first_name = user.first_name
             model.last_name = user.last_name
+            model.username = user.username
+            model.username_changed_at = user.username_changed_at
             model.hashed_password = user.hashed_password
             model.has_password = user.has_password
             model.auth_provider = user.auth_provider.value

@@ -1,3 +1,4 @@
+import random
 from typing import Optional
 
 import httpx
@@ -18,6 +19,32 @@ from app.domain.exceptions import (AccountInactiveError, AuthenticationError,
 
 logger = get_logger(__name__)
 
+
+# ── Username helper ────────────────────────────────────────────
+
+async def _gen_unique_username(email: str, user_repo: IUserInterface) -> str:
+    """Derive a unique username from an e-mail address.
+
+    If the sanitised base already exists in the DB, up to 10 attempts are
+    made by appending a random 3-digit suffix before falling back to a
+    UUID-based fallback.
+    """
+    base = User.sanitize_username_from_email(email)
+    candidate = base
+    if not await user_repo.get_by_username(candidate):
+        return candidate
+
+    for _ in range(10):
+        suffix = str(random.randint(100, 999))
+        candidate = base[:12] + suffix
+        if not await user_repo.get_by_username(candidate):
+            return candidate
+
+    # Ultimate fallback: use first 12 chars of UUID (always unique)
+    import uuid as _uuid
+    return ('u' + str(_uuid.uuid4()).replace('-', ''))[:15]
+
+
 class RegisterUseCase:
     def __init__(self, user_repo: IUserInterface, auth_repo: IJwtService, email_svc: IEmailService) -> None:
         self._user_repo = user_repo
@@ -29,9 +56,11 @@ class RegisterUseCase:
         if existing:
             raise UserAlreadyExistsError(f"User with email {email} already exists")
 
+        username = await _gen_unique_username(email, self._user_repo)
         hashed = self._auth_repo.hash_password(password)
         user = User.create_email_user(
-            email=email, first_name=first_name, last_name=last_name, hashed_password=hashed
+            email=email, first_name=first_name, last_name=last_name,
+            hashed_password=hashed, username=username,
         )
         user = await self._user_repo.create(user)
 
@@ -113,13 +142,15 @@ class GoogleAuthUseCase:
             is_new_user = False
             if user.auth_provider != 'google' or user.google_sub != google_sub:
                 raise UserAlreadyExistsError(f"User with email already exists with a different authentication method") 
-        else:   
+        else:
+            username = await _gen_unique_username(email, self._user_repo)
             user = User.create_google_user(
                 email=email,
                 first_name=first_name,
                 last_name=last_name,
                 google_sub=google_sub,
-                avatar_url=google_user_avatar
+                avatar_url=google_user_avatar,
+                username=username,
             )
             user = await self._user_repo.create(user)
         

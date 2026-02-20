@@ -59,6 +59,7 @@ class UserResponse(BaseModel):
     email: str
     first_name: str
     last_name: str
+    username: Optional[str] = None
     auth_provider: str
     avatar_url: Optional[str] = None
     is_active: bool

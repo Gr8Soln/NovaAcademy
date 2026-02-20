@@ -3,21 +3,24 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from app.adapters.schemas import (ChangePasswordRequest, SetPasswordRequest,
-                                  UpdateProfileRequest, UserResponse,
-                                  success_response)
+                                  UpdateProfileRequest, UpdateUsernameRequest,
+                                  UserResponse, success_response)
 from app.application.use_cases import (ChangePasswordUseCase,
                                        DeactivateAccountUseCase,
                                        RemoveAvatarUseCase, SetPasswordUseCase,
                                        UpdateProfileUseCase,
+                                       UpdateUsernameUseCase,
                                        UploadAvatarUseCase)
 from app.core.logging import get_logger
 from app.domain.entities import User
-from app.domain.exceptions import InvalidCredentialError
+from app.domain.exceptions import (InvalidCredentialError, InvalidUsernameError,
+                                   UsernameCooldownError,
+                                   UsernameUnavailableError)
 from app.infrastructure.api.dependencies import (
     get_change_password_usecase, get_current_user,
     get_deactivate_account_usecase, get_remove_avatar_usecase,
     get_set_password_usecase, get_update_profile_usecase,
-    get_upload_avatar_usecase)
+    get_update_username_usecase, get_upload_avatar_usecase)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 logger = get_logger(__name__)
@@ -32,6 +35,7 @@ def _user_response(user: User) -> UserResponse:
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
+        username=user.username,
         auth_provider=(
             user.auth_provider.value
             if hasattr(user.auth_provider, "value")
@@ -187,3 +191,25 @@ async def deactivate_account(
 ):
     await use_case.execute(current_user.id)
     return success_response(message="Account deactivated successfully.")
+
+# ── PATCH /users/me/username ────────────────────────────────────────
+
+@router.patch("/me/username", status_code=status.HTTP_200_OK)
+async def update_username(
+    body: UpdateUsernameRequest,
+    current_user: User = Depends(get_current_user),
+    use_case: UpdateUsernameUseCase = Depends(get_update_username_usecase),
+):
+    try:
+        updated = await use_case.execute(current_user.id, body.username)
+    except InvalidUsernameError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
+    except UsernameCooldownError as exc:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(exc))
+    except UsernameUnavailableError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+    return success_response(
+        data=_user_response(updated).model_dump(mode="json"),
+        message="Username updated successfully.",
+    )

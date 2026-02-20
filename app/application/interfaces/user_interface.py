@@ -20,6 +20,10 @@ class IUserInterface(ABC):
         ...
 
     @abstractmethod
+    async def get_by_username(self, username: str) -> Optional[User]:
+        ...
+
+    @abstractmethod
     async def get_by_google_sub(self, google_sub: str) -> Optional[User]:
         ...
 

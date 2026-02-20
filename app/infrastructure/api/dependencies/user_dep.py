@@ -7,6 +7,7 @@ from app.application.use_cases import (ChangePasswordUseCase,
                                        GetCurrentUserUseCase,
                                        RemoveAvatarUseCase, SetPasswordUseCase,
                                        UpdateProfileUseCase,
+                                       UpdateUsernameUseCase,
                                        UploadAvatarUseCase)
 
 from .core_dep import get_jwt_service, get_storage_service, get_user_repository
@@ -55,3 +56,9 @@ def get_deactivate_account_usecase(
     user_repo: IUserInterface = Depends(get_user_repository),
 ) -> DeactivateAccountUseCase:
     return DeactivateAccountUseCase(user_repo)
+
+
+def get_update_username_usecase(
+    user_repo: IUserInterface = Depends(get_user_repository),
+) -> UpdateUsernameUseCase:
+    return UpdateUsernameUseCase(user_repo)
