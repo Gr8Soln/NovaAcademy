@@ -1,17 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-    AlertTriangle,
-    Camera,
-    Check,
-    CheckCircle,
-    KeyRound,
-    Loader2,
-    Lock,
-    Mail,
-    Pencil,
-    Trash2,
-    User as UserIcon,
-    X,
+  AlertTriangle,
+  AtSign,
+  Camera,
+  Check,
+  CheckCircle,
+  KeyRound,
+  Loader2,
+  Lock,
+  Mail,
+  Pencil,
+  Trash2,
+  User as UserIcon,
+  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -47,9 +48,12 @@ function VerifyEmailBanner({ email }: { email: string }) {
       <div className="flex items-start gap-3 rounded-xl border border-success-200 bg-success-50 px-4 py-3">
         <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600" />
         <div>
-          <p className="text-sm font-semibold text-success-700">Verification email sent!</p>
+          <p className="text-sm font-semibold text-success-700">
+            Verification email sent!
+          </p>
           <p className="text-xs text-success-600 mt-0.5">
-            Check your inbox at <span className="font-medium">{email}</span> and click the link to verify your account.
+            Check your inbox at <span className="font-medium">{email}</span> and
+            click the link to verify your account.
           </p>
         </div>
       </div>
@@ -60,13 +64,13 @@ function VerifyEmailBanner({ email }: { email: string }) {
     <div className="flex items-start gap-3 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3">
       <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-warning-600" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-warning-700">Email not verified</p>
+        <p className="text-sm font-semibold text-warning-700">
+          Email not verified
+        </p>
         <p className="text-xs text-warning-600 mt-0.5">
           Verify your email address to unlock all features.
         </p>
-        {error && (
-          <p className="text-xs text-danger-500 mt-1">{error}</p>
-        )}
+        {error && <p className="text-xs text-danger-500 mt-1">{error}</p>}
       </div>
       <button
         type="button"
@@ -369,6 +373,180 @@ function ProfileInfoForm({ user }: { user: User }) {
   );
 }
 
+/* ─── Username section ──────────────────────────────────────── */
+
+function UsernameSection({ user }: { user: User }) {
+  const qc = useQueryClient();
+  const { setAuth, accessToken, refreshToken } = useAuthStore();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(user.username ?? "");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    setValue(user.username ?? "");
+  }, [user.username]);
+
+  const lastChanged = user.username_changed_at
+    ? new Date(user.username_changed_at)
+    : null;
+  const nextAllowed = lastChanged
+    ? new Date(lastChanged.getTime() + 7 * 24 * 60 * 60 * 1000)
+    : null;
+  const canChange = !nextAllowed || new Date() >= nextAllowed;
+
+  const mutation = useMutation({
+    mutationFn: () => authApi.updateUsername(value.trim()),
+    onSuccess: (updated) => {
+      setAuth(updated, accessToken!, refreshToken!);
+      qc.invalidateQueries({ queryKey: ["me"] });
+      setEditing(false);
+      setSuccess(true);
+      setError("");
+    },
+    onError: (e: Error) => setError(e.message),
+  });
+
+  const validate = () => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setError("Username is required");
+      return false;
+    }
+    if (!/^[A-Za-z_][A-Za-z0-9_]{2,14}$/.test(trimmed)) {
+      setError(
+        "3–15 chars · letters, digits, underscore · cannot start with a digit",
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const handleSave = () => {
+    if (validate()) mutation.mutate();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-neutral-800">Username</h3>
+        {!editing && canChange && (
+          <button
+            type="button"
+            title="Change username"
+            onClick={() => {
+              setEditing(true);
+              setSuccess(false);
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-sm hover:bg-neutral-50 hover:text-primary-600 transition-colors"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* display */}
+      {!editing && (
+        <div className="flex items-center gap-3 rounded-xl border border-neutral-100 bg-neutral-50 px-4 py-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-50 text-primary-600">
+            <AtSign className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-neutral-800">
+              {user.username ? (
+                <span className="font-mono">@{user.username}</span>
+              ) : (
+                <span className="text-neutral-400 italic">Not set</span>
+              )}
+            </p>
+            {lastChanged && (
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Last changed{" "}
+                {lastChanged.toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+                {!canChange && nextAllowed && (
+                  <>
+                    {" "}
+                    · next change available{" "}
+                    {nextAllowed.toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </>
+                )}
+              </p>
+            )}
+          </div>
+          {success && (
+            <span className="ml-auto text-xs text-success-600 font-medium flex items-center gap-1 flex-shrink-0">
+              <Check className="h-3.5 w-3.5" /> Updated
+            </span>
+          )}
+        </div>
+      )}
+
+      {!editing && !canChange && (
+        <p className="text-xs text-neutral-500 bg-neutral-50 rounded-lg px-4 py-2 border border-neutral-100">
+          Usernames can only be changed once every 7 days.
+        </p>
+      )}
+
+      {/* edit form */}
+      {editing && (
+        <div className="space-y-3 rounded-xl border border-neutral-100 bg-neutral-50 p-4">
+          {error && (
+            <p className="text-sm text-danger-500 bg-danger-50 rounded-lg px-4 py-2">
+              {error}
+            </p>
+          )}
+          <Input
+            label="New username"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="e.g. john_doe"
+            autoComplete="off"
+          />
+          <p className="text-xs text-neutral-400">
+            3–15 characters · letters, numbers, underscores · cannot start with
+            a digit.
+          </p>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              title="Save"
+              disabled={mutation.isPending}
+              onClick={handleSave}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-700 text-white shadow-sm hover:bg-primary-500 transition-colors disabled:opacity-50"
+            >
+              {mutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
+            </button>
+            <button
+              type="button"
+              title="Cancel"
+              onClick={() => {
+                setEditing(false);
+                setError("");
+                setValue(user.username ?? "");
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-sm hover:bg-neutral-50 hover:text-neutral-700 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Password section ──────────────────────────────────────── */
 
 function PasswordSection({ user }: { user: User }) {
@@ -631,6 +809,11 @@ export default function ProfilePage() {
                 <h2 className="font-display text-2xl font-bold text-primary-900">
                   {fullName}
                 </h2>
+                {user.username && (
+                  <p className="text-sm font-mono text-primary-600 mt-0.5">
+                    @{user.username}
+                  </p>
+                )}
                 <p className="text-neutral-500 mt-0.5">{user.email}</p>
                 <span className="mt-2 inline-flex items-center rounded-full bg-primary-50 px-3 py-0.5 text-xs font-semibold text-primary-700">
                   {user.auth_provider === "google"
@@ -658,6 +841,13 @@ export default function ProfilePage() {
           <Card>
             <CardContent>
               <ProfileInfoForm user={user} />
+            </CardContent>
+          </Card>
+
+          {/* Username */}
+          <Card>
+            <CardContent>
+              <UsernameSection user={user} />
             </CardContent>
           </Card>
 

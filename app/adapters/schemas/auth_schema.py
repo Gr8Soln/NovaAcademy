@@ -60,6 +60,7 @@ class UserResponse(BaseModel):
     first_name: str
     last_name: str
     username: Optional[str] = None
+    username_changed_at: Optional[datetime] = None
     auth_provider: str
     avatar_url: Optional[str] = None
     is_active: bool

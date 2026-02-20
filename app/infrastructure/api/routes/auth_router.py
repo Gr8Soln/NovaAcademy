@@ -35,6 +35,8 @@ def _user_response(user) -> UserResponse:
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
+        username=user.username,
+        username_changed_at=user.username_changed_at,
         auth_provider=user.auth_provider.value if hasattr(user.auth_provider, "value") else user.auth_provider,
         avatar_url=user.avatar_url,
         is_active=user.is_active,

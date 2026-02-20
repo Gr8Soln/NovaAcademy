@@ -12,6 +12,8 @@ from app.core.config import settings
 from app.core.logging import get_logger
 from app.infrastructure.api import (auth_router, chat_router, file_router,
                                     user_router)
+from app.infrastructure.db import Base
+from app.infrastructure.db.session import engine
 
 logger = get_logger(__name__)
 
@@ -21,6 +23,10 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """Startup / shutdown lifecycle hook."""
+    # Create all tables on a fresh database (idempotent via checkfirst=True)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     upload_dir = Path(settings.UPLOAD_DIR)
     upload_dir.mkdir(parents=True, exist_ok=True)
     logger.info(f"🟢 {settings.APP_NAME} App started")

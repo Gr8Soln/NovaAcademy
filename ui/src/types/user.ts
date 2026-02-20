@@ -3,6 +3,8 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  username: string | null;
+  username_changed_at: string | null;
   auth_provider: string;
   avatar_url: string | null;
   is_active: boolean;

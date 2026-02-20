@@ -4,7 +4,12 @@ import api from "./api";
 export const authApi = {
   // ── Auth ───────────────────────────────────────────────────────
 
-  register: (email: string, first_name: string, last_name: string, password: string) =>
+  register: (
+    email: string,
+    first_name: string,
+    last_name: string,
+    password: string,
+  ) =>
     api<AuthResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify({ email, first_name, last_name, password }),
@@ -80,6 +85,12 @@ export const authApi = {
     api<User>("/users/me/password", {
       method: "PUT",
       body: JSON.stringify({ current_password, new_password }),
+    }),
+
+  updateUsername: (username: string) =>
+    api<User>("/users/me/username", {
+      method: "PATCH",
+      body: JSON.stringify({ username }),
     }),
 
   deactivateAccount: () => api<null>("/users/me", { method: "DELETE" }),
