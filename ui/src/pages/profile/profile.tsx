@@ -375,16 +375,23 @@ function ProfileInfoForm({ user }: { user: User }) {
 
 /* ─── Username section ──────────────────────────────────────── */
 
-function UsernameSection({ user }: { user: User }) {
+function UsernameAndPasswordSection({ user }: { user: User }) {
   const qc = useQueryClient();
   const { setAuth, accessToken, refreshToken } = useAuthStore();
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(user.username ?? "");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [usernameEditing, setUsernameEditing] = useState(false);
+  const [usernameValue, setUsernameValue] = useState(user.username ?? "");
+  const [usernameError, setUsernameError] = useState("");
+  const [usernameSuccess, setUsernameSuccess] = useState(false);
+  const hasPassword = user.has_password ?? user.auth_provider === "email";
+  const [mode, setMode] = useState<"idle" | "set" | "change">("idle");
+  const [form, setForm] = useState({ current: "", next: "", confirm: "" });
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>(
+    {},
+  );
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
 
   useEffect(() => {
-    setValue(user.username ?? "");
+    setUsernameValue(user.username ?? "");
   }, [user.username]);
 
   const lastChanged = user.username_changed_at
@@ -395,26 +402,26 @@ function UsernameSection({ user }: { user: User }) {
     : null;
   const canChange = !nextAllowed || new Date() >= nextAllowed;
 
-  const mutation = useMutation({
-    mutationFn: () => authApi.updateUsername(value.trim()),
+  const usernameMutation = useMutation({
+    mutationFn: () => authApi.updateUsername(usernameValue.trim()),
     onSuccess: (updated) => {
       setAuth(updated, accessToken!, refreshToken!);
       qc.invalidateQueries({ queryKey: ["me"] });
-      setEditing(false);
-      setSuccess(true);
-      setError("");
+      setUsernameEditing(false);
+      setUsernameSuccess(true);
+      setUsernameError("");
     },
-    onError: (e: Error) => setError(e.message),
+    onError: (e: Error) => setUsernameError(e.message),
   });
 
-  const validate = () => {
-    const trimmed = value.trim();
+  const validateUsername = () => {
+    const trimmed = usernameValue.trim();
     if (!trimmed) {
-      setError("Username is required");
+      setUsernameError("Username is required");
       return false;
     }
     if (!/^[A-Za-z_][A-Za-z0-9_]{2,14}$/.test(trimmed)) {
-      setError(
+      setUsernameError(
         "3–15 chars · letters, digits, underscore · cannot start with a digit",
       );
       return false;
@@ -422,31 +429,81 @@ function UsernameSection({ user }: { user: User }) {
     return true;
   };
 
-  const handleSave = () => {
-    if (validate()) mutation.mutate();
+  const handleSaveUsername = () => {
+    if (validateUsername()) usernameMutation.mutate();
+  };
+
+  // ===== Password =========================
+
+  const passwordMutation = useMutation({
+    mutationFn: () =>
+      hasPassword
+        ? authApi.changePassword(form.current, form.next)
+        : authApi.setPassword(form.next),
+    onSuccess: () => {
+      setPasswordSuccess(true);
+      setMode("idle");
+      setForm({ current: "", next: "", confirm: "" });
+    },
+    onError: (e: Error) => setPasswordErrors({ general: e.message }),
+  });
+
+  const validatePassword = () => {
+    const errs: Record<string, string> = {};
+    if (hasPassword && !form.current) errs.current = "Required";
+    if (!form.next || form.next.length < 8) errs.next = "At least 8 characters";
+    if (form.next !== form.confirm) errs.confirm = "Passwords don't match";
+    setPasswordErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (validatePassword()) passwordMutation.mutate();
+  };
+
+  const cancel = () => {
+    setMode("idle");
+    setPasswordErrors({});
+    setForm({ current: "", next: "", confirm: "" });
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-neutral-800">Username</h3>
-        {!editing && canChange && (
-          <button
-            type="button"
-            title="Change username"
-            onClick={() => {
-              setEditing(true);
-              setSuccess(false);
-            }}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-sm hover:bg-neutral-50 hover:text-primary-600 transition-colors"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
-        )}
+        <h3 className="font-semibold text-neutral-800">Username & Password</h3>
+        <div className="flex items-center justify-end gap-2">
+          {!usernameEditing && canChange && (
+            <button
+              type="button"
+              title="Change username"
+              onClick={() => {
+                setUsernameEditing(true);
+                setUsernameSuccess(false);
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-sm hover:bg-neutral-50 hover:text-primary-600 transition-colors"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          )}
+
+          {mode === "idle" && (
+            <button
+              type="button"
+              title={hasPassword ? "Change password" : "Set password"}
+              onClick={() => {
+                setPasswordSuccess(false);
+                setMode(hasPassword ? "change" : "set");
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-sm hover:bg-neutral-50 hover:text-primary-600 transition-colors"
+            >
+              <KeyRound className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* display */}
-      {!editing && (
+      {!usernameEditing && (
         <div className="flex items-center gap-3 rounded-xl border border-neutral-100 bg-neutral-50 px-4 py-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-50 text-primary-600">
             <AtSign className="h-4 w-4" />
@@ -481,7 +538,7 @@ function UsernameSection({ user }: { user: User }) {
               </p>
             )}
           </div>
-          {success && (
+          {usernameSuccess && (
             <span className="ml-auto text-xs text-success-600 font-medium flex items-center gap-1 flex-shrink-0">
               <Check className="h-3.5 w-3.5" /> Updated
             </span>
@@ -489,24 +546,24 @@ function UsernameSection({ user }: { user: User }) {
         </div>
       )}
 
-      {!editing && !canChange && (
+      {!usernameEditing && !canChange && (
         <p className="text-xs text-neutral-500 bg-neutral-50 rounded-lg px-4 py-2 border border-neutral-100">
           Usernames can only be changed once every 7 days.
         </p>
       )}
 
       {/* edit form */}
-      {editing && (
+      {usernameEditing && (
         <div className="space-y-3 rounded-xl border border-neutral-100 bg-neutral-50 p-4">
-          {error && (
+          {usernameError && (
             <p className="text-sm text-danger-500 bg-danger-50 rounded-lg px-4 py-2">
-              {error}
+              {usernameError}
             </p>
           )}
           <Input
             label="New username"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
+            value={usernameValue}
+            onChange={(e) => setUsernameValue(e.target.value)}
             placeholder="e.g. john_doe"
             autoComplete="off"
           />
@@ -518,11 +575,11 @@ function UsernameSection({ user }: { user: User }) {
             <button
               type="button"
               title="Save"
-              disabled={mutation.isPending}
-              onClick={handleSave}
+              disabled={usernameMutation.isPending}
+              onClick={handleSaveUsername}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-700 text-white shadow-sm hover:bg-primary-500 transition-colors disabled:opacity-50"
             >
-              {mutation.isPending ? (
+              {usernameMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Check className="h-4 w-4" />
@@ -532,9 +589,9 @@ function UsernameSection({ user }: { user: User }) {
               type="button"
               title="Cancel"
               onClick={() => {
-                setEditing(false);
-                setError("");
-                setValue(user.username ?? "");
+                setUsernameEditing(false);
+                setUsernameError("");
+                setUsernameValue(user.username ?? "");
               }}
               className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-sm hover:bg-neutral-50 hover:text-neutral-700 transition-colors"
             >
@@ -543,69 +600,8 @@ function UsernameSection({ user }: { user: User }) {
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-/* ─── Password section ──────────────────────────────────────── */
-
-function PasswordSection({ user }: { user: User }) {
-  const hasPassword = user.has_password ?? user.auth_provider === "email";
-  const [mode, setMode] = useState<"idle" | "set" | "change">("idle");
-  const [form, setForm] = useState({ current: "", next: "", confirm: "" });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [success, setSuccess] = useState(false);
-
-  const mutation = useMutation({
-    mutationFn: () =>
-      hasPassword
-        ? authApi.changePassword(form.current, form.next)
-        : authApi.setPassword(form.next),
-    onSuccess: () => {
-      setSuccess(true);
-      setMode("idle");
-      setForm({ current: "", next: "", confirm: "" });
-    },
-    onError: (e: Error) => setErrors({ general: e.message }),
-  });
-
-  const validate = () => {
-    const errs: Record<string, string> = {};
-    if (hasPassword && !form.current) errs.current = "Required";
-    if (!form.next || form.next.length < 8) errs.next = "At least 8 characters";
-    if (form.next !== form.confirm) errs.confirm = "Passwords don't match";
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (validate()) mutation.mutate();
-  };
-
-  const cancel = () => {
-    setMode("idle");
-    setErrors({});
-    setForm({ current: "", next: "", confirm: "" });
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-neutral-800">Password</h3>
-        {mode === "idle" && (
-          <button
-            type="button"
-            title={hasPassword ? "Change password" : "Set password"}
-            onClick={() => {
-              setSuccess(false);
-              setMode(hasPassword ? "change" : "set");
-            }}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-sm hover:bg-neutral-50 hover:text-primary-600 transition-colors"
-          >
-            <KeyRound className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+      <hr className="flex-1 border-neutral-200" />
 
       {/* status badge */}
       {mode === "idle" && (
@@ -627,7 +623,7 @@ function PasswordSection({ user }: { user: User }) {
                   : "Add a password to log in without OAuth."}
             </p>
           </div>
-          {success && (
+          {passwordSuccess && (
             <span className="ml-auto text-xs text-success-600 font-medium flex items-center gap-1">
               <Check className="h-3.5 w-3.5" /> Updated
             </span>
@@ -638,9 +634,9 @@ function PasswordSection({ user }: { user: User }) {
       {/* form */}
       {mode !== "idle" && (
         <div className="space-y-4 rounded-xl border border-neutral-100 bg-neutral-50 p-4">
-          {errors.general && (
+          {passwordErrors.general && (
             <p className="text-sm text-danger-500 bg-danger-50 rounded-lg px-4 py-2">
-              {errors.general}
+              {passwordErrors.general}
             </p>
           )}
 
@@ -652,7 +648,7 @@ function PasswordSection({ user }: { user: User }) {
               onChange={(e) =>
                 setForm((p) => ({ ...p, current: e.target.value }))
               }
-              error={errors.current}
+              error={passwordErrors.current}
               autoComplete="current-password"
             />
           )}
@@ -662,7 +658,7 @@ function PasswordSection({ user }: { user: User }) {
             label={hasPassword ? "New password" : "Password"}
             value={form.next}
             onChange={(e) => setForm((p) => ({ ...p, next: e.target.value }))}
-            error={errors.next}
+            error={passwordErrors.next}
             autoComplete="new-password"
           />
 
@@ -673,7 +669,7 @@ function PasswordSection({ user }: { user: User }) {
             onChange={(e) =>
               setForm((p) => ({ ...p, confirm: e.target.value }))
             }
-            error={errors.confirm}
+            error={passwordErrors.confirm}
             autoComplete="new-password"
           />
 
@@ -681,11 +677,11 @@ function PasswordSection({ user }: { user: User }) {
             <button
               type="button"
               title={hasPassword ? "Update password" : "Set password"}
-              disabled={mutation.isPending}
+              disabled={passwordMutation.isPending}
               onClick={handleSubmit}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-700 text-white shadow-sm hover:bg-primary-500 transition-colors disabled:opacity-50"
             >
-              {mutation.isPending ? (
+              {passwordMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Check className="h-4 w-4" />
@@ -844,17 +840,10 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Username */}
+          {/* Username & Password */}
           <Card>
             <CardContent>
-              <UsernameSection user={user} />
-            </CardContent>
-          </Card>
-
-          {/* Password */}
-          <Card>
-            <CardContent>
-              <PasswordSection user={user} />
+              <UsernameAndPasswordSection user={user} />
             </CardContent>
           </Card>
         </div>

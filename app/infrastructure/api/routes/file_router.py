@@ -58,6 +58,18 @@ async def get_file(file_path: str):
     return FileResponse(path=target_path)
 
 
+@router.get("/images/{file_path:path}")
+async def get_image(file_path: str):
+    """
+    Serve an images file from the configured images directory.
+    """
+    target_path = get_safe_path(file_path, f"{settings.UPLOAD_DIR}/images")
+    
+    if not target_path or not target_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+        
+    return FileResponse(path=target_path)
+
 @router.get("/avatars/{file_path:path}")
 async def get_avatar(file_path: str):
     """

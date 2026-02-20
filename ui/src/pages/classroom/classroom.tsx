@@ -11,11 +11,12 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import type { ClassroomCardData } from "@/components/classroom/ClassroomCard";
 import ClassroomList from "@/components/classroom/ClassroomList";
 import { authApi } from "@/lib/api/auth";
 import { classApi } from "@/lib/api/chat";
 import { cn } from "@/lib/utils";
-import type { User } from "@/types";
+import type { ClassRoom, User } from "@/types";
 
 // ── Modal shell ─────────────────────────────────────────────
 function Modal({
@@ -412,6 +413,38 @@ export default function ClassroomPage() {
   const [joinCode, setJoinCode] = useState("");
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joinSuccess, setJoinSuccess] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
+
+  // Debounce search input
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(searchQuery), 350);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  function classToCard(c: ClassRoom): ClassroomCardData {
+    return {
+      id: c.id,
+      code: c.code,
+      name: c.name,
+      description: c.description ?? "",
+      memberCount: c.member_count,
+      progress: 0,
+      subject: "Classroom",
+    };
+  }
+
+  const isSearchMode = debouncedQ.trim().length >= 1;
+
+  const {
+    data: searchResults,
+    isFetching: searching,
+    isError: searchError,
+  } = useQuery<ClassRoom[]>({
+    queryKey: ["classSearch", debouncedQ],
+    queryFn: () => classApi.searchClasses(debouncedQ) as Promise<ClassRoom[]>,
+    enabled: isSearchMode,
+  });
 
   const { mutate: joinClass, isPending: joining } = useMutation({
     mutationFn: (code: string) => classApi.joinClass(code),
@@ -481,13 +514,69 @@ export default function ClassroomPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
         <input
           type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search classrooms…"
-          className="w-full pl-9 pr-4 py-2.5 text-sm border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all"
+          className="w-full pl-9 pr-9 py-2.5 text-sm border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all"
         />
+        {searchQuery && (
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setDebouncedQ("");
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* Section label */}
+      <div className="flex items-center gap-2">
+        {isSearchMode ? (
+          searching ? (
+            <p className="text-sm text-neutral-400 flex items-center gap-2">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Searching for "{debouncedQ}"…
+            </p>
+          ) : searchError ? (
+            <p className="text-sm text-red-500">
+              Search failed. Please try again.
+            </p>
+          ) : (
+            <p className="text-sm text-neutral-500">
+              <span className="font-semibold text-neutral-800">
+                {searchResults?.length ?? 0}
+              </span>{" "}
+              result{searchResults?.length !== 1 ? "s" : ""} for{" "}
+              <span className="font-medium text-neutral-700">
+                "{debouncedQ}"
+              </span>
+            </p>
+          )
+        ) : (
+          <p className="text-sm font-semibold text-neutral-700">My Classes</p>
+        )}
       </div>
 
       {/* Classroom grid */}
-      <ClassroomList />
+      {isSearchMode ? (
+        searching ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-52 rounded-2xl bg-neutral-100 animate-pulse"
+              />
+            ))}
+          </div>
+        ) : (
+          <ClassroomList classrooms={(searchResults ?? []).map(classToCard)} />
+        )
+      ) : (
+        <ClassroomList />
+      )}
 
       {/* ── Join Class Modal ─────────────────────────────── */}
       <Modal
