@@ -2,6 +2,7 @@ export * from "./ai";
 export * from "./analytics";
 export * from "./auth";
 export * from "./challenges";
+export * from "./chat";
 export * from "./dashboard";
 export * from "./documents";
 export * from "./leaderboard";

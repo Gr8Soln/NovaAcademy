@@ -1,10 +1,12 @@
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import (APIRouter, Depends, File, HTTPException, Query,
+                     UploadFile, status)
 
 from app.adapters.schemas import (ChangePasswordRequest, SetPasswordRequest,
                                   UpdateProfileRequest, UpdateUsernameRequest,
                                   UserResponse, success_response)
+from app.application.interfaces import IUserInterface
 from app.application.use_cases import (ChangePasswordUseCase,
                                        DeactivateAccountUseCase,
                                        RemoveAvatarUseCase, SetPasswordUseCase,
@@ -20,7 +22,8 @@ from app.infrastructure.api.dependencies import (
     get_change_password_usecase, get_current_user,
     get_deactivate_account_usecase, get_remove_avatar_usecase,
     get_set_password_usecase, get_update_profile_usecase,
-    get_update_username_usecase, get_upload_avatar_usecase)
+    get_update_username_usecase, get_upload_avatar_usecase,
+    get_user_repository)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 logger = get_logger(__name__)
@@ -213,4 +216,21 @@ async def update_username(
     return success_response(
         data=_user_response(updated).model_dump(mode="json"),
         message="Username updated successfully.",
+    )
+
+
+# ── GET /users/search ─────────────────────────────────────────────
+
+@router.get("/search", status_code=status.HTTP_200_OK)
+async def search_users(
+    q: str = Query(..., min_length=1, max_length=100),
+    limit: int = Query(10, ge=1, le=50),
+    _: User = Depends(get_current_user),
+    user_repo: IUserInterface = Depends(get_user_repository),
+):
+    """Search users by name, email, or username. Requires authentication."""
+    results = await user_repo.search(query=q, offset=0, limit=limit)
+    return success_response(
+        data=[_user_response(u).model_dump(mode="json") for u in results],
+        message="Search results",
     )

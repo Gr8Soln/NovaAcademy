@@ -93,5 +93,8 @@ export const authApi = {
       body: JSON.stringify({ username }),
     }),
 
+  searchUsers: (q: string, limit = 10) =>
+    api<User[]>(`/users/search?q=${encodeURIComponent(q)}&limit=${limit}`),
+
   deactivateAccount: () => api<null>("/users/me", { method: "DELETE" }),
 };

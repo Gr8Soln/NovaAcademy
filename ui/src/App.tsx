@@ -9,6 +9,7 @@ import {
   ChallengesPage,
   ClassChatPage,
   ClassLibraryPage,
+  ClassMembersPage,
   ClassOverviewPage,
   ClassPage,
   ClassQuizPage,
@@ -108,6 +109,7 @@ export default function App() {
           <Route path="library" element={<ClassLibraryPage />} />
           <Route path="study" element={<ClassStudyPage />} />
           <Route path="quiz" element={<ClassQuizPage />} />
+          <Route path="participants" element={<ClassMembersPage />} />
         </Route>
 
         {/* Profile */}

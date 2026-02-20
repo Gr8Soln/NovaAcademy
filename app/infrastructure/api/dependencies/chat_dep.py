@@ -14,11 +14,18 @@ from app.application.interfaces import (IChatCacheInterface,
                                         IChatMessageInterface,
                                         IChatNotificationInterface,
                                         IChatPresenceService, IChatPubSub)
-from app.application.use_cases import (DeleteChatMessageUseCase,
+from app.application.use_cases import (AddGroupMemberUseCase,
+                                       ChangeGroupMemberRoleUseCase,
+                                       CreateGroupUseCase,
+                                       DeleteChatMessageUseCase,
+                                       DeleteGroupUseCase,
                                        EditChatMessageUseCase,
-                                       GetChatMessagesUseCase,
+                                       GetChatMessagesUseCase, GetGroupUseCase,
+                                       GetUserGroupsUseCase,
+                                       RemoveGroupMemberUseCase,
                                        SearchchatMessagesUseCase,
-                                       SendChatMessageUseCase)
+                                       SendChatMessageUseCase,
+                                       UpdateGroupUseCase)
 from app.core.config import Settings, get_settings
 from app.infrastructure.db import get_db_session
 
@@ -171,3 +178,63 @@ async def get_search_chat_messages_use_case(
         message_repo=message_repo,
         group_repo=group_repo,
     )
+
+
+# ---------------------------------------------------------------------------
+# Group management use-case factories
+# ---------------------------------------------------------------------------
+
+async def get_create_group_usecase(
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
+    db=Depends(get_db_session),
+) -> CreateGroupUseCase:
+    from app.adapters.repositories import SQLUserRepository
+    from app.application.interfaces import IUserInterface
+    user_repo: IUserInterface = SQLUserRepository(db)
+    return CreateGroupUseCase(group_repo=group_repo, user_repo=user_repo)
+
+
+async def get_get_user_groups_usecase(
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
+) -> GetUserGroupsUseCase:
+    return GetUserGroupsUseCase(group_repo=group_repo)
+
+
+async def get_get_group_usecase(
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
+) -> GetGroupUseCase:
+    return GetGroupUseCase(group_repo=group_repo)
+
+
+async def get_update_group_usecase(
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
+) -> UpdateGroupUseCase:
+    return UpdateGroupUseCase(group_repo=group_repo)
+
+
+async def get_delete_group_usecase(
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
+) -> DeleteGroupUseCase:
+    return DeleteGroupUseCase(group_repo=group_repo)
+
+
+async def get_add_group_member_usecase(
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
+    db=Depends(get_db_session),
+) -> AddGroupMemberUseCase:
+    from app.adapters.repositories import SQLUserRepository
+    from app.application.interfaces import IUserInterface
+    user_repo: IUserInterface = SQLUserRepository(db)
+    return AddGroupMemberUseCase(group_repo=group_repo, user_repo=user_repo)
+
+
+async def get_remove_group_member_usecase(
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
+) -> RemoveGroupMemberUseCase:
+    return RemoveGroupMemberUseCase(group_repo=group_repo)
+
+
+async def get_change_group_role_usecase(
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
+) -> ChangeGroupMemberRoleUseCase:
+    return ChangeGroupMemberRoleUseCase(group_repo=group_repo)

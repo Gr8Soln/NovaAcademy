@@ -24,3 +24,33 @@ export interface AuthResponse {
   user: User;
   tokens: TokenPair;
 }
+
+export type GroupRole = "owner" | "admin" | "member";
+
+export interface GroupMember {
+  user_id: string;
+  username: string;
+  role: GroupRole;
+  joined_at: string;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  description: string | null;
+  avatar_url: string | null;
+  is_private: boolean;
+  created_by: string;
+  member_count: number;
+  members: GroupMember[];
+  created_at: string;
+}
+
+export interface UserSearchResult {
+  id: string;
+  username: string | null;
+  first_name: string;
+  last_name: string;
+  avatar_url: string | null;
+  email: string;
+}

@@ -1,73 +1,65 @@
+import { useQuery } from "@tanstack/react-query";
+
 import ClassroomCard, {
   type ClassroomCardData,
 } from "@/components/classroom/ClassroomCard";
+import { chatApi } from "@/lib/api/chat";
+import type { Group } from "@/types";
 
-// ── Mock data ───────────────────────────────────────────────
-const mockClassrooms: ClassroomCardData[] = [
-  {
-    id: "cls-1",
-    name: "Introduction to Machine Learning",
-    description:
-      "Learn the fundamentals of ML including supervised and unsupervised learning, neural networks, and model evaluation.",
-    memberCount: 34,
-    progress: 72,
-    subject: "Computer Science",
-  },
-  {
-    id: "cls-2",
-    name: "Organic Chemistry II",
-    description:
-      "Advanced organic chemistry covering reaction mechanisms, stereochemistry, and spectroscopy techniques.",
-    memberCount: 28,
-    progress: 45,
-    subject: "Chemistry",
-  },
-  {
-    id: "cls-3",
-    name: "Data Structures & Algorithms",
-    description:
-      "Master essential data structures like trees, graphs, and hash maps. Practice algorithm design and complexity analysis.",
-    memberCount: 41,
-    progress: 88,
-    subject: "Computer Science",
-  },
-  {
-    id: "cls-4",
-    name: "Calculus III — Multivariable",
-    description:
-      "Explore partial derivatives, multiple integrals, vector fields, and theorems of Green, Stokes, and Gauss.",
-    memberCount: 22,
-    progress: 30,
-    subject: "Mathematics",
-  },
-  {
-    id: "cls-5",
-    name: "Principles of Economics",
-    description:
-      "Covers micro and macroeconomic theory, market structures, fiscal & monetary policy, and international trade.",
-    memberCount: 56,
-    progress: 60,
-    subject: "Economics",
-  },
-  {
-    id: "cls-6",
-    name: "Modern World History",
-    description:
-      "A survey of global events from the 18th century to the present, focusing on revolutions, wars, and cultural shifts.",
-    memberCount: 19,
-    progress: 15,
-    subject: "History",
-  },
-];
+function groupToCard(g: Group): ClassroomCardData {
+  return {
+    id: g.id,
+    name: g.name,
+    description: g.description ?? "",
+    memberCount: g.member_count,
+    progress: 0,
+    subject: "Classroom",
+  };
+}
 
 interface ClassroomListProps {
+  /** Optional override – pass your own list instead of fetching. */
   classrooms?: ClassroomCardData[];
 }
 
-export default function ClassroomList({
-  classrooms = mockClassrooms,
-}: ClassroomListProps) {
-  if (classrooms.length === 0) {
+export default function ClassroomList({ classrooms }: ClassroomListProps) {
+  const {
+    data: groups,
+    isLoading,
+    isError,
+  } = useQuery<Group[]>({
+    queryKey: ["classrooms"],
+    queryFn: () => chatApi.getMyGroups() as Promise<Group[]>,
+    enabled: !classrooms,
+  });
+
+  const items: ClassroomCardData[] =
+    classrooms ?? (groups ?? []).map(groupToCard);
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-52 rounded-2xl bg-neutral-100 animate-pulse"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <p className="text-sm text-red-500">
+          Failed to load classrooms. Please try again.
+        </p>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <div className="h-16 w-16 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
@@ -85,9 +77,10 @@ export default function ClassroomList({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-      {classrooms.map((c) => (
+      {items.map((c) => (
         <ClassroomCard key={c.id} classroom={c} />
       ))}
     </div>
   );
 }
+

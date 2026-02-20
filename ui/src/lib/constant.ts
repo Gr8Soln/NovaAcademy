@@ -18,6 +18,7 @@ export const pages = {
   classLibrary: "/class/:classId/library",
   classStudy: "/class/:classId/study",
   classQuiz: "/class/:classId/quiz",
+  classParticipants: "/class/:classId/participants",
   documents: "/classroom/documents",
   study: "/classroom/study/:documentId",
   examHall: "/classroom/exam-hall",

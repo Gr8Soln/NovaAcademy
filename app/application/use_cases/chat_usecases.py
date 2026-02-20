@@ -335,3 +335,191 @@ class SearchchatMessagesUseCase:
             query=query,
             limit=limit,
         )
+
+
+# =============================================================================
+# GROUP MANAGEMENT USE CASES
+# =============================================================================
+
+from app.application.interfaces import IUserInterface
+from app.domain.entities import User
+
+
+class CreateGroupUseCase:
+    """Create a new class/group and optionally add initial members."""
+
+    def __init__(self, group_repo: IChatGroupInterface, user_repo: IUserInterface):
+        self._group_repo = group_repo
+        self._user_repo = user_repo
+
+    async def execute(
+        self,
+        creator_id: UUID,
+        name: str,
+        description: str = "",
+        avatar_url: Optional[str] = None,
+        is_private: bool = False,
+        initial_member_usernames: list[str] | None = None,
+    ) -> ChatGroup:
+        creator = await self._user_repo.get_by_id(creator_id)
+        if not creator:
+            raise ValueError("Creator not found")
+
+        group = ChatGroup(
+            name=name,
+            description=description,
+            created_by=creator_id,
+            avatar_url=avatar_url,
+            is_private=is_private,
+        )
+        # Fix auto-created stub member – replace with real username
+        group.members[0].username = creator.username or creator.email.split("@")[0]
+
+        for username in (initial_member_usernames or []):
+            user = await self._user_repo.get_by_username(username)
+            if user and not group.is_member(user.id):
+                uname = user.username or user.email.split("@")[0]
+                group.add_member(user.id, uname)
+
+        return await self._group_repo.save(group)
+
+
+class GetUserGroupsUseCase:
+    """Return all groups the caller belongs to."""
+
+    def __init__(self, group_repo: IChatGroupInterface):
+        self._group_repo = group_repo
+
+    async def execute(self, user_id: UUID) -> list[ChatGroup]:
+        return await self._group_repo.get_user_groups(user_id)
+
+
+class GetGroupUseCase:
+    """Return a single group (caller must be a member)."""
+
+    def __init__(self, group_repo: IChatGroupInterface):
+        self._group_repo = group_repo
+
+    async def execute(self, group_id: UUID, user_id: UUID) -> ChatGroup:
+        group = await self._group_repo.get_by_id(group_id)
+        if not group:
+            raise ValueError("Group not found")
+        if not group.is_member(user_id):
+            raise PermissionError("You are not a member of this group")
+        return group
+
+
+class UpdateGroupUseCase:
+    """Update group metadata – owner or admin only."""
+
+    def __init__(self, group_repo: IChatGroupInterface):
+        self._group_repo = group_repo
+
+    async def execute(
+        self,
+        group_id: UUID,
+        editor_id: UUID,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        avatar_url: Optional[str] = None,
+        is_private: Optional[bool] = None,
+    ) -> ChatGroup:
+        group = await self._group_repo.get_by_id(group_id)
+        if not group:
+            raise ValueError("Group not found")
+
+        member = group.get_member(editor_id)
+        if not member or not member.is_admin_or_owner():
+            raise PermissionError("Only admins or the owner can update the group")
+
+        if name is not None:
+            group.name = name.strip()
+        if description is not None:
+            group.description = description
+        if avatar_url is not None:
+            group.avatar_url = avatar_url
+        if is_private is not None:
+            group.is_private = is_private
+
+        return await self._group_repo.save(group)
+
+
+class AddGroupMemberUseCase:
+    """Add a user to a group by username – owner or admin only."""
+
+    def __init__(self, group_repo: IChatGroupInterface, user_repo: IUserInterface):
+        self._group_repo = group_repo
+        self._user_repo = user_repo
+
+    async def execute(self, group_id: UUID, adder_id: UUID, username: str) -> ChatGroup:
+        group = await self._group_repo.get_by_id(group_id)
+        if not group:
+            raise ValueError("Group not found")
+
+        adder = group.get_member(adder_id)
+        if not adder or not adder.is_admin_or_owner():
+            raise PermissionError("Only admins or the owner can add members")
+
+        user = await self._user_repo.get_by_username(username)
+        if not user:
+            raise ValueError(f"User '{username}' not found")
+
+        uname = user.username or user.email.split("@")[0]
+        group.add_member(user.id, uname)
+        return await self._group_repo.save(group)
+
+
+class RemoveGroupMemberUseCase:
+    """Remove a member from a group – owner or admin only (or self-leave)."""
+
+    def __init__(self, group_repo: IChatGroupInterface):
+        self._group_repo = group_repo
+
+    async def execute(self, group_id: UUID, remover_id: UUID, target_user_id: UUID) -> ChatGroup:
+        group = await self._group_repo.get_by_id(group_id)
+        if not group:
+            raise ValueError("Group not found")
+
+        group.remove_member(target_user_id, remover_id)
+        return await self._group_repo.save(group)
+
+
+class ChangeGroupMemberRoleUseCase:
+    """Promote or demote a member – owner only."""
+
+    def __init__(self, group_repo: IChatGroupInterface):
+        self._group_repo = group_repo
+
+    async def execute(
+        self, group_id: UUID, owner_id: UUID, target_user_id: UUID, new_role: str
+    ) -> ChatGroup:
+        group = await self._group_repo.get_by_id(group_id)
+        if not group:
+            raise ValueError("Group not found")
+
+        if new_role == "admin":
+            group.promote_member(target_user_id, owner_id)
+        elif new_role == "member":
+            group.demote_member(target_user_id, owner_id)
+        else:
+            raise ValueError("Role must be 'admin' or 'member'")
+
+        return await self._group_repo.save(group)
+
+
+class DeleteGroupUseCase:
+    """Delete a group – owner only."""
+
+    def __init__(self, group_repo: IChatGroupInterface):
+        self._group_repo = group_repo
+
+    async def execute(self, group_id: UUID, user_id: UUID) -> None:
+        group = await self._group_repo.get_by_id(group_id)
+        if not group:
+            raise ValueError("Group not found")
+
+        member = group.get_member(user_id)
+        if not member or member.role.value != "owner":
+            raise PermissionError("Only the owner can delete the group")
+
+        await self._group_repo.delete(group_id)

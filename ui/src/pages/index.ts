@@ -36,6 +36,9 @@ export const ClassChatPage = lazy(() => import("./classroom/class-chat"));
 export const ClassLibraryPage = lazy(() => import("./classroom/class-library"));
 export const ClassStudyPage = lazy(() => import("./classroom/class-study"));
 export const ClassQuizPage = lazy(() => import("./classroom/class-quiz"));
+export const ClassMembersPage = lazy(
+  () => import("./classroom/class-members"),
+);
 
 // ── Profile ─────────────────────────────────────────────────
 export const ProfilePage = lazy(() => import("./profile/profile"));

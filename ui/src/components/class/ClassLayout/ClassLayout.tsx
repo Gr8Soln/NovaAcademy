@@ -21,7 +21,7 @@ import { pages } from "@/lib/constant";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores";
 
-type TabKey = "overview" | "chat" | "library" | "study" | "quiz";
+type TabKey = "overview" | "chat" | "library" | "study" | "quiz" | "participants";
 
 interface NavItem {
   key: TabKey;
@@ -70,6 +70,13 @@ function buildNavItems(classId: string): NavItem[] {
       icon: PenTool,
       path: `${base}/quiz`,
       color: "from-pink-500 to-rose-500",
+    },
+    {
+      key: "participants",
+      label: "Participants",
+      icon: Users,
+      path: `${base}/participants`,
+      color: "from-cyan-500 to-sky-500",
     },
   ];
 }
