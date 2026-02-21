@@ -245,11 +245,11 @@ const DashboardLayout = () => {
             <div className="flex items-center gap-3 sm:gap-4">
               {/* Action Buttons */}
               <Link
-                to={pages.documents}
+                to={pages.classroom}
                 className="hidden sm:flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-all hover:shadow hover:-translate-y-0.5"
               >
                 <BookOpen className="h-4 w-4" />
-                <span>Study Now</span>
+                <span>Start Learning</span>
               </Link>
 
               <div className="h-8 w-px bg-neutral-200 hidden sm:block"></div>

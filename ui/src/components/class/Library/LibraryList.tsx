@@ -103,7 +103,7 @@ export default function LibraryList() {
       <UploadFile />
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-3">
         {/* Search */}
         <div className="relative flex-1 w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
