@@ -10,8 +10,8 @@ from fastapi.responses import JSONResponse
 from app.adapters.schemas import error_response, success_response
 from app.core.config import settings
 from app.core.logging import get_logger
-from app.infrastructure.api import (auth_router, chat_router, file_router,
-                                    user_router)
+from app.infrastructure.api import (auth_router, chat_router, document_router,
+                                    file_router, user_router)
 from app.infrastructure.db import Base
 from app.infrastructure.db.session import engine
 
@@ -95,6 +95,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix=settings.API_PREFIX)
     app.include_router(user_router, prefix=settings.API_PREFIX)
     app.include_router(chat_router, prefix=settings.API_PREFIX)
+    app.include_router(document_router, prefix=settings.API_PREFIX)
     app.include_router(file_router, include_in_schema=False)
 
     @app.get(f"{settings.API_PREFIX}/health")

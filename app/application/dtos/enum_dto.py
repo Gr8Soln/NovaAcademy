@@ -18,3 +18,11 @@ class MessageType(Enum):
     FILE = "file"
     SYSTEM = "system"  # "User joined", "User left", etc.
 
+
+class DocumentFileType(str, Enum):
+    """Supported document file types."""
+    PDF = "pdf"
+    TXT = "txt"
+    DOCX = "docx"
+    MD = "md"
+
