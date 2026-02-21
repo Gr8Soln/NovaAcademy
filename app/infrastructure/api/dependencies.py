@@ -397,6 +397,31 @@ async def get_search_chat_messages_use_case(
 
 
 
+async def get_class_id_by_code(
+    class_code: str,
+    current_user: User = Depends(get_current_user),
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
+) -> uuid.UUID:
+    """
+    Resolve class_code to class_id and verify the current user is a member.
+    """
+    group = await group_repo.get_by_code(class_code)
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail=f"Class with code '{class_code}' not found"
+        )
+    
+    is_member = await group_repo.is_member(group.id, current_user.id)
+    if not is_member:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this class"
+        )
+    
+    return group.id
+
+
 async def startup_event():
     """
     Initialize services on application startup.

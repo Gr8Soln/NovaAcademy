@@ -1,89 +1,54 @@
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowDownAZ,
   ArrowUpAZ,
   Filter,
   Grid3X3,
   List,
+  Loader2,
   Search,
 } from "lucide-react";
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 
+import { documentsApi } from "@/lib/api/documents";
 import { cn } from "@/lib/utils";
+import type { Document } from "@/types/document";
 
-import FileCard, { type FileData } from "./FileCard";
+import FileCard from "./FileCard";
 import UploadFile from "./UploadFile";
-
-/* ── Mock data ───────────────────────────────────────────── */
-const mockFiles: FileData[] = [
-  {
-    id: "f1",
-    name: "ML Lecture Notes — Week 1.pdf",
-    type: "pdf",
-    size: "2.4 MB",
-    uploadedAt: "Jan 12, 2026",
-    uploadedBy: "Prof. Chen",
-  },
-  {
-    id: "f2",
-    name: "Neural Network Diagram.png",
-    type: "image",
-    size: "890 KB",
-    uploadedAt: "Jan 15, 2026",
-    uploadedBy: "Sarah K.",
-  },
-  {
-    id: "f3",
-    name: "Dataset — Iris Classification.csv",
-    type: "spreadsheet",
-    size: "12 KB",
-    uploadedAt: "Jan 18, 2026",
-    uploadedBy: "Prof. Chen",
-  },
-  {
-    id: "f4",
-    name: "Backpropagation Tutorial.mp4",
-    type: "video",
-    size: "156 MB",
-    uploadedAt: "Jan 20, 2026",
-    uploadedBy: "NovaAI",
-  },
-  {
-    id: "f5",
-    name: "Assignment 1 — Linear Regression.pdf",
-    type: "pdf",
-    size: "1.1 MB",
-    uploadedAt: "Jan 22, 2026",
-    uploadedBy: "Prof. Chen",
-  },
-  {
-    id: "f6",
-    name: "Study Guide — Midterm Review.pdf",
-    type: "document",
-    size: "3.7 MB",
-    uploadedAt: "Feb 01, 2026",
-    uploadedBy: "NovaAI",
-  },
-];
 
 type SortDir = "asc" | "desc";
 type ViewMode = "list" | "grid";
 
 export default function LibraryList() {
-  const [files] = useState<FileData[]>(mockFiles);
+  const { classId } = useParams<{ classId: string }>(); // This is the class_code
   const [search, setSearch] = useState("");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const [filterType, setFilterType] = useState<FileData["type"] | "all">("all");
+  const [filterType, setFilterType] = useState<Document["file_type"] | "all">("all");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
-  const filtered = files
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["documents", classId, page],
+    queryFn: () => documentsApi.list(classId!, (page - 1) * limit, limit),
+    enabled: !!classId,
+  });
+
+  const documents = data?.data || [];
+  const total = data?.metadata?.total_data || 0;
+
+  // Local filtering for search (or we could use the search API)
+  const filtered = documents
     .filter((f) => {
-      if (filterType !== "all" && f.type !== filterType) return false;
-      if (search && !f.name.toLowerCase().includes(search.toLowerCase()))
+      if (filterType !== "all" && f.file_type !== filterType) return false;
+      if (search && !f.title.toLowerCase().includes(search.toLowerCase()))
         return false;
       return true;
     })
     .sort((a, b) => {
-      const cmp = a.name.localeCompare(b.name);
+      const cmp = a.title.localeCompare(b.title);
       return sortDir === "asc" ? cmp : -cmp;
     });
 
@@ -95,12 +60,12 @@ export default function LibraryList() {
           Library
         </h2>
         <p className="text-xs text-neutral-400 mt-0.5">
-          {files.length} files shared in this class
+          {isLoading ? "Loading..." : `${total} files shared in this class`}
         </p>
       </div>
 
       {/* Upload zone */}
-      <UploadFile />
+      <UploadFile classCode={classId!} onUploadSuccess={() => refetch()} />
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-3">
@@ -123,16 +88,15 @@ export default function LibraryList() {
             <select
               value={filterType}
               onChange={(e) =>
-                setFilterType(e.target.value as FileData["type"] | "all")
+                setFilterType(e.target.value as Document["file_type"] | "all")
               }
               className="text-sm border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 cursor-pointer"
             >
               <option value="all">All types</option>
               <option value="pdf">PDF</option>
-              <option value="image">Image</option>
-              <option value="spreadsheet">Spreadsheet</option>
-              <option value="video">Video</option>
-              <option value="document">Document</option>
+              <option value="docx">DOCX</option>
+              <option value="txt">TXT</option>
+              <option value="md">Markdown</option>
             </select>
           </div>
 
@@ -177,27 +141,52 @@ export default function LibraryList() {
       </div>
 
       {/* File list / grid */}
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-neutral-200/60 transition-all">
+          <Loader2 className="h-8 w-8 text-primary-600 animate-spin mb-3" />
+          <p className="text-sm text-neutral-500 font-medium">Fetching class library...</p>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-neutral-200/60">
           <div className="text-4xl mb-3">📂</div>
           <p className="text-sm font-medium text-neutral-500">
-            No files match your search
+            {search ? "No files match your search" : "No files in the library yet"}
           </p>
           <p className="text-xs text-neutral-400 mt-1">
-            Try adjusting your filters
+            {search ? "Try adjusting your filters" : "Upload your first study material to get started!"}
           </p>
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {filtered.map((file) => (
-            <FileCard key={file.id} file={file} view="grid" />
+          {filtered.map((doc) => (
+            <FileCard key={doc.id} doc={doc} view="grid" classCode={classId!} onDeleteSuccess={() => refetch()} />
           ))}
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((file) => (
-            <FileCard key={file.id} file={file} view="list" />
+          {filtered.map((doc) => (
+            <FileCard key={doc.id} doc={doc} view="list" classCode={classId!} onDeleteSuccess={() => refetch()} />
           ))}
+        </div>
+      )}
+
+      {/* Pagination (Simplified) */}
+      {total > limit && (
+        <div className="flex justify-center gap-2 mt-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(p => p - 1)}
+            className="px-4 py-2 text-sm font-medium border border-neutral-200 rounded-xl bg-white disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <button
+            disabled={page * limit >= total}
+            onClick={() => setPage(p => p + 1)}
+            className="px-4 py-2 text-sm font-medium border border-neutral-200 rounded-xl bg-white disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>
