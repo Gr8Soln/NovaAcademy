@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
 
 from app.adapters.repositories import (SQLChatGroupRepository,
                                        SQLChatMessageRepository)
@@ -31,7 +32,10 @@ from app.application.use_cases import (AddClassMemberUseCase,
                                        SendChatMessageUseCase,
                                        UpdateClassUseCase)
 from app.core.config import Settings, get_settings
+from app.domain.entities import User
 from app.infrastructure.db import get_db_session
+
+from .auth_dep import get_current_user
 
 if TYPE_CHECKING:
     from app.infrastructure.ws.connection_manager import ConnectionManager
@@ -282,3 +286,28 @@ async def get_handle_join_request_usecase(
     group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
 ) -> HandleJoinRequestUseCase:
     return HandleJoinRequestUseCase(group_repo=group_repo)
+
+
+async def get_class_id_by_code(
+    class_code: str,
+    current_user: User = Depends(get_current_user),
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
+) -> UUID:
+    """
+    Resolve class_code to class_id and verify the current user is a member.
+    """
+    group = await group_repo.get_by_code(class_code)
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Class with code '{class_code}' not found",
+        )
+
+    is_member = await group_repo.is_member(group.id, current_user.id)
+    if not is_member:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this class",
+        )
+
+    return group.id

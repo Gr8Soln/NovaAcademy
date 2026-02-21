@@ -21,13 +21,13 @@ class DocumentChunk:
     IMPORTANT: embedding_model must match the model used at query time.
     Vectors from different models are NOT comparable.
     """
-    id: UUID = field(default_factory=uuid4)
     document_id: UUID
     content: str
     chunk_index: int
     token_count: int
     embedding_model: str                    # e.g. "text-embedding-3-small"
     embedding_dim: int                      # e.g. 1536
+    id: UUID = field(default_factory=uuid4)
     vector_id: Optional[UUID] = None        # Qdrant point ID (set after upsert)
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -47,7 +47,6 @@ class Document:
     - Processing follows: PENDING → PROCESSING → READY | FAILED.
     - chunk_count is set only when processing succeeds.
     """
-    id: UUID = field(default_factory=uuid4)
     user_id: UUID
     class_id: UUID                          # FK → ChatGroup (groups table)
     file_id: str
@@ -56,6 +55,7 @@ class Document:
     file_size_bytes: int
     file_url: str
     file_extension: str
+    id: UUID = field(default_factory=uuid4)
     processing_status: ProcessingStatus = ProcessingStatus.PENDING
     page_count: Optional[int] = None
     chunk_count: int = 0

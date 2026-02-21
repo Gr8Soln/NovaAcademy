@@ -45,12 +45,12 @@ def get_safe_path(requested_path: str, base_directory: str, check_exists: bool =
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/files/{file_path:path}")
+@router.get("/documents/{file_path:path}")
 async def get_file(file_path: str):
     """
     Serve a file from the configured files directory.
     """
-    target_path = get_safe_path(file_path, settings.UPLOAD_DIR)
+    target_path = get_safe_path(file_path, f"{settings.UPLOAD_DIR}/documents")
     
     if not target_path or not target_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
