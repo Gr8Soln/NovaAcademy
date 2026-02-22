@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     # ── Vector DB ───────────────────────────────────────────────
     QDRANT_HOST: str = "localhost"
     QDRANT_PORT: int = 6333
+    QDRANT_API_KEY: Optional[str] = None
     VECTOR_SIZE: int = 1536
 
     # ── LLM ─────────────────────────────────────────────────────

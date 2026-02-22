@@ -6,7 +6,6 @@ from app.application.interfaces import IVectorStoreInterface
 from app.core.config import settings
 from app.domain.entities import DocumentChunk
 
-
 COLLECTION_NAME = "nova_chunks"
 
 
@@ -25,9 +24,10 @@ class QdrantVectorStore(IVectorStoreInterface):
         - embedding_dim   (int)
     """
 
-    def __init__(self, qdrant_host: str, qdrant_port: int, openai_api_key: str) -> None:
+    def __init__(self, qdrant_host: str, qdrant_port: int, openai_api_key: str, qdrant_api_key: Optional[str] = None) -> None:
         self._host = qdrant_host
         self._port = qdrant_port
+        self._qdrant_api_key = qdrant_api_key
         self._openai_key = openai_api_key
         self._client = None      # Lazy init
         self._openai_client = None
@@ -39,16 +39,24 @@ class QdrantVectorStore(IVectorStoreInterface):
         if self._client is None:
             try:
                 from qdrant_client import AsyncQdrantClient  # type: ignore
-                from qdrant_client.models import (  # type: ignore
-                    Distance,
-                    VectorParams,
-                )
+                from qdrant_client.models import (Distance,  # type: ignore
+                                                  VectorParams)
             except ImportError as exc:
                 raise RuntimeError(
                     "qdrant-client is required. Install: pip install qdrant-client"
                 ) from exc
 
-            self._client = AsyncQdrantClient(host=self._host, port=self._port)
+            if "://" in self._host:
+                self._client = AsyncQdrantClient(
+                    url=self._host,
+                    api_key=self._qdrant_api_key,
+                )
+            else:
+                self._client = AsyncQdrantClient(
+                    host=self._host,
+                    port=self._port,
+                    api_key=self._qdrant_api_key,
+                )
 
             # Ensure collection exists
             collections = await self._client.get_collections()
@@ -132,7 +140,8 @@ class QdrantVectorStore(IVectorStoreInterface):
 
     async def delete_document_vectors(self, document_id: UUID) -> None:
         """Delete all Qdrant points whose payload.document_id matches."""
-        from qdrant_client.models import FieldCondition, Filter, MatchValue  # type: ignore
+        from qdrant_client.models import (FieldCondition,  # type: ignore
+                                          Filter, MatchValue)
 
         qdrant = await self._get_client()
         await qdrant.delete(
@@ -161,7 +170,8 @@ class QdrantVectorStore(IVectorStoreInterface):
         This MUST match the model recorded in the indexed chunks' embedding_model
         field. If they differ, results will be semantically meaningless.
         """
-        from qdrant_client.models import FieldCondition, Filter, MatchValue  # type: ignore
+        from qdrant_client.models import (FieldCondition,  # type: ignore
+                                          Filter, MatchValue)
 
         qdrant = await self._get_client()
 

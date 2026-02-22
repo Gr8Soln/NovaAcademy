@@ -5,8 +5,12 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.interfaces import IDocumentInterface
+from app.core.logging import get_logger
 from app.domain.entities import Document, DocumentChunk, ProcessingStatus
 from app.infrastructure.db import DocumentChunkModel, DocumentModel
+
+
+logger = get_logger(__name__)
 
 
 class SQLDocumentRepository(IDocumentInterface):
@@ -19,6 +23,8 @@ class SQLDocumentRepository(IDocumentInterface):
 
     async def save(self, document: Document) -> Document:
         """Persist a new or updated document."""
+        
+        logger.info(f">>> >>>> >>> >>>> >>> >>>> Saving document {document.id} (user {document.user_id}) to database")
         result = await self._session.execute(
             select(DocumentModel).where(DocumentModel.id == document.id)
         )

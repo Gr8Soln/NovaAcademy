@@ -13,6 +13,7 @@ from fastapi import (
     UploadFile,
 )
 
+from app.core.logging import get_logger
 from app.adapters.schemas import (    
     DocumentResponse,
     UploadDocumentResponse,
@@ -36,6 +37,8 @@ from app.infrastructure.api.dependencies import (
     get_search_documents_usecase,
     get_upload_document_usecase,
 )
+
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/class/{class_code}/documents", tags=["Documents"])
 
@@ -77,6 +80,9 @@ async def upload_document(
     `processing_status = "pending"`.  Chunking and embedding run in the
     background.  Poll `GET /{document_id}` to track progress.
     """
+    
+    logger.info(f"Received upload request for class {class_code} (id {class_id}) from user {current_user.id} with file {file.filename}")
+    
     try:
         document = await use_case.execute(
             file=file,

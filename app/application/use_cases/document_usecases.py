@@ -10,7 +10,9 @@ from app.application.interfaces import (
 )
 from app.core.config import settings
 from app.domain.entities import Document, DocumentChunk
+from app.core.logging import get_logger
 
+logger = get_logger(__name__)
 
 class UploadDocumentUseCase:
     """
@@ -89,6 +91,9 @@ class UploadDocumentUseCase:
         Heavy background processing: extract → chunk → embed → store.
         Should be called via FastAPI BackgroundTasks after execute().
         """
+        
+        logger.info(f"Starting background processing for document {document.id} (user {document.user_id})")
+        
         try:
             document.mark_processing()
             await self._repo.save(document)
