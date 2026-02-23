@@ -39,7 +39,7 @@ async def get_vector_store_service(
     """Singleton Qdrant client (one connection pool for all requests)."""
     global _qdrant_instance
     if _qdrant_instance is None:
-        from app.adapters.services.qdrant_vector_store import QdrantVector
+        from app.adapters.services.qdrant_vector import QdrantVector
 
         _qdrant_instance = QdrantVector(
             qdrant_host=settings.QDRANT_HOST,

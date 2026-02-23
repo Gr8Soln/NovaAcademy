@@ -3,11 +3,8 @@ from typing import Optional
 from uuid import UUID
 
 from app.domain.entities import Document, DocumentChunk
-
-
-class ExtractedChunk:
-    chunks: list[str]
-    total_pages: Optional[int]
+from app.domain.entities.document_entity import (DocumentChunksAndEmbeddings,
+                                                 ExtractedChunk)
 
 
 class IDocumentInterface(ABC):
@@ -130,48 +127,37 @@ class IDocumentEmbedderInterface(ABC):
     """
 
     @abstractmethod
-    async def embed(self, text: str) -> list[float]:
+    async def embed(self, text: str) -> tuple[str, list[float]]:
         """
         Embed a text string into a vector.
 
         Args:
             text: The text to embed.
         Returns:
-            A list of floats representing the embedding vector.
+            A tuple of (text, embedding vector).
         """
         ...
 
     @abstractmethod
-    async def embed_multiple(self, texts: list[str]) -> list[list[float]]:
+    async def embed_multiple(self, texts: list[str]) -> list[tuple[str, list[float]]]:
         """
         Embed multiple text strings into vectors.
 
         Args:
             texts: The list of texts to embed.
         Returns:
-            A list of lists of floats representing the embedding vectors.
+            A list of (text, embedding vector) tuples.
         """
         ...
 
 
 
 class IVectorStoreInterface(ABC):
-    """
-    Abstract interface for the vector/embedding store (Qdrant).
-
-    CRITICAL: The same embedding model must be used at both index-time
-    (upsert_chunks) and query-time (search). Chunks store the model name
-    so the implementation can enforce this.
-    """
-
     @abstractmethod
-    async def upsert_chunks(
+    async def store_embeddings(
         self,
-        document_id: UUID,
-        user_id: UUID,
-        class_id: UUID,
-        chunks: list[DocumentChunk],
-    ) -> list[DocumentChunk]:
+        data: DocumentChunksAndEmbeddings,
+    ) -> None:
         """
         Embed each chunk and upsert into the vector store.
 
@@ -180,18 +166,19 @@ class IVectorStoreInterface(ABC):
         ...
 
     @abstractmethod
-    async def delete_document_vectors(self, document_id: UUID) -> None:
+    async def delete_embeddings(self, document_id: str) -> None:
         """Remove all vectors belonging to a document from the store."""
         ...
 
     @abstractmethod
-    async def search(
+    async def search_embeddings(
         self,
-        query: str,
-        user_id: UUID,
+        embedded_query: list[float],
         top_k: int = 5,
-        class_id: Optional[UUID] = None,
-    ) -> list[dict]:
+        user_id: Optional[str] = None,
+        class_id: Optional[str] = None,
+        document_id: Optional[str] = None,
+    ) -> list[dict[str, str | int]]:
         """
         Embed a query string and return the top-k most similar chunks.
 

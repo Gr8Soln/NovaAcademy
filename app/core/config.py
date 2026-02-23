@@ -36,15 +36,20 @@ class Settings(BaseSettings):
     CELERY_BACKEND: str = "redis://localhost:6379/1"
 
     # ── Vector DB ───────────────────────────────────────────────
-    QDRANT_HOST: str = "localhost"
-    QDRANT_PORT: int = 6333
-    QDRANT_API_KEY: Optional[str] = None
-    VECTOR_SIZE: int = 1536
+    QDRANT_HOST: str
+    QDRANT_PORT: str
+    QDRANT_VECTOR_SIZE: int
+    QDRANT_API_KEY: str
+    QDRANT_COLLECTION_NAME: str
 
     # ── LLM ─────────────────────────────────────────────────────
     OPENAI_API_KEY: Optional[str] = None
     LLM_MODEL: str = "gpt-4.1"
     EMBEDDING_MODEL: str = "text-embedding-3-small"
+
+    # ── Ollama ──────────────────────────────────────────────────
+    OLLAMA_HOST: str = "http://localhost:11434"
+    OLLAMA_EMBEDDING_MODEL: str = "nomic-embed-text"
 
     # ── File storage ────────────────────────────────────────────
     UPLOAD_DIR: str = "./uploads"

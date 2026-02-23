@@ -12,15 +12,28 @@ class ProcessingStatus(str, Enum):
     FAILED = "failed"
 
 
+class ExtractedChunk:
+    chunks: list[str]
+    total_pages: Optional[int]
+    
+    
+class EmbeddedChunk:
+    index: int
+    chunk: str
+    embedding: list[float]
+
+class DocumentChunksAndEmbeddings:
+    document_id: str
+    user_id: str
+    class_id: str
+    created_at: datetime
+    embedding_model: str
+    embedding_dim: int
+    embedded_chunks: list[EmbeddedChunk]
+    
+
 @dataclass
 class DocumentChunk:
-    """
-    A single chunk of a document after text extraction and splitting.
-    Each chunk is independently embedded and stored in the vector store.
-
-    IMPORTANT: embedding_model must match the model used at query time.
-    Vectors from different models are NOT comparable.
-    """
     document_id: UUID
     content: str
     chunk_index: int
@@ -34,7 +47,6 @@ class DocumentChunk:
     def assign_vector_id(self, vector_id: UUID) -> None:
         """Record the Qdrant point ID after successful embedding upsert."""
         self.vector_id = vector_id
-
 
 @dataclass
 class Document:

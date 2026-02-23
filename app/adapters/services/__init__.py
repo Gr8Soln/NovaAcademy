@@ -5,5 +5,5 @@ from .jwt_auth import *
 from .local_storage import *
 from .ollama_embedder import *
 from .push_notification import *
-from .qdrant_vector_store import *
+from .qdrant_vector import *
 from .smtp_email import *

@@ -223,8 +223,8 @@ class SearchDocumentsUseCase:
         if not query or not query.strip():
             return []
 
-        return await self._vector_store.search(
-            query=query,
+        return await self._vector_store.search_embeddings(
+            query,
             user_id=user_id,
             class_id=class_id,
             top_k=top_k,
