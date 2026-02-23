@@ -10,7 +10,7 @@ from app.core.logging import get_logger
 logger = get_logger(__name__)
 
 
-class SMTPEmailService(IEmailService):
+class SMTPEmail(IEmailService):
     def __init__(
         self,
         smtp_host: str,

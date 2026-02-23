@@ -9,7 +9,7 @@ from app.application.interfaces import IChatPresenceService, IChatPubSub
 from app.domain.entities import ChatMessage
 
 
-class RedisPubSubService(IChatPubSub):    
+class RedisPubSub(IChatPubSub):    
     def __init__(self, redis_url: str):
         self.redis_url = redis_url
         self._publisher: Any  # redis.asyncio.Redis (stubs are sync-typed)
@@ -221,7 +221,7 @@ class RedisPubSubService(IChatPubSub):
 
 
 
-class RedisPresenceService(IChatPresenceService):    
+class RedisPresence(IChatPresenceService):    
     def __init__(self, redis_url: str):
         self.redis_url = redis_url
         self._redis: Any  # redis.asyncio.Redis (stubs are sync-typed)

@@ -9,21 +9,7 @@ from app.domain.entities import DocumentChunk
 COLLECTION_NAME = "nova_chunks"
 
 
-class QdrantVectorStore(IVectorStoreInterface):
-    """
-    Qdrant-backed vector store using OpenAI embeddings.
-
-    A single collection (`nova_chunks`) stores all users' chunks.
-    Each point has a payload:
-        - document_id  (str UUID)
-        - user_id      (str UUID)
-        - class_id     (str UUID)
-        - chunk_index  (int)
-        - content      (str)
-        - embedding_model (str)
-        - embedding_dim   (int)
-    """
-
+class QdrantVector(IVectorStoreInterface):
     def __init__(self, qdrant_host: str, qdrant_port: int, openai_api_key: str, qdrant_api_key: Optional[str] = None) -> None:
         self._host = qdrant_host
         self._port = qdrant_port
@@ -39,8 +25,8 @@ class QdrantVectorStore(IVectorStoreInterface):
         if self._client is None:
             try:
                 from qdrant_client import AsyncQdrantClient  # type: ignore
-                from qdrant_client.models import (Distance,  # type: ignore
-                                                  VectorParams)
+                from qdrant_client.models import Distance  # type: ignore
+                from qdrant_client.models import VectorParams
             except ImportError as exc:
                 raise RuntimeError(
                     "qdrant-client is required. Install: pip install qdrant-client"
@@ -140,8 +126,8 @@ class QdrantVectorStore(IVectorStoreInterface):
 
     async def delete_document_vectors(self, document_id: UUID) -> None:
         """Delete all Qdrant points whose payload.document_id matches."""
-        from qdrant_client.models import (FieldCondition,  # type: ignore
-                                          Filter, MatchValue)
+        from qdrant_client.models import FieldCondition  # type: ignore
+        from qdrant_client.models import Filter, MatchValue
 
         qdrant = await self._get_client()
         await qdrant.delete(
@@ -170,8 +156,8 @@ class QdrantVectorStore(IVectorStoreInterface):
         This MUST match the model recorded in the indexed chunks' embedding_model
         field. If they differ, results will be semantically meaningless.
         """
-        from qdrant_client.models import (FieldCondition,  # type: ignore
-                                          Filter, MatchValue)
+        from qdrant_client.models import FieldCondition  # type: ignore
+        from qdrant_client.models import Filter, MatchValue
 
         qdrant = await self._get_client()
 

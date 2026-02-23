@@ -7,7 +7,7 @@ from app.domain.entities import ChatMessage
 logger = get_logger(__name__)
 
 
-class PushNotificationService(IChatNotificationInterface):
+class PushNotification(IChatNotificationInterface):
     """
     Push notification service for mentions and new messages.
     

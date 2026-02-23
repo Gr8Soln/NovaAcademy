@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.repositories import SQLDocumentRepository
-from app.adapters.services import DocumentExtractorService
+from app.adapters.services import DocumentExtractor
 from app.application.interfaces import (IDocumentExtractorInterface,
                                         IDocumentInterface, IStorageService,
                                         IVectorStoreInterface)
@@ -30,7 +30,7 @@ def get_document_repository(
 
 
 def get_document_extractor_service() -> IDocumentExtractorInterface:
-    return DocumentExtractorService()
+    return DocumentExtractor()
 
 
 async def get_vector_store_service(
@@ -39,9 +39,9 @@ async def get_vector_store_service(
     """Singleton Qdrant client (one connection pool for all requests)."""
     global _qdrant_instance
     if _qdrant_instance is None:
-        from app.adapters.vectors.qdrant_vector_store import QdrantVectorStore
+        from app.adapters.services.qdrant_vector_store import QdrantVector
 
-        _qdrant_instance = QdrantVectorStore(
+        _qdrant_instance = QdrantVector(
             qdrant_host=settings.QDRANT_HOST,
             qdrant_port=settings.QDRANT_PORT,
             openai_api_key=settings.OPENAI_API_KEY or "",

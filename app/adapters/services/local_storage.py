@@ -17,7 +17,7 @@ class StorageError(Exception):
     pass
 
 
-class LocalStorageService(IStorageService):
+class LocalStorage(IStorageService):
     """Local file storage implementation with image compression."""
     
     # Image file types

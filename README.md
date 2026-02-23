@@ -99,7 +99,31 @@ createdb novaacademy
 alembic upgrade head
 ```
 
-### 4. Run
+### 4. Celery (worker & beat)
+
+Assumptions:
+
+- Redis is available at REDIS_URL (e.g. redis://localhost:6379/0)
+- Celery app is defined in `app/infracture/worker.py` or your project entry (adjust `-A` accordingly)
+
+Start worker
+
+```bash
+celery -A app.infrastructure.worker.celery_app worker --loglevel=info
+
+# For Windows (no multiprocessing):
+celery -A app.infrastructure.worker.celery_app worker --pool=solo --loglevel=info
+```
+
+Start beat (scheduler)
+
+```bash
+celery -A app.infrastructure.worker.celery_app beat --loglevel=info
+```
+
+---
+
+### 5. Run
 
 ```bash
 # Backend — starts on http://localhost:8000

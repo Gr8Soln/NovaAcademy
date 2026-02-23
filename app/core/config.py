@@ -32,6 +32,8 @@ class Settings(BaseSettings):
 
     # ── Redis ───────────────────────────────────────────────────
     REDIS_URL: str = "redis://localhost:6379/0"
+    CELERY_BROKER: str = "redis://localhost:6379/0"
+    CELERY_BACKEND: str = "redis://localhost:6379/1"
 
     # ── Vector DB ───────────────────────────────────────────────
     QDRANT_HOST: str = "localhost"

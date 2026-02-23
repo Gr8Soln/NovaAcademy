@@ -48,11 +48,11 @@
 # # =============================================================================
 
 # """
-# from ...adapters.email.smtp_email_service import SMTPEmailService
+# from ...adapters.email.smtp_email_service import SMTPEmail
 
 
 # class EmailNotificationService(IChatNotificationInterface):
-#     def __init__(self, email_service: SMTPEmailService):
+#     def __init__(self, email_service: SMTPEmail):
 #         self.email_service = email_service
     
 #     async def notify_mention(self, mentioned_user_id: UUID, message: ChatMessage, group_name: str):

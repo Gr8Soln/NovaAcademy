@@ -5,6 +5,11 @@ from uuid import UUID
 from app.domain.entities import Document, DocumentChunk
 
 
+class ExtractedChunk:
+    chunks: list[str]
+    total_pages: Optional[int]
+
+
 class IDocumentInterface(ABC):
     """Persistence interface for documents and their chunks."""
 
@@ -73,12 +78,11 @@ class IDocumentInterface(ABC):
         """Delete all chunks associated with a document."""
         ...
 
-
 class IDocumentExtractorInterface(ABC):
     """Service for reading raw text out of uploaded files and splitting it."""
 
     @abstractmethod
-    async def extract_text(self, file_path: str, file_type: str) -> tuple[str, Optional[int]]:
+    async def extract(self, file_path: str) -> tuple[str, Optional[int]]:
         """
         Extract plain text from a stored file.
 
@@ -94,13 +98,9 @@ class IDocumentExtractorInterface(ABC):
         """
         ...
 
+
     @abstractmethod
-    def chunk_text(
-        self,
-        text: str,
-        chunk_size: int = 500,
-        overlap: int = 50,
-    ) -> list[str]:
+    def chunk(self, text: str, chunk_size: int = 500, overlap: int = 50 ) -> list[str]:
         """
         Split text into overlapping chunks.
 
@@ -113,6 +113,46 @@ class IDocumentExtractorInterface(ABC):
             List of text chunks.
         """
         ...
+    
+    
+    @abstractmethod
+    def extract_and_chunk(self, file_path: str) -> ExtractedChunk:
+        """
+        
+        """
+        ...
+        
+        
+    
+
+class IDocumentEmbedderInterface(ABC):
+    """
+    """
+
+    @abstractmethod
+    async def embed(self, text: str) -> list[float]:
+        """
+        Embed a text string into a vector.
+
+        Args:
+            text: The text to embed.
+        Returns:
+            A list of floats representing the embedding vector.
+        """
+        ...
+
+    @abstractmethod
+    async def embed_multiple(self, texts: list[str]) -> list[list[float]]:
+        """
+        Embed multiple text strings into vectors.
+
+        Args:
+            texts: The list of texts to embed.
+        Returns:
+            A list of lists of floats representing the embedding vectors.
+        """
+        ...
+
 
 
 class IVectorStoreInterface(ABC):

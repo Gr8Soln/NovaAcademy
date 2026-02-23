@@ -2,8 +2,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.repositories import SQLUserRepository
-from app.adapters.services import (JWTAuthService, LocalStorageService,
-                                   SMTPEmailService)
+from app.adapters.services import JWTAuth, LocalStorage, SMTPEmail
 from app.application.interfaces import (IEmailService, IJwtService,
                                         IStorageService, IUserInterface)
 from app.core.config import settings
@@ -17,7 +16,7 @@ def get_user_repository(
 
 
 async def get_jwt_service() -> IJwtService:
-    return JWTAuthService(
+    return JWTAuth(
         secret_key=settings.SECRET_KEY,
         algorithm=settings.ALGORITHM,
         access_token_expire_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -29,7 +28,7 @@ async def get_jwt_service() -> IJwtService:
 
 
 async def get_email_service() -> IEmailService:
-    return SMTPEmailService(
+    return SMTPEmail(
         smtp_host=settings.SMTP_HOST,
         smtp_port=settings.SMTP_PORT,
         smtp_username=settings.SMTP_USERNAME,
@@ -44,6 +43,6 @@ async def get_email_service() -> IEmailService:
 
 
 async def get_storage_service() -> IStorageService:
-    return LocalStorageService(
+    return LocalStorage(
         upload_dir=settings.UPLOAD_DIR, base_url=settings.BASE_URL
     )

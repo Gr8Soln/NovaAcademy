@@ -11,7 +11,7 @@ from app.application.interfaces import IJwtService
 from app.domain.exceptions import AuthenticationError
 
 
-class JWTAuthService(IJwtService):
+class JWTAuth(IJwtService):
     def __init__(
         self,
         secret_key: str,

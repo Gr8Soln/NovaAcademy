@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
 
 from app.adapters.repositories import (SQLChatGroupRepository,
                                        SQLChatMessageRepository)
-from app.adapters.services import (PushNotificationService, RedisCacheService,
-                                   RedisPresenceService, RedisPubSubService)
+from app.adapters.services import (PushNotification, RedisCacheService,
+                                   RedisPresence, RedisPubSub)
 from app.application.interfaces import (IChatCacheInterface,
                                         IChatGroupInterface,
                                         IChatMessageInterface,
@@ -40,8 +40,8 @@ from .auth_dep import get_current_user
 if TYPE_CHECKING:
     from app.infrastructure.ws.connection_manager import ConnectionManager
 
-_pubsub_instance: RedisPubSubService | None = None
-_presence_instance: RedisPresenceService | None = None
+_pubsub_instance: RedisPubSub | None = None
+_presence_instance: RedisPresence | None = None
 _cache_instance: RedisCacheService | None = None
 _connection_manager: ConnectionManager | None = None
 
@@ -52,7 +52,7 @@ async def get_chat_pubsub_service(
     global _pubsub_instance
 
     if _pubsub_instance is None:
-        _pubsub_instance = RedisPubSubService(settings.REDIS_URL)
+        _pubsub_instance = RedisPubSub(settings.REDIS_URL)
         await _pubsub_instance.connect()
 
     return _pubsub_instance
@@ -65,7 +65,7 @@ async def get_chat_presence_service(
     global _presence_instance
 
     if _presence_instance is None:
-        _presence_instance = RedisPresenceService(settings.REDIS_URL)
+        _presence_instance = RedisPresence(settings.REDIS_URL)
         await _presence_instance.connect()
 
     return _presence_instance
@@ -117,7 +117,7 @@ async def get_chat_notification_service(
     settings: Settings = Depends(get_settings),
 ) -> IChatNotificationInterface:
     """Get notification service."""
-    return PushNotificationService()
+    return PushNotification()
 
 
 
@@ -198,10 +198,10 @@ async def get_create_class_usecase(
     settings: Settings = Depends(get_settings),
 ) -> CreateClassUseCase:
     from app.adapters.repositories import SQLUserRepository
-    from app.adapters.services import LocalStorageService
+    from app.adapters.services import LocalStorage
     from app.application.interfaces import IUserInterface
     user_repo: IUserInterface = SQLUserRepository(db)
-    storage = LocalStorageService(
+    storage = LocalStorage(
         upload_dir=settings.UPLOAD_DIR if hasattr(settings, "UPLOAD_DIR") else "uploads",
         base_url=settings.BASE_URL if hasattr(settings, "BASE_URL") else "/api/v1/avatar",
     )
@@ -224,8 +224,8 @@ async def get_update_class_usecase(
     group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
     settings: Settings = Depends(get_settings),
 ) -> UpdateClassUseCase:
-    from app.adapters.services import LocalStorageService
-    storage = LocalStorageService(
+    from app.adapters.services import LocalStorage
+    storage = LocalStorage(
         upload_dir=settings.UPLOAD_DIR if hasattr(settings, "UPLOAD_DIR") else "uploads",
         base_url=settings.BASE_URL if hasattr(settings, "BASE_URL") else "/api/v1/avatar",
     )

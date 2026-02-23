@@ -1,16 +1,12 @@
-import os
 from typing import Optional
 from uuid import UUID
 
-from app.application.interfaces import (
-    IDocumentExtractorInterface,
-    IDocumentInterface,
-    IStorageService,
-    IVectorStoreInterface,
-)
+from app.application.interfaces import (IDocumentExtractorInterface,
+                                        IDocumentInterface, IStorageService,
+                                        IVectorStoreInterface)
 from app.core.config import settings
-from app.domain.entities import Document, DocumentChunk
 from app.core.logging import get_logger
+from app.domain.entities import Document, DocumentChunk
 
 logger = get_logger(__name__)
 
@@ -101,11 +97,11 @@ class UploadDocumentUseCase:
             file_path = self._storage.get_file_path(
                 document.file_id, document.file_extension
             )
-            text, page_count = await self._extractor.extract_text(
-                file_path, document.file_type
+            text, page_count = await self._extractor.extract(
+                file_path
             )
 
-            raw_chunks = self._extractor.chunk_text(text)
+            raw_chunks = self._extractor.chunk(text)
             if not raw_chunks:
                 raise ValueError("No text could be extracted from the document")
 
