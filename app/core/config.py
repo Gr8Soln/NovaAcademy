@@ -5,15 +5,18 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    # ── Development ─────────────────────────────────────────────────────
+    PORT: int = 8000
+    ENV: str = "development"  # or "production"
+    LOG_DIR: str = "./logs"
+    DEBUG: bool = False
+    
+    
     # ── App ─────────────────────────────────────────────────────
     APP_NAME: str = "NovaAcademy"
     API_PREFIX: str = "/api/v1"
-    BASE_URL: str = "http://localhost:8000"
-    LOG_DIR: str = "./logs"
-    PORT: int = 8000
-    ENV: str = "development"  # or "production"
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
-    DEBUG: bool = False
+    BASE_URL: str = "http://localhost:8000"
     UI_BASE_URL: str = "http://localhost:5173"
 
     # ── Auth ────────────────────────────────────────────────────
@@ -36,16 +39,15 @@ class Settings(BaseSettings):
     CELERY_BACKEND: str = "redis://localhost:6379/1"
 
     # ── Vector DB ───────────────────────────────────────────────
-    QDRANT_HOST: str
-    QDRANT_PORT: str
-    QDRANT_VECTOR_SIZE: int
-    QDRANT_API_KEY: str
-    QDRANT_COLLECTION_NAME: str
+    QDRANT_HOST: str = "localhost"
+    QDRANT_PORT: int = 6333
+    QDRANT_VECTOR_SIZE: int = 1536
+    QDRANT_API_KEY: str = ""
+    QDRANT_COLLECTION_NAME: str = "novaacademy"
 
     # ── LLM ─────────────────────────────────────────────────────
     OPENAI_API_KEY: Optional[str] = None
-    LLM_MODEL: str = "gpt-4.1"
-    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    OPENAI_MODEL: str = "gpt-4.1"
 
     # ── Ollama ──────────────────────────────────────────────────
     OLLAMA_HOST: str = "http://localhost:11434"
