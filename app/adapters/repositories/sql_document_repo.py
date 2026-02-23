@@ -6,9 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.interfaces import IDocumentInterface
 from app.core.logging import get_logger
-from app.domain.entities import Document, DocumentChunk, ProcessingStatus
-from app.infrastructure.db import DocumentChunkModel, DocumentModel
-
+from app.domain.entities import Document, ProcessingStatus
+from app.infrastructure.db import DocumentModel
 
 logger = get_logger(__name__)
 
@@ -113,37 +112,6 @@ class SQLDocumentRepository(IDocumentInterface):
             return True
         return False
 
-    # ── Chunks ───────────────────────────────────────────────────
-
-    async def save_chunk(self, chunk: DocumentChunk) -> DocumentChunk:
-        model = self._chunk_to_model(chunk)
-        self._session.add(model)
-        await self._session.flush()
-        return chunk
-
-    async def save_chunks(self, chunks: list[DocumentChunk]) -> list[DocumentChunk]:
-        for chunk in chunks:
-            model = self._chunk_to_model(chunk)
-            self._session.add(model)
-        await self._session.flush()
-        return chunks
-
-    async def get_chunks(self, document_id: UUID) -> list[DocumentChunk]:
-        result = await self._session.execute(
-            select(DocumentChunkModel)
-            .where(DocumentChunkModel.document_id == document_id)
-            .order_by(DocumentChunkModel.chunk_index)
-        )
-        return [self._chunk_to_entity(m) for m in result.scalars().all()]
-
-    async def delete_chunks(self, document_id: UUID) -> None:
-        from sqlalchemy import delete as sa_delete
-        await self._session.execute(
-            sa_delete(DocumentChunkModel).where(
-                DocumentChunkModel.document_id == document_id
-            )
-        )
-        await self._session.flush()
 
     # ── Mappers ──────────────────────────────────────────────────
 
@@ -164,32 +132,4 @@ class SQLDocumentRepository(IDocumentInterface):
             file_extension=model.file_extension,
             created_at=model.created_at,
             updated_at=model.updated_at,
-        )
-
-    @staticmethod
-    def _chunk_to_model(chunk: DocumentChunk) -> DocumentChunkModel:
-        return DocumentChunkModel(
-            id=chunk.id,
-            document_id=chunk.document_id,
-            content=chunk.content,
-            chunk_index=chunk.chunk_index,
-            token_count=chunk.token_count,
-            embedding_model=chunk.embedding_model,
-            embedding_dim=chunk.embedding_dim,
-            vector_id=chunk.vector_id,
-            created_at=chunk.created_at,
-        )
-
-    @staticmethod
-    def _chunk_to_entity(model: DocumentChunkModel) -> DocumentChunk:
-        return DocumentChunk(
-            id=model.id,
-            document_id=model.document_id,
-            content=model.content,
-            chunk_index=model.chunk_index,
-            token_count=model.token_count,
-            embedding_model=model.embedding_model,
-            embedding_dim=model.embedding_dim,
-            vector_id=model.vector_id,
-            created_at=model.created_at,
         )

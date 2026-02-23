@@ -12,8 +12,7 @@ from app.core.config import settings
 from app.core.logging import get_logger
 from app.infrastructure.api import (auth_router, chat_router, document_router,
                                     file_router, user_router)
-from app.infrastructure.db import Base
-from app.infrastructure.db.session import engine
+from app.infrastructure.db import Base, engine
 
 logger = get_logger(__name__)
 

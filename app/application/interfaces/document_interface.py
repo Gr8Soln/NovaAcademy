@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from uuid import UUID
 
-from app.domain.entities import Document, DocumentChunk
+from app.domain.entities import Document
 from app.domain.entities.document_entity import (DocumentChunksAndEmbeddings,
                                                  ExtractedChunk)
 
@@ -53,28 +53,6 @@ class IDocumentInterface(ABC):
         """
         ...
 
-    # ── Chunks ──────────────────────────────────────────────────────
-
-    @abstractmethod
-    async def save_chunk(self, chunk: DocumentChunk) -> DocumentChunk:
-        """Persist a single document chunk."""
-        ...
-
-    @abstractmethod
-    async def save_chunks(self, chunks: list[DocumentChunk]) -> list[DocumentChunk]:
-        """Bulk-persist document chunks."""
-        ...
-
-    @abstractmethod
-    async def get_chunks(self, document_id: UUID) -> list[DocumentChunk]:
-        """Return all chunks for a document, ordered by chunk_index."""
-        ...
-
-    @abstractmethod
-    async def delete_chunks(self, document_id: UUID) -> None:
-        """Delete all chunks associated with a document."""
-        ...
-
 class IDocumentExtractorInterface(ABC):
     """Service for reading raw text out of uploaded files and splitting it."""
 
@@ -97,7 +75,7 @@ class IDocumentExtractorInterface(ABC):
 
 
     @abstractmethod
-    def chunk(self, text: str, chunk_size: int = 500, overlap: int = 50 ) -> list[str]:
+    def chunk(self, text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
         """
         Split text into overlapping chunks.
 
@@ -113,9 +91,15 @@ class IDocumentExtractorInterface(ABC):
     
     
     @abstractmethod
-    def extract_and_chunk(self, file_path: str) -> ExtractedChunk:
+    async def extract_and_chunk(self, file_path: str, chunk_size: int = 500, overlap: int = 50) -> ExtractedChunk:
         """
-        
+        Extract text from a file and split it into chunks.
+
+        Args:
+            file_path: Absolute path to the stored file.
+
+        Returns:
+            ExtractedChunk with the list of text chunks and total page count.
         """
         ...
         

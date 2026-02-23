@@ -7,11 +7,18 @@ import pytesseract
 from docx import Document
 from PIL import Image
 from pptx import Presentation
+from transformers import AutoTokenizer
 
 from app.application.interfaces import IDocumentExtractorInterface
+from app.core.config import settings
+from app.domain.entities.document_entity import ExtractedChunk
 
 
 class DocumentExtractor(IDocumentExtractorInterface):
+    def __init__(self, tokenizer_model: Optional[str] = None) -> None:
+        model_name = tokenizer_model or getattr(settings, "OLLAMA_TOKENIZER_MODEL", "bert-base-uncased")
+        self._tokenizer = AutoTokenizer.from_pretrained(model_name)
+
     async def extract(self, file_path: str) -> tuple[str, Optional[int]]:
         ext = os.path.splitext(file_path)[1].lower()
 
@@ -37,7 +44,28 @@ class DocumentExtractor(IDocumentExtractorInterface):
     
     
     def chunk(self, text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
-        ...
+        """Split *text* into overlapping token-based chunks using the transformers tokeniser."""
+        token_ids = self._tokenizer.encode(text, add_special_tokens=False)
+
+        chunks: list[str] = []
+        start = 0
+        while start < len(token_ids):
+            end = min(start + chunk_size, len(token_ids))
+            chunk_text = self._tokenizer.decode(token_ids[start:end], skip_special_tokens=True)
+            chunks.append(chunk_text)
+            if end == len(token_ids):
+                break
+            start += chunk_size - overlap
+
+        return chunks
+
+    async def extract_and_chunk(
+        self, file_path: str, chunk_size: int = 500, overlap: int = 50
+    ) -> ExtractedChunk:
+        """Extract text from *file_path* and return token-chunked results."""
+        text, total_pages = await self.extract(file_path)
+        chunks = self.chunk(text, chunk_size=chunk_size, overlap=overlap)
+        return ExtractedChunk(chunks=chunks, total_pages=total_pages)
 
 
     # -----------------------------

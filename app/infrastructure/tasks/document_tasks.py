@@ -6,7 +6,7 @@ from celery import shared_task
 
 from app.adapters.services import (DocumentExtractor, OllamaEmbedder,
                                    QdrantVector)
-from app.infrastructure.db import (DocumentChunkModel, DocumentModel,
+from app.infrastructure.db import (DocumentModel,
                                    async_session_factory)
 
 

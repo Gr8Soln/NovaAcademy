@@ -12,16 +12,19 @@ class ProcessingStatus(str, Enum):
     FAILED = "failed"
 
 
+@dataclass
 class ExtractedChunk:
     chunks: list[str]
-    total_pages: Optional[int]
+    total_pages: Optional[int] = None
     
     
+@dataclass
 class EmbeddedChunk:
     index: int
     chunk: str
     embedding: list[float]
 
+@dataclass
 class DocumentChunksAndEmbeddings:
     document_id: str
     user_id: str
@@ -31,22 +34,6 @@ class DocumentChunksAndEmbeddings:
     embedding_dim: int
     embedded_chunks: list[EmbeddedChunk]
     
-
-@dataclass
-class DocumentChunk:
-    document_id: UUID
-    content: str
-    chunk_index: int
-    token_count: int
-    embedding_model: str                    # e.g. "text-embedding-3-small"
-    embedding_dim: int                      # e.g. 1536
-    id: UUID = field(default_factory=uuid4)
-    vector_id: Optional[UUID] = None        # Qdrant point ID (set after upsert)
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-
-    def assign_vector_id(self, vector_id: UUID) -> None:
-        """Record the Qdrant point ID after successful embedding upsert."""
-        self.vector_id = vector_id
 
 @dataclass
 class Document:

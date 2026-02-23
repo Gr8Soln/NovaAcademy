@@ -1,12 +1,15 @@
+import datetime
 from typing import Optional
 from uuid import UUID
 
-from app.application.interfaces import (IDocumentExtractorInterface,
+from app.application.interfaces import (IDocumentEmbedderInterface,
+                                        IDocumentExtractorInterface,
                                         IDocumentInterface, IStorageService,
                                         IVectorStoreInterface)
 from app.core.config import settings
 from app.core.logging import get_logger
-from app.domain.entities import Document, DocumentChunk
+from app.domain.entities import (Document, DocumentChunksAndEmbeddings,
+                                 EmbeddedChunk)
 
 logger = get_logger(__name__)
 
@@ -22,7 +25,7 @@ class UploadDocumentUseCase:
     5. Background: extract text → chunk → embed → upsert to vector store → mark READY
     """
 
-    SUPPORTED_TYPES = {"pdf", "txt", "docx", "md"}
+    SUPPORTED_TYPES = {"pdf", "txt", "docx", "csv", "xlsx", "pptx", "png", "jpg", "jpeg"}
     MAX_SIZE_BYTES = settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
 
     def __init__(
@@ -30,11 +33,13 @@ class UploadDocumentUseCase:
         document_repo: IDocumentInterface,
         storage: IStorageService,
         extractor: IDocumentExtractorInterface,
+        embedder: IDocumentEmbedderInterface,
         vector_store: IVectorStoreInterface,
     ) -> None:
         self._repo = document_repo
         self._storage = storage
         self._extractor = extractor
+        self._embedder = embedder
         self._vector_store = vector_store
 
     async def execute(
@@ -82,14 +87,16 @@ class UploadDocumentUseCase:
         )
         return await self._repo.save(document)
 
-    async def process_document(self, document: Document) -> None:
+
+    async def process_document(self, document_id: UUID, user_id: UUID) -> None:
         """
         Heavy background processing: extract → chunk → embed → store.
         Should be called via FastAPI BackgroundTasks after execute().
         """
-        
-        logger.info(f"Starting background processing for document {document.id} (user {document.user_id})")
-        
+        document = await self._repo.get_by_id(document_id, user_id)
+        if not document:
+            raise ValueError("Document not found")
+
         try:
             document.mark_processing()
             await self._repo.save(document)
@@ -97,36 +104,35 @@ class UploadDocumentUseCase:
             file_path = self._storage.get_file_path(
                 document.file_id, document.file_extension
             )
-            text, page_count = await self._extractor.extract(
-                file_path
-            )
+            extracted_chunk = await self._extractor.extract_and_chunk(file_path)
 
-            raw_chunks = self._extractor.chunk(text)
+            raw_chunks = extracted_chunk.chunks
+            page_count = extracted_chunk.total_pages
             if not raw_chunks:
                 raise ValueError("No text could be extracted from the document")
-
-            chunks = [
-                DocumentChunk(
-                    document_id=document.id,
-                    content=chunk_text,
-                    chunk_index=i,
-                    token_count=len(chunk_text.split()),
-                    embedding_model=settings.EMBEDDING_MODEL,
-                    embedding_dim=settings.VECTOR_SIZE,
-                )
-                for i, chunk_text in enumerate(raw_chunks)
-            ]
-
+            
+            # Embed chunks using the embedder service 
+            embedded_chunks = await self._embedder.embed_multiple(raw_chunks)
+            
             # Embed and store in vector store (fills vector_id on each chunk)
-            embedded_chunks = await self._vector_store.upsert_chunks(
-                document_id=document.id,
-                user_id=document.user_id,
-                class_id=document.class_id,
-                chunks=chunks,
+            await self._vector_store.store_embeddings(
+                DocumentChunksAndEmbeddings(
+                    document_id=str(document.id),
+                    user_id=str(document.user_id),
+                    class_id=str(document.class_id),
+                    created_at=datetime.datetime.now(datetime.timezone.utc),
+                    embedding_model=self._embedder.__class__.__name__,
+                    embedding_dim=len(embedded_chunks[0][1]) if embedded_chunks else 0,
+                    embedded_chunks=[
+                        EmbeddedChunk(
+                            index=i,
+                            chunk=chunk,
+                            embedding=embedding,
+                        )
+                        for i, (chunk, embedding) in enumerate(embedded_chunks)
+                    ],                    
+               )
             )
-
-            # Persist chunks in SQL
-            await self._repo.save_chunks(embedded_chunks)
 
             document.mark_ready(chunk_count=len(embedded_chunks), page_count=page_count)
             await self._repo.save(document)
@@ -190,12 +196,8 @@ class DeleteDocumentUseCase:
             raise ValueError("Document not found")
 
         # 1. Remove vectors from Qdrant
-        await self._vector_store.delete_document_vectors(document_id)
-
-        # 2. Delete SQL chunks and document record
-        await self._repo.delete_chunks(document_id)
-        await self._repo.delete(document_id, user_id)
-
+        await self._vector_store.delete_embeddings(str(document_id))
+        
         # 3. Delete physical file
         await self._storage.delete_file(document.file_id, document.file_extension)
 
@@ -229,4 +231,5 @@ class SearchDocumentsUseCase:
             class_id=class_id,
             top_k=top_k,
         )
+
 

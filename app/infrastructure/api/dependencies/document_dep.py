@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.repositories import SQLDocumentRepository
-from app.adapters.services import DocumentExtractor
+from app.adapters.services import DocumentExtractor, ollama_embedder
 from app.application.interfaces import (IDocumentExtractorInterface,
                                         IDocumentInterface, IStorageService,
                                         IVectorStoreInterface)
@@ -16,8 +16,6 @@ from app.application.use_cases import (DeleteDocumentUseCase,
 from app.core.config import Settings, get_settings
 from app.infrastructure.db import get_db_session
 
-from .auth_dep import get_current_user
-from .chat_dep import get_chat_group_repository
 from .core_dep import get_storage_service
 
 _qdrant_instance = None
@@ -29,38 +27,36 @@ def get_document_repository(
     return SQLDocumentRepository(session)
 
 
-def get_document_extractor_service() -> IDocumentExtractorInterface:
+def get_document_extractor() -> IDocumentExtractorInterface:
     return DocumentExtractor()
 
 
-async def get_vector_store_service(
+async def get_vector_store(
     settings: Settings = Depends(get_settings),
 ) -> IVectorStoreInterface:
     """Singleton Qdrant client (one connection pool for all requests)."""
-    global _qdrant_instance
-    if _qdrant_instance is None:
-        from app.adapters.services.qdrant_vector import QdrantVector
+    from app.adapters.services.qdrant_vector import QdrantVector
 
-        _qdrant_instance = QdrantVector(
-            qdrant_host=settings.QDRANT_HOST,
-            qdrant_port=settings.QDRANT_PORT,
-            openai_api_key=settings.OPENAI_API_KEY or "",
-            qdrant_api_key=settings.QDRANT_API_KEY,
-        )
-    return _qdrant_instance
+    return QdrantVector(
+        host=settings.QDRANT_HOST,
+        port=settings.QDRANT_PORT,
+        api_key=settings.QDRANT_API_KEY,
+    )
+    
 
 
 def get_upload_document_usecase(
     document_repo: IDocumentInterface = Depends(get_document_repository),
     storage: IStorageService = Depends(get_storage_service),
-    extractor: IDocumentExtractorInterface = Depends(get_document_extractor_service),
-    vector_store: IVectorStoreInterface = Depends(get_vector_store_service),
+    extractor: IDocumentExtractorInterface = Depends(get_document_extractor),
+    vector_store: IVectorStoreInterface = Depends(get_vector_store),
 ) -> UploadDocumentUseCase:
     return UploadDocumentUseCase(
         document_repo=document_repo,
         storage=storage,
         extractor=extractor,
         vector_store=vector_store,
+        embedder=ollama_embedder,
     )
 
 
@@ -79,7 +75,7 @@ def get_list_documents_usecase(
 def get_delete_document_usecase(
     document_repo: IDocumentInterface = Depends(get_document_repository),
     storage: IStorageService = Depends(get_storage_service),
-    vector_store: IVectorStoreInterface = Depends(get_vector_store_service),
+    vector_store: IVectorStoreInterface = Depends(get_vector_store),
 ) -> DeleteDocumentUseCase:
     return DeleteDocumentUseCase(
         document_repo=document_repo,
@@ -89,6 +85,7 @@ def get_delete_document_usecase(
 
 
 def get_search_documents_usecase(
-    vector_store: IVectorStoreInterface = Depends(get_vector_store_service),
+    vector_store: IVectorStoreInterface = Depends(get_vector_store),
 ) -> SearchDocumentsUseCase:
+    return SearchDocumentsUseCase(vector_store=vector_store)
     return SearchDocumentsUseCase(vector_store=vector_store)
