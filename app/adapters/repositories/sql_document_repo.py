@@ -23,13 +23,11 @@ class SQLDocumentRepository(IDocumentInterface):
 
     async def save(self, document: Document) -> Document:
         """Persist a new or updated document."""
-        
-        logger.info(f">>> >>>> >>> >>>> >>> >>>> Saving document {document.id} (user {document.user_id}) to database")
         result = await self._session.execute(
             select(DocumentModel).where(DocumentModel.id == document.id)
         )
         model = result.scalar_one_or_none()
-
+        
         if model:
             # Update mutable fields
             model.title = document.title

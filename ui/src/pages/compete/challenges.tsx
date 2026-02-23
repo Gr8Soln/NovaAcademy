@@ -31,10 +31,12 @@ const statusVariant: Record<
 export default function ChallengesPage() {
   const queryClient = useQueryClient();
 
-  const { data: challenges = [], isLoading } = useQuery<Challenge[]>({
+  const { data, isLoading } = useQuery<Challenge[] | { data: Challenge[] }>({
     queryKey: ["challenges"],
-    queryFn: () => challengesApi.list() as Promise<Challenge[]>,
+    queryFn: () => challengesApi.list() as any,
   });
+
+  const challenges: Challenge[] = (Array.isArray(data) ? data : data?.data) || [];
 
   const acceptMutation = useMutation({
     mutationFn: (id: string) => challengesApi.accept(id),

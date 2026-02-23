@@ -26,6 +26,10 @@ const api = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
 
   const body = await res.json();
   // All backend responses are { status, message, data }. Unwrap automatically.
+  // If metadata is present, it's a paginated response. Keep the whole body so we have access to metadata.
+  if (body && typeof body === "object" && "metadata" in body && body.metadata !== null) {
+    return body as T;
+  }
   return (body.data ?? body) as T;
 };
 

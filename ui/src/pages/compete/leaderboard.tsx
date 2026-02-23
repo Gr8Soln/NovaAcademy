@@ -24,11 +24,12 @@ export default function LeaderboardPage() {
     "weekly",
   );
 
-  const { data: leaderboard = [], isLoading } = useQuery<LeaderboardEntry[]>({
+  const { data, isLoading } = useQuery<LeaderboardEntry[] | { data: LeaderboardEntry[] }>({
     queryKey: ["leaderboard", boardType, period],
-    queryFn: () =>
-      leaderboardApi.get(boardType, period, 50) as Promise<LeaderboardEntry[]>,
+    queryFn: () => leaderboardApi.get(boardType, period, 50) as any,
   });
+
+  const leaderboard: LeaderboardEntry[] = (Array.isArray(data) ? data : data?.data) || [];
 
   const { data: myRank } = useQuery<LeaderboardEntry>({
     queryKey: ["leaderboard", "me", boardType, period],
@@ -163,7 +164,7 @@ export default function LeaderboardPage() {
             {/* List */}
             <Card>
               <CardContent className="p-0 divide-y divide-neutral-100">
-                {rest.map((entry, idx) => (
+                {rest.map((entry: LeaderboardEntry, idx: number) => (
                   <div
                     key={entry.user_id}
                     className="flex items-center justify-between p-4 hover:bg-neutral-50 transition-colors"

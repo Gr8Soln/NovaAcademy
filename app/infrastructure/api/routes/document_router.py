@@ -81,8 +81,6 @@ async def upload_document(
     background.  Poll `GET /{document_id}` to track progress.
     """
     
-    logger.info(f"Received upload request for class {class_code} (id {class_id}) from user {current_user.id} with file {file.filename}")
-    
     try:
         document = await use_case.execute(
             file=file,
@@ -90,7 +88,7 @@ async def upload_document(
             class_id=class_id,
             title=title,
         )
-        background_tasks.add_task(use_case.process_document, document)
+        # background_tasks.add_task(use_case.process_document, document)
         return success_response(
             message="Document uploaded. Embedding is running in the background.",
             data=UploadDocumentResponse(
