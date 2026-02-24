@@ -34,7 +34,6 @@ async def _create_session() -> tuple:
 
 @celery_app.task(name="process_document", bind=True, max_retries=3)
 def process_document(self: Task, document_id: str) -> None:
-    logger.debug(f"🟢🟢🟢\n\nProcessing document (STAGE 1): {document_id}\n\n🟢🟢🟢")
     asyncio.run(_process_document(document_id))
 
 
@@ -49,8 +48,6 @@ async def _process_document(document_id: str) -> None:
                 logger.error(f"Document {document_id} not found.")
                 return
 
-            logger.debug(f"🟢🟢🟢\n\nProcessing document (STAGE 2): {document.file_id}\n\n🟢🟢🟢")
-            
             use_case = ProcessDocumentUseCase(
                 document_repo=repo,
                 extractor=DocumentExtractor(),
@@ -90,7 +87,7 @@ async def _process_pending_documents() -> None:
                 logger.info("No stale documents to process.")
                 return
 
-            logger.info(f"Found {len(documents)} stale document(s) to reprocess.")
+            logger.info(f"🔥 Found {len(documents)} stale document(s) to reprocess.")
 
             use_case = ProcessDocumentUseCase(
                 document_repo=repo,

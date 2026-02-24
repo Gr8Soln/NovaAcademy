@@ -54,7 +54,7 @@ class SQLDocumentRepository(IDocumentInterface):
             )
             self._session.add(model)
 
-        await self._session.flush()
+        await self._session.commit()
         return document
 
     async def get_by_id(
@@ -120,7 +120,7 @@ class SQLDocumentRepository(IDocumentInterface):
         model = result.scalar_one_or_none()
         if model:
             await self._session.delete(model)
-            await self._session.flush()
+            await self._session.commit()
             return True
         return False
 

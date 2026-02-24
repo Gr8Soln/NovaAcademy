@@ -18,6 +18,10 @@ class DocumentExtractor(IDocumentExtractorInterface):
     def __init__(self, tokenizer_model: Optional[str] = None) -> None:
         model_name = tokenizer_model or getattr(settings, "OLLAMA_TOKENIZER_MODEL", "bert-base-uncased")
         self._tokenizer = AutoTokenizer.from_pretrained(model_name)
+        # We only use the tokenizer for chunking, not inference.
+        # Override model_max_length to suppress the spurious
+        # "Token indices sequence length is longer than …" warning.
+        self._tokenizer.model_max_length = int(1e30)
 
     async def extract(self, file_path: str) -> tuple[str, Optional[int]]:
         ext = os.path.splitext(file_path)[1].lower()
@@ -40,7 +44,11 @@ class DocumentExtractor(IDocumentExtractorInterface):
         if ext == ".docx":
             return self._extract_docx(file_path)
 
+        if ext == ".txt":
+            return self._extract_txt(file_path)
+
         raise ValueError(f"Unsupported file type: {ext}")
+
     
     
     def chunk(self, text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
@@ -151,4 +159,11 @@ class DocumentExtractor(IDocumentExtractorInterface):
         return text, 1
     
     
-    
+    # -----------------------------
+    # TXT
+    # -----------------------------
+
+    def _extract_txt(self, file_path: str) -> tuple[str, int]:
+        with open(file_path, "r", encoding="utf-8") as f:
+            text = f.read()
+        return text, 1

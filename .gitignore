@@ -44,3 +44,7 @@ google-client.json
 
 # Logs
 logs/
+
+
+# Celery Logs
+celerybeat-schedule.*

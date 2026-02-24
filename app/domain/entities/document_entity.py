@@ -67,12 +67,13 @@ class Document:
         if self.file_size_bytes <= 0:
             raise ValueError("File size must be positive")
 
-    def mark_processing(self) -> None:
+    def mark_processing(self, retrying: bool = False) -> None:
         """Transition to PROCESSING; only valid from PENDING."""
         if self.processing_status != ProcessingStatus.PENDING:
-            raise ValueError(
-                f"Cannot start processing from status '{self.processing_status}'"
-            )
+            if not retrying:
+                raise ValueError(
+                    f"Cannot start processing from status '{self.processing_status}'"
+                )
         self.processing_status = ProcessingStatus.PROCESSING
         self.updated_at = datetime.now(timezone.utc)
 
