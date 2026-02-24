@@ -203,13 +203,9 @@ class DeleteDocumentUseCase:
 
 
 class SearchDocumentsUseCase:
-    """
-    Semantic search across documents owned by a user,
-    optionally filtered by a specific class.
-    """
-
-    def __init__(self, vector_store: IVectorStoreInterface) -> None:
+    def __init__(self, vector_store: IVectorStoreInterface, embedder: IDocumentEmbedderInterface) -> None:
         self._vector_store = vector_store
+        self._embedder = embedder
 
     async def execute(
         self,
@@ -224,11 +220,15 @@ class SearchDocumentsUseCase:
         """
         if not query or not query.strip():
             return []
-
+        
+        # Embed query string
+        _, embedded_query = await self._embedder.embed(query.strip())
+        
+        # Retrieve similar chunks from vector store
         return await self._vector_store.search_embeddings(
-            query,
-            user_id=user_id,
-            class_id=class_id,
+            embedded_query,
+            user_id=str(user_id) if user_id else None,
+            class_id=str(class_id) if class_id else None,
             top_k=top_k,
         )
 

@@ -90,7 +90,8 @@ def get_delete_document_usecase(
 
 def get_search_documents_usecase(
     vector_store: IVectorStoreInterface = Depends(get_vector_store),
+    embedder: IDocumentEmbedderInterface = Depends(get_document_embedder),
 ) -> SearchDocumentsUseCase:
-    return SearchDocumentsUseCase(vector_store=vector_store)
+    return SearchDocumentsUseCase(vector_store=vector_store, embedder=embedder)
 
 
