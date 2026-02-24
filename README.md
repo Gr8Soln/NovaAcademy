@@ -104,21 +104,21 @@ alembic upgrade head
 Assumptions:
 
 - Redis is available at REDIS_URL (e.g. redis://localhost:6379/0)
-- Celery app is defined in `app/infracture/worker.py` or your project entry (adjust `-A` accordingly)
+- Celery app is defined in `app/infrastructure/celery_app.py` or your project entry (adjust `-A` accordingly)
 
 Start worker
 
 ```bash
-celery -A app.infrastructure.worker.celery_app worker --loglevel=info
+celery -A app.infrastructure.celery_app.celery_app worker --loglevel=info
 
 # For Windows (no multiprocessing):
-celery -A app.infrastructure.worker.celery_app worker --pool=solo --loglevel=info
+celery -A app.infrastructure.celery_app.celery_app worker --pool=solo --loglevel=info
 ```
 
 Start beat (scheduler)
 
 ```bash
-celery -A app.infrastructure.worker.celery_app beat --loglevel=info
+celery -A app.infrastructure.celery_app.celery_app beat --loglevel=info
 ```
 
 ---

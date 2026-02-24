@@ -74,7 +74,7 @@ async def upload_document(
         )
         
         # Process the document in background
-        cast(Task, process_document).delay(str(document.id))
+        process_document.delay(str(document.id))   # type: ignore
         
         return success_response(
             message="Document uploaded. Embedding is running in the background.",

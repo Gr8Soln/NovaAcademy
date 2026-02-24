@@ -102,7 +102,7 @@ class ProcessDocumentUseCase:
                 document.file_id, document.file_extension
             )
             extracted_chunk = await self._extractor.extract_and_chunk(file_path)
-
+            
             raw_chunks = extracted_chunk.chunks
             page_count = extracted_chunk.total_pages
             if not raw_chunks:
@@ -110,7 +110,7 @@ class ProcessDocumentUseCase:
             
             # Embed chunks using the embedder service 
             embedded_chunks = await self._embedder.embed_multiple(raw_chunks)
-            
+               
             # Embed and store in vector store (fills vector_id on each chunk)
             await self._vector_store.store_embeddings(
                 DocumentChunksAndEmbeddings(
@@ -134,7 +134,7 @@ class ProcessDocumentUseCase:
             document.mark_ready(chunk_count=len(embedded_chunks), page_count=page_count)
             await self._repo.save(document)
 
-        except Exception:
+        except Exception as e:
             document.mark_failed()
             await self._repo.save(document)
             raise
