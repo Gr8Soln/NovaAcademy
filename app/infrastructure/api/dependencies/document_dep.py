@@ -39,7 +39,6 @@ async def get_vector_store(
     return QdrantVector(
         host=settings.QDRANT_HOST,
         port=settings.QDRANT_PORT,
-        api_key=settings.QDRANT_API_KEY,
     )
     
 

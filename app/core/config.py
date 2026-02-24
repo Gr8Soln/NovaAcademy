@@ -42,7 +42,6 @@ class Settings(BaseSettings):
     QDRANT_HOST: str = "localhost"
     QDRANT_PORT: int = 6333
     QDRANT_VECTOR_SIZE: int = 1536
-    QDRANT_API_KEY: str = ""
     QDRANT_COLLECTION_NAME: str = "novaacademy"
 
     # ── LLM ─────────────────────────────────────────────────────
