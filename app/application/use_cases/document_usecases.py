@@ -14,17 +14,6 @@ from app.domain.entities import (Document, DocumentChunksAndEmbeddings,
 logger = get_logger(__name__)
 
 class UploadDocumentUseCase:
-    """
-    Upload a document file, persist it, then trigger async processing.
-
-    Flow:
-    1. Validate file type and size
-    2. Store file via IStorageService
-    3. Create Document entity (status=PENDING)
-    4. Persist document record
-    5. Background: extract text → chunk → embed → upsert to vector store → mark READY
-    """
-
     SUPPORTED_TYPES = {"pdf", "txt", "docx", "csv", "xlsx", "pptx", "png", "jpg", "jpeg"}
     MAX_SIZE_BYTES = settings.MAX_DOCUMENT_SIZE_MB * 1024 * 1024
 
@@ -32,15 +21,9 @@ class UploadDocumentUseCase:
         self,
         document_repo: IDocumentInterface,
         storage: IStorageService,
-        extractor: IDocumentExtractorInterface,
-        embedder: IDocumentEmbedderInterface,
-        vector_store: IVectorStoreInterface,
     ) -> None:
         self._repo = document_repo
         self._storage = storage
-        self._extractor = extractor
-        self._embedder = embedder
-        self._vector_store = vector_store
 
     async def execute(
         self,
@@ -88,14 +71,28 @@ class UploadDocumentUseCase:
         return await self._repo.save(document)
 
 
-    async def process_document(self, document_id: UUID, user_id: UUID) -> None:
+
+class ProcessDocumentUseCase:
+    def __init__(
+        self,
+        document_repo: IDocumentInterface,
+        storage: IStorageService,
+        extractor: IDocumentExtractorInterface,
+        embedder: IDocumentEmbedderInterface,
+        vector_store: IVectorStoreInterface,
+    ) -> None:
+        self._repo = document_repo
+        self._storage = storage
+        self._extractor = extractor
+        self._embedder = embedder
+        self._vector_store = vector_store
+
+   
+    async def execute(self, document: Document) -> None:
         """
         Heavy background processing: extract → chunk → embed → store.
-        Should be called via FastAPI BackgroundTasks after execute().
+        Should be called via Celery Delay or FastAPI BackgroundTasks after upload.
         """
-        document = await self._repo.get_by_id(document_id, user_id)
-        if not document:
-            raise ValueError("Document not found")
 
         try:
             document.mark_processing()

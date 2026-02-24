@@ -14,6 +14,7 @@ from app.application.use_cases import (DeleteDocumentUseCase,
                                        ListDocumentsUseCase,
                                        SearchDocumentsUseCase,
                                        UploadDocumentUseCase)
+from app.application.use_cases.document_usecases import ProcessDocumentUseCase
 from app.core.config import Settings, get_settings
 from app.infrastructure.db import get_db_session
 
@@ -50,11 +51,21 @@ def get_document_embedder() -> IDocumentEmbedderInterface:
 def get_upload_document_usecase(
     document_repo: IDocumentInterface = Depends(get_document_repository),
     storage: IStorageService = Depends(get_storage_service),
+) -> UploadDocumentUseCase:
+    return UploadDocumentUseCase(
+        document_repo=document_repo,
+        storage=storage
+    )
+
+
+def get_process_document_usecase(
+    document_repo: IDocumentInterface = Depends(get_document_repository),
+    storage: IStorageService = Depends(get_storage_service),
     extractor: IDocumentExtractorInterface = Depends(get_document_extractor),
     embedder: IDocumentEmbedderInterface = Depends(get_document_embedder),
     vector_store: IVectorStoreInterface = Depends(get_vector_store),
-) -> UploadDocumentUseCase:
-    return UploadDocumentUseCase(
+) -> ProcessDocumentUseCase:
+    return ProcessDocumentUseCase(
         document_repo=document_repo,
         storage=storage,
         extractor=extractor,

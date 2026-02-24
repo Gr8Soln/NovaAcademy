@@ -24,6 +24,14 @@ class IDocumentInterface(ABC):
         ...
 
     @abstractmethod
+    async def get_any_by_id(self, document_id: UUID) -> Optional[Document]:
+        """
+        Return a document by ID, without scoping to the owning user.
+        Returns None if not found.
+        """
+        ...
+
+    @abstractmethod
     async def list_by_user(
         self,
         user_id: UUID,
@@ -50,6 +58,14 @@ class IDocumentInterface(ABC):
         """
         Delete a document record.
         Returns True if deleted, False if not found / not owned.
+        """
+        ...
+
+    @abstractmethod
+    async def get_stale_unprocessed(self, older_than_minutes: int = 5) -> list["Document"]:
+        """
+        Return documents whose processing_status is PENDING or FAILED
+        and whose created_at is at least `older_than_minutes` minutes ago.
         """
         ...
 

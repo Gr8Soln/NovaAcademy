@@ -1,42 +1,27 @@
-from typing import Optional
+from typing import Optional, cast
 from uuid import UUID
 
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Depends,
-    File,
-    Form,
-    HTTPException,
-    Query,
-    status,
-    UploadFile,
-)
+from celery import Task
+from fastapi import (APIRouter, Depends, File, Form, HTTPException, Query,
+                     UploadFile, status)
 
+from app.adapters.schemas import (DocumentResponse, UploadDocumentResponse,
+                                  generate_pagination, success_response)
+from app.application.use_cases import (DeleteDocumentUseCase,
+                                       GetDocumentUseCase,
+                                       ListDocumentsUseCase,
+                                       SearchDocumentsUseCase,
+                                       UploadDocumentUseCase)
 from app.core.logging import get_logger
-from app.adapters.schemas import (    
-    DocumentResponse,
-    UploadDocumentResponse,
-    generate_pagination,
-    success_response,
-)
-from app.application.use_cases import (
-    DeleteDocumentUseCase,
-    GetDocumentUseCase,
-    ListDocumentsUseCase,
-    SearchDocumentsUseCase,
-    UploadDocumentUseCase,
-)
 from app.domain.entities import User
-from app.infrastructure.api.dependencies import (
-    get_class_id_by_code,
-    get_current_user,
-    get_delete_document_usecase,
-    get_get_document_usecase,
-    get_list_documents_usecase,
-    get_search_documents_usecase,
-    get_upload_document_usecase,
-)
+from app.infrastructure.api.dependencies import (get_class_id_by_code,
+                                                 get_current_user,
+                                                 get_delete_document_usecase,
+                                                 get_get_document_usecase,
+                                                 get_list_documents_usecase,
+                                                 get_search_documents_usecase,
+                                                 get_upload_document_usecase)
+from app.infrastructure.tasks import process_document
 
 logger = get_logger(__name__)
 
@@ -66,7 +51,6 @@ def _doc_response(doc) -> DocumentResponse:
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def upload_document(
     class_code: str,
-    background_tasks: BackgroundTasks,
     file: UploadFile = File(..., description="Document file (PDF, TXT, DOCX, MD)"),
     title: Optional[str] = Form(None, description="Display title; defaults to filename"),
     current_user: User = Depends(get_current_user),
@@ -88,7 +72,10 @@ async def upload_document(
             class_id=class_id,
             title=title,
         )
-        # background_tasks.add_task(use_case.process_document, document)
+        
+        # Process the document in background
+        cast(Task, process_document).delay(str(document.id))
+        
         return success_response(
             message="Document uploaded. Embedding is running in the background.",
             data=UploadDocumentResponse(

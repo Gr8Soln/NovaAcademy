@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID
 
@@ -70,6 +71,17 @@ class SQLDocumentRepository(IDocumentInterface):
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
+    async def get_any_by_id(
+        self, document_id: UUID
+    ) -> Optional[Document]:
+        result = await self._session.execute(
+            select(DocumentModel).where(
+                DocumentModel.id == document_id
+            )
+        )
+        model = result.scalar_one_or_none()
+        return self._to_entity(model) if model else None
+
     async def list_by_user(
         self,
         user_id: UUID,
@@ -111,6 +123,20 @@ class SQLDocumentRepository(IDocumentInterface):
             await self._session.flush()
             return True
         return False
+
+    async def get_stale_unprocessed(self, older_than_minutes: int = 5) -> list[Document]:
+        cutoff = datetime.now(timezone.utc) - timedelta(minutes=older_than_minutes)
+        result = await self._session.execute(
+            select(DocumentModel).where(
+                and_(
+                    DocumentModel.processing_status.in_(
+                        [ProcessingStatus.PENDING.value, ProcessingStatus.FAILED.value]
+                    ),
+                    DocumentModel.created_at <= cutoff,
+                )
+            )
+        )
+        return [self._to_entity(m) for m in result.scalars().all()]
 
 
     # ── Mappers ──────────────────────────────────────────────────
