@@ -47,10 +47,10 @@ class Document:
     - chunk_count is set only when processing succeeds.
     """
     user_id: UUID
-    class_id: UUID                          # FK → ChatGroup (groups table)
+    class_id: UUID                          
     file_id: str
     title: str
-    file_type: str                          # e.g. "pdf", "txt"
+    file_type: str                         
     file_size_bytes: int
     file_url: str
     file_extension: str
@@ -67,22 +67,17 @@ class Document:
         if self.file_size_bytes <= 0:
             raise ValueError("File size must be positive")
 
-    def mark_processing(self, retrying: bool = False) -> None:
+    def mark_processing(self) -> None:
         """Transition to PROCESSING; only valid from PENDING."""
-        if self.processing_status != ProcessingStatus.PENDING:
-            if not retrying:
-                raise ValueError(
-                    f"Cannot start processing from status '{self.processing_status}'"
-                )
+        if self.processing_status not in [ProcessingStatus.PENDING, ProcessingStatus.FAILED]:
+            raise ValueError(f"Cannot start processing from status '{self.processing_status}'")
         self.processing_status = ProcessingStatus.PROCESSING
         self.updated_at = datetime.now(timezone.utc)
 
     def mark_ready(self, chunk_count: int, page_count: Optional[int] = None) -> None:
         """Transition to READY after successful chunking/embedding."""
         if self.processing_status != ProcessingStatus.PROCESSING:
-            raise ValueError(
-                f"Cannot mark ready from status '{self.processing_status}'"
-            )
+            raise ValueError(f"Cannot mark ready from status '{self.processing_status}'")
         if chunk_count < 1:
             raise ValueError("A completed document must have at least one chunk")
         self.processing_status = ProcessingStatus.READY

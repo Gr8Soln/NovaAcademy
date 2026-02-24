@@ -86,9 +86,7 @@ async def _process_pending_documents() -> None:
             if not documents:
                 logger.info("No stale documents to process.")
                 return
-
-            logger.info(f"🔥 Found {len(documents)} stale document(s) to reprocess.")
-
+            
             use_case = ProcessDocumentUseCase(
                 document_repo=repo,
                 extractor=DocumentExtractor(),

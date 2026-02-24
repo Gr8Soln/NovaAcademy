@@ -95,9 +95,7 @@ class ProcessDocumentUseCase:
         """
 
         try:
-            logger.info(f"🔥 Current Document Status: {document.processing_status}")
             document.mark_processing()
-            logger.info(f"🔥 Current Document Status: {document.processing_status}")
             await self._repo.save(document)
 
             file_path = self._storage.get_file_path(
