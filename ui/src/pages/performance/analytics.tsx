@@ -29,10 +29,18 @@ const mockSubjectData = [
   { subject: "Physics", A: 65, fullMark: 150 },
 ];
 
+const mockAnalytics: UserAnalytics = {
+  total_points: 12500,
+  total_study_seconds: 124200, // ~34.5 hours
+  total_quizzes: 48,
+  total_challenges: 12,
+};
+
 export default function AnalyticsPage() {
   const { data: analytics, isLoading } = useQuery<UserAnalytics>({
     queryKey: ["analytics", "me"],
     queryFn: () => analyticsApi.me() as Promise<UserAnalytics>,
+    initialData: mockAnalytics, // Use mock data for visualization
   });
 
   if (isLoading) return <SectionLoader />;
