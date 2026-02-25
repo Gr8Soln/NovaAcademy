@@ -9,7 +9,6 @@ export const pages = {
 
   // Dashboard pages
   dashboard: "/dashboard",
-  analytics: "/dashboard/analytics",
 
   // Classroom pages
   classroom: "/classroom",

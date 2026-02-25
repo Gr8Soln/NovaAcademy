@@ -5,7 +5,6 @@ import { AuthLayout, DashboardLayout } from "@/components/layout";
 import { PageLoader } from "@/components/ui";
 import { pages } from "@/lib/constant";
 import {
-  AnalyticsPage,
   ChallengesPage,
   ClassChatPage,
   ClassLibraryPage,
@@ -75,7 +74,6 @@ export default function App() {
           }
         >
           <Route index element={<DashboardPage />} />
-          <Route path="analytics" element={<AnalyticsPage />} />
         </Route>
 
         {/* Classroom */}

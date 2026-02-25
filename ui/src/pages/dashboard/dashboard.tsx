@@ -1,28 +1,36 @@
-import { challengesApi, dashboardApi } from "@/lib/api";
-import type { Challenge, DashboardData } from "@/types";
-import { useQuery } from "@tanstack/react-query";
-import {
-  BookOpen,
-  Clock,
-  Flame,
-  Play,
-  Shield,
-  Swords,
-  Trophy,
-  Upload,
-} from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
 import {
   Bar,
   BarChart,
+  PolarAngleAxis,
+  PolarGrid,
+  Radar,
+  RadarChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 
+import { analyticsApi, challengesApi, dashboardApi } from "@/lib/api";
+import type { Challenge, DashboardData, UserAnalytics } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import {
+  BarChart3,
+  BookOpen,
+  BrainCircuit,
+  Clock,
+  Flame,
+  Play,
+  Shield,
+  Swords,
+  Target,
+  Trophy,
+  Upload,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+
 import { Button } from "@/components/ui/buttons";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionLoader } from "@/components/ui/loaders";
 import { pages } from "@/lib/constant";
 import { useAuthStore } from "@/stores";
@@ -41,6 +49,11 @@ export default function DashboardPage() {
     queryFn: () => challengesApi.list() as Promise<Challenge[]>,
   });
 
+  const { data: analytics } = useQuery<UserAnalytics>({
+    queryKey: ["analytics", "me"],
+    queryFn: () => analyticsApi.me() as Promise<UserAnalytics>,
+  });
+
   if (isLoading) return <SectionLoader />;
 
   // Mock data for graphs/streaks if not in API yet
@@ -54,12 +67,53 @@ export default function DashboardPage() {
     { day: "Sun", minutes: 25 },
   ];
 
+  const mockSubjectData = [
+    { subject: "Math", A: 120, fullMark: 150 },
+    { subject: "Science", A: 98, fullMark: 150 },
+    { subject: "English", A: 86, fullMark: 150 },
+    { subject: "History", A: 99, fullMark: 150 },
+    { subject: "Geography", A: 85, fullMark: 150 },
+    { subject: "Physics", A: 65, fullMark: 150 },
+  ];
+
+  const stats = [
+    {
+      label: "Total Points",
+      value: (analytics?.total_points || 0).toLocaleString(),
+      icon: Trophy,
+      color: "text-yellow-600",
+      bg: "bg-yellow-100",
+    },
+    {
+      label: "Study Time",
+      value: `${Math.round((data?.total_study_time_seconds || 0) / 3600)}h`,
+      icon: Clock,
+      color: "text-blue-600",
+      bg: "bg-blue-100",
+    },
+    {
+      label: "Accuracy",
+      value: `${Math.round((data?.overall_accuracy || 0) * 100)}%`,
+      icon: Target,
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
+    },
+    {
+      label: "Challenges",
+      value: challenges?.length || 0,
+      icon: Swords,
+      color: "text-orange-600",
+      bg: "bg-orange-100",
+    },
+  ];
+
   const pendingChallenges =
     challenges?.filter((c) => c.status === "pending").slice(0, 3) ?? [];
   const mostRecentDoc = data?.recent_documents?.[0];
 
   return (
     <div className="space-y-6 pb-20 lg:pb-0">
+      {/* Header & Streak */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 flex flex-col justify-center">
           <h1 className="font-display text-3xl font-bold text-primary-900">
@@ -91,6 +145,29 @@ export default function DashboardPage() {
           {/* Decorative glow */}
           <div className="absolute -right-6 -bottom-6 h-24 w-24 rounded-full bg-accent-500/20 blur-2xl" />
         </Card>
+      </div>
+
+      {/* Stats Ribbon */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <Card key={stat.label} className="overflow-hidden">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div
+                className={`h-10 w-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color}`}
+              >
+                <stat.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-[10px] text-neutral-500 font-medium uppercase tracking-wide">
+                  {stat.label}
+                </p>
+                <p className="text-lg font-bold text-neutral-900">
+                  {stat.value}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -147,50 +224,77 @@ export default function DashboardPage() {
             </Card>
           )}
 
-          {/* Study Time Graph */}
-          <div className="pt-2">
-            {" "}
-            {/* Visual separation */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-lg font-semibold text-primary-900 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary-600" />
-                Study Activity
-              </h2>
-              <select className="bg-transparent text-sm font-medium text-neutral-500 focus:outline-none cursor-pointer">
-                <option>This Week</option>
-                <option>Last Week</option>
-              </select>
+          {/* Visualization Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            {/* Study Activity */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display text-lg font-semibold text-primary-900 flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary-600" />
+                  Study Activity
+                </h2>
+              </div>
+              <Card className="h-[300px]">
+                <CardContent className="p-4 h-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={studyData}>
+                      <XAxis
+                        dataKey="day"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "#9CA3AF", fontSize: 10 }}
+                        dy={10}
+                      />
+                      <YAxis hide />
+                      <Tooltip
+                        cursor={{ fill: "#F3F4F6" }}
+                        contentStyle={{
+                          borderRadius: "8px",
+                          border: "none",
+                          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        }}
+                      />
+                      <Bar
+                        dataKey="minutes"
+                        fill="#3B5BDB"
+                        radius={[4, 4, 0, 0]}
+                        barSize={30}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
             </div>
-            <Card>
-              <CardContent className="p-6 h-[240px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={studyData}>
-                    <XAxis
-                      dataKey="day"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: "#9CA3AF", fontSize: 12 }}
-                      dy={10}
-                    />
-                    <YAxis hide />
-                    <Tooltip
-                      cursor={{ fill: "#F3F4F6" }}
-                      contentStyle={{
-                        borderRadius: "8px",
-                        border: "none",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                      }}
-                    />
-                    <Bar
-                      dataKey="minutes"
-                      fill="#3B5BDB"
-                      radius={[4, 4, 0, 0]}
-                      barSize={45}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+
+            {/* Subject Mastery Radar */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display text-lg font-semibold text-primary-900 flex items-center gap-2">
+                  <BrainCircuit className="h-5 w-5 text-accent-600" />
+                  Subject Mastery
+                </h2>
+              </div>
+              <Card className="h-[300px]">
+                <CardContent className="p-4 h-full flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={mockSubjectData}>
+                      <PolarGrid stroke="#e5e5e5" />
+                      <PolarAngleAxis
+                        dataKey="subject"
+                        tick={{ fill: "#737373", fontSize: 10 }}
+                      />
+                      <Radar
+                        name="Mastery"
+                        dataKey="A"
+                        stroke="#8b5cf6"
+                        fill="#8b5cf6"
+                        fillOpacity={0.5}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
 
@@ -198,43 +302,44 @@ export default function DashboardPage() {
         <div className="space-y-6">
           {/* Quick Actions */}
           <Card>
-            <CardHeader>
-              <h3 className="font-display text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+            <CardHeader className="pb-3 border-b border-neutral-100 mb-2">
+              <h3 className="font-display text-sm font-semibold text-neutral-900 uppercase tracking-wider flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-primary-500" />
                 Quick Actions
               </h3>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-neutral-100">
+            <CardContent className="p-2 pt-0">
+              <div className="space-y-1">
                 <button
                   onClick={() => navigate(pages.documents)}
-                  className="w-full flex items-center gap-3 py-4 hover:px-4 rounded-lg hover:bg-neutral-50 transition-all text-left"
+                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-all text-left group"
                 >
-                  <div className="h-8 w-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600">
+                  <div className="h-8 w-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600 group-hover:bg-primary-100">
                     <Upload className="h-4 w-4" />
                   </div>
-                  <span className="text-sm font-medium text-neutral-700">
+                  <span className="text-sm font-medium text-neutral-700 group-hover:text-primary-700">
                     Upload New Document
                   </span>
                 </button>
                 <button
-                  className="w-full flex items-center gap-3 py-4 hover:px-4 rounded-lg hover:bg-neutral-50 transition-all text-left"
+                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-all text-left group"
                   onClick={() => navigate(pages.examHall)}
                 >
-                  <div className="h-8 w-8 rounded-lg bg-accent-50 flex items-center justify-center text-accent-600">
+                  <div className="h-8 w-8 rounded-lg bg-accent-50 flex items-center justify-center text-accent-600 group-hover:bg-accent-100">
                     <Shield className="h-4 w-4" />
                   </div>
-                  <span className="text-sm font-medium text-neutral-700">
+                  <span className="text-sm font-medium text-neutral-700 group-hover:text-accent-700">
                     Enter Exam Hall
                   </span>
                 </button>
                 <button
-                  className="w-full flex items-center gap-3 py-4 hover:px-4 rounded-lg hover:bg-neutral-50 transition-all text-left"
+                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-all text-left group"
                   onClick={() => navigate(pages.challenges)}
                 >
-                  <div className="h-8 w-8 rounded-lg bg-success-50 flex items-center justify-center text-success-600">
+                  <div className="h-8 w-8 rounded-lg bg-success-50 flex items-center justify-center text-success-600 group-hover:bg-success-100">
                     <Swords className="h-4 w-4" />
                   </div>
-                  <span className="text-sm font-medium text-neutral-700">
+                  <span className="text-sm font-medium text-neutral-700 group-hover:text-success-700">
                     1v1 Challenge
                   </span>
                 </button>
@@ -243,7 +348,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Upcoming Challenges */}
-          <div>
+          <div className="space-y-3">
             <div className="flex items-center justify-between mb-2">
               <h2 className="font-display text-lg font-semibold text-primary-900">
                 Challenges
@@ -260,7 +365,7 @@ export default function DashboardPage() {
                 {pendingChallenges.map((c) => (
                   <Card
                     key={c.id}
-                    className="p-4 flex items-center justify-between"
+                    className="p-4 flex items-center justify-between hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-neutral-100 flex items-center justify-center">
@@ -296,6 +401,7 @@ export default function DashboardPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => navigate(pages.challenges)}
+                    className="mt-2"
                   >
                     Create one?
                   </Button>

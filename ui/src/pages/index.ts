@@ -13,7 +13,6 @@ export const ConfirmEmailPage = lazy(() => import("./auth/confirm-email"));
 
 // ── Dashboard ───────────────────────────────────────────────
 export const DashboardPage = lazy(() => import("./dashboard/dashboard"));
-export const AnalyticsPage = lazy(() => import("./performance/analytics"));
 
 // ── Study ───────────────────────────────────────────────────
 export const DocumentsPage = lazy(() => import("./study/documents"));
