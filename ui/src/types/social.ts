@@ -55,4 +55,6 @@ export interface UserAnalytics {
   total_study_seconds: number;
   total_quizzes: number;
   total_challenges: number;
+  accuracy: number;
+  class_stats: Record<string, number>;
 }

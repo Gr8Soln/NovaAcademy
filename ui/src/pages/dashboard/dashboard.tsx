@@ -30,7 +30,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/buttons";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SectionLoader } from "@/components/ui/loaders";
 import { pages } from "@/lib/constant";
 import { useAuthStore } from "@/stores";
@@ -86,21 +86,21 @@ export default function DashboardPage() {
     },
     {
       label: "Study Time",
-      value: `${Math.round((data?.total_study_time_seconds || 0) / 3600)}h`,
+      value: `${Math.round((analytics?.total_study_seconds || 0) / 3600)}h`,
       icon: Clock,
       color: "text-blue-600",
       bg: "bg-blue-100",
     },
     {
       label: "Accuracy",
-      value: `${Math.round((data?.overall_accuracy || 0) * 100)}%`,
+      value: `${Math.round((analytics?.accuracy || 0) * 100)}%`,
       icon: Target,
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
     {
       label: "Challenges",
-      value: challenges?.length || 0,
+      value: analytics?.total_challenges || 0,
       icon: Swords,
       color: "text-orange-600",
       bg: "bg-orange-100",

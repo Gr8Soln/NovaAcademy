@@ -35,6 +35,7 @@ const navSections: { title?: string; items: NavItem[] }[] = [
     items: [
       { to: pages.dashboard, label: "Dashboard", icon: LayoutDashboard },
       { to: pages.classroom, label: "Classroom", icon: BookOpen },
+      { to: pages.documents, label: "My Library", icon: GraduationCap },
     ],
   },
   {

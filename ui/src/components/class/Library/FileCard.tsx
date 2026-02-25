@@ -8,10 +8,12 @@ import {
   Trash2,
   AlertCircle,
   Clock,
+  Play,
 } from "lucide-react";
 
 import { documentsApi } from "@/lib/api/documents";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 import type { Document } from "@/types/document";
 
 interface FileCardProps {
@@ -55,6 +57,7 @@ const colorMap: Record<
   },
 };
 
+
 function formatSize(bytes: number): string {
   if (bytes === 0) return "0 B";
   const k = 1024;
@@ -63,6 +66,7 @@ function formatSize(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 }
 
+
 export default function FileCard({
   doc,
   view = "list",
@@ -70,6 +74,7 @@ export default function FileCard({
   onDeleteSuccess,
   className,
 }: FileCardProps) {
+  const navigate = useNavigate();
   const Icon = iconMap[doc.file_type] || FileText;
   const colors = colorMap[doc.file_type] || colorMap.txt;
 
@@ -134,6 +139,19 @@ export default function FileCard({
           </p>
           <div className="flex items-center gap-1 opacity-10 group-hover:opacity-100 transition-opacity">
             <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const path = classCode === "personal"
+                  ? `/classroom/study/${doc.id}`
+                  : `/class/${classCode}/study?docId=${doc.id}`;
+                navigate(path);
+              }}
+              className="p-1 rounded text-neutral-300 hover:text-primary-600 transition-colors"
+              title="Start Studying"
+            >
+              <Play className="h-3 w-3 fill-current" />
+            </button>
+            <button
               onClick={(e) => { e.stopPropagation(); deleteDoc(); }}
               className="p-1 rounded text-neutral-300 hover:text-red-500 transition-colors"
             >
@@ -188,6 +206,19 @@ export default function FileCard({
       </div>
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const path = classCode === "personal"
+              ? `/classroom/study/${doc.id}`
+              : `/class/${classCode}/study?docId=${doc.id}`;
+            navigate(path);
+          }}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-primary-600 hover:bg-primary-50 transition-colors"
+          title="Start Studying"
+        >
+          <Play className="h-4 w-4 fill-current" />
+        </button>
         <button
           className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 hover:text-amber-500 hover:bg-amber-50 transition-colors"
           title="Star"

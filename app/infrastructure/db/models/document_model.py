@@ -13,8 +13,8 @@ class DocumentModel(Base):
     __tablename__ = "documents"
 
     user_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
-    class_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("groups.id", ondelete="CASCADE"), nullable=False, index=True
+    class_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        ForeignKey("groups.id", ondelete="CASCADE"), nullable=True, index=True
     )
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     file_type: Mapped[str] = mapped_column(String(20), nullable=False)          # pdf | txt | docx | md

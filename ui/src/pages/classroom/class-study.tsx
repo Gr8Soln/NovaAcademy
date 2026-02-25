@@ -1,11 +1,12 @@
-import { StudyInterface } from "@/components/class/Study";
+import StudyRoom from "@/pages/study/components/StudyRoom";
+import { useParams } from "react-router-dom";
 
 export default function ClassStudyPage() {
+  const { classId } = useParams<{ classId: string }>();
+
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="p-4 md:p-6 lg:p-8 max-w-[1400px] mx-auto">
-        <StudyInterface />
-      </div>
+    <div className="h-full">
+      <StudyRoom mode="class" classId={classId} />
     </div>
   );
 }

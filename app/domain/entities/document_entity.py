@@ -47,7 +47,7 @@ class Document:
     - chunk_count is set only when processing succeeds.
     """
     user_id: UUID
-    class_id: UUID                          
+    class_id: Optional[UUID] = None
     file_id: str
     title: str
     file_type: str                         
