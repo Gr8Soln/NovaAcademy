@@ -50,6 +50,8 @@ class Settings(BaseSettings):
 
     # ── Ollama ──────────────────────────────────────────────────
     OLLAMA_HOST: str = "http://localhost:11434"
+    OLLAMA_API_KEY: Optional[str] = "http://localhost:11434"
+    OLLAMA_CHAT_MODEL: str = "qwen3:latest"
     OLLAMA_EMBEDDING_MODEL: str = "nomic-embed-text"
 
     # ── File storage ────────────────────────────────────────────

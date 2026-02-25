@@ -21,6 +21,8 @@ env/
 
 # Environment
 .env
+.env.production
+.env.development
 
 # Uploads
 uploads/
