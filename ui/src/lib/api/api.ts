@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/stores";
 
-const BASE_URL = import.meta.env.VITE_BASE_API_URL;
+export const BASE_URL = import.meta.env.VITE_BASE_API_URL;
 
 const api = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
   const token = useAuthStore.getState().accessToken;

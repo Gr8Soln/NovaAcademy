@@ -1,4 +1,9 @@
-export type ProcessingStatus = "pending" | "processing" | "ready" | "failed";
+export enum ProcessingStatus {
+  PENDING = "pending",
+  PROCESSING = "processing",
+  READY = "ready",
+  FAILED = "failed",
+}
 export type DocumentFileType = "pdf" | "txt" | "docx" | "md";
 
 export interface Document {

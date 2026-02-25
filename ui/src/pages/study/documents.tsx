@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/buttons";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionLoader } from "@/components/ui/loaders";
 import { documentsApi } from "@/lib/api";
+import {ProcessingStatus} from "@/types"
 
 const fileIcon: Record<string, string> = {
   pdf: "text-danger-600 bg-danger-50",
@@ -110,11 +111,11 @@ export default function DocumentsPage() {
                   </span>
                   <Badge
                     variant={
-                      doc.processing_status === "completed"
+                      doc.processing_status === ProcessingStatus.READY
                         ? "success"
-                        : doc.processing_status === "processing"
+                        : doc.processing_status === ProcessingStatus.PROCESSING
                           ? "warning"
-                          : doc.processing_status === "failed"
+                          : doc.processing_status === ProcessingStatus.FAILED
                             ? "danger"
                             : "default"
                     }
