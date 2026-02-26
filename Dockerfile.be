@@ -11,14 +11,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install dependencies
-# We filter out pywin32 as it's Windows-only
 COPY requirements.txt .
 RUN grep -v "pywin32" requirements.txt > requirements_docker.txt && \
     pip install --no-cache-dir -r requirements_docker.txt
 
 # Copy application code
 COPY app/ ./app/
-COPY alembic/ ./alembic/
+COPY migrations/ ./migrations/
+COPY templates/ ./templates/
 COPY alembic.ini .
 
 # Set environment variables

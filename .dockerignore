@@ -1,0 +1,12 @@
+node_modules
+.venv
+dist
+.env
+.git
+__pycache__
+*.pyc
+logs
+uploads
+celerybeat-schedule*
+ui/node_modules
+ui/dist
