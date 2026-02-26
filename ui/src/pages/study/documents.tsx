@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowDownAZ,
   ArrowUpAZ,
@@ -10,9 +10,9 @@ import {
   Search,
   Upload,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-import { documentsApi } from "@/lib/api";
+import { documentsApi } from "@/lib/api/documents";
 import { cn } from "@/lib/utils";
 import type { Document } from "@/types/document";
 import FileCard from "@/components/class/Library/FileCard";
@@ -27,23 +27,37 @@ export default function DocumentsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [page, setPage] = useState(1);
   const limit = 24;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["personal-documents-page", page],
-    queryFn: () => documentsApi.list((page - 1) * limit, limit) as Promise<any>,
+    queryFn: () => documentsApi.list("personal", (page - 1) * limit, limit),
   });
 
-  const documents = (data as any)?.data || [];
-  const total = (data as any)?.metadata?.total_data || 0;
+  const { mutate: uploadFile, isPending: isUploading } = useMutation({
+    mutationFn: (file: File) => documentsApi.upload("personal", file),
+    onSuccess: () => refetch(),
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      Array.from(files).forEach((file) => uploadFile(file));
+      e.target.value = ""; // Reset
+    }
+  };
+
+  const documents = data?.data || [];
+  const total = data?.metadata?.total_data || 0;
 
   const filtered = documents
-    .filter((f: Document) => {
+    .filter((f) => {
       if (filterType !== "all" && f.file_type !== filterType) return false;
       if (search && !f.title.toLowerCase().includes(search.toLowerCase()))
         return false;
       return true;
     })
-    .sort((a: Document, b: Document) => {
+    .sort((a, b) => {
       const cmp = a.title.localeCompare(b.title);
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -63,10 +77,28 @@ export default function DocumentsPage() {
           </p>
         </div>
 
-        <button className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20">
-          <Upload className="h-4 w-4" />
-          Upload Document
-        </button>
+        <div className="flex items-center gap-3">
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            multiple
+            onChange={handleFileChange}
+            accept=".pdf,.docx,.txt,.md"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 disabled:opacity-50"
+          >
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
+            {isUploading ? "Uploading..." : "Upload Document"}
+          </button>
+        </div>
       </div>
 
       {/* Toolbar */}
@@ -150,7 +182,7 @@ export default function DocumentsPage() {
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {filtered.map((doc: any) => (
+          {filtered.map((doc) => (
             <FileCard
               key={doc.id}
               doc={doc}
@@ -162,7 +194,7 @@ export default function DocumentsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((doc: any) => (
+          {filtered.map((doc) => (
             <FileCard
               key={doc.id}
               doc={doc}

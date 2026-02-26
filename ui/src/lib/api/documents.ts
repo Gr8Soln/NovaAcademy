@@ -4,7 +4,7 @@ import type { Document, DocumentListResponse } from "@/types/document";
 export type { Document, DocumentListResponse };
 
 export const documentsApi = {
-  /** List documents for a specific class (paginated) */
+  /** List documents (paginated). If classCode is 'personal', lists all/personal docs. */
   list: (
     classCode: string,
     offset = 0,
@@ -14,18 +14,22 @@ export const documentsApi = {
       offset: String(offset),
       limit: String(limit),
     });
-    return api(`/class/${classCode}/documents/?${params.toString()}`);
+    const url = classCode === "personal"
+      ? `/documents/?${params.toString()}`
+      : `/class/${classCode}/documents/?${params.toString()}`;
+    return api(url);
   },
 
-  /** Get a single document by ID within a class context */
-  get: (classCode: string, id: string): Promise<{ status: string; message: string; data: Document }> =>
-    api(`/class/${classCode}/documents/${id}`),
+  /** Get a single document by ID */
+  get: (classCode: string, id: string): Promise<{ status: string; message: string; data: Document }> => {
+    const url = classCode === "personal"
+      ? `/documents/${id}`
+      : `/class/${classCode}/documents/${id}`;
+    return api(url);
+  },
 
   /**
-   * Upload a document to a specific class.
-   *
-   * The server responds immediately with `processing_status = "pending"`.
-   * Chunking + embedding run in the background – poll `get(id)` to track progress.
+   * Upload a document.
    */
   upload: (
     classCode: string,
@@ -35,20 +39,30 @@ export const documentsApi = {
     const form = new FormData();
     form.append("file", file);
     if (title) form.append("title", title);
-    return api(`/class/${classCode}/documents/`, { method: "POST", body: form });
+    const url = classCode === "personal"
+      ? `/documents/`
+      : `/class/${classCode}/documents/`;
+    return api(url, { method: "POST", body: form });
   },
 
-  /** Permanently delete a document and all its data */
-  delete: (classCode: string, id: string): Promise<{ status: string; message: string }> =>
-    api(`/class/${classCode}/documents/${id}`, { method: "DELETE" }),
+  /** Permanently delete a document */
+  delete: (classCode: string, id: string): Promise<{ status: string; message: string }> => {
+    const url = classCode === "personal"
+      ? `/documents/${id}`
+      : `/class/${classCode}/documents/${id}`;
+    return api(url, { method: "DELETE" });
+  },
 
-  /** Perform semantic search across documents within a class */
+  /** Perform semantic search across documents */
   search: (
     classCode: string,
     query: string,
     limit = 5,
   ): Promise<{ status: string; message: string; data: any[] }> => {
     const params = new URLSearchParams({ q: query, limit: String(limit) });
-    return api(`/class/${classCode}/documents/search?${params.toString()}`);
+    const url = classCode === "personal"
+      ? `/documents/search?${params.toString()}`
+      : `/class/${classCode}/documents/search?${params.toString()}`;
+    return api(url);
   },
 };
