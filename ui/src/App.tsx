@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { AuthLayout, DashboardLayout } from "@/components/layout";
+import { AuthLayout, DashboardLayout, StudyLayout } from "@/components/layout";
 import { PageLoader } from "@/components/ui";
 import { pages } from "@/lib/constant";
 import {
@@ -76,6 +76,21 @@ export default function App() {
           <Route index element={<DashboardPage />} />
         </Route>
 
+        {/* Study Experience (Immersive) */}
+        <Route
+          path="study"
+          element={
+            <ProtectedRoute>
+              <StudyLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path=":documentId" element={<StudyPage />} />
+          <Route path="personal" element={<DocumentsPage />} />
+          <Route path="class/:classId" element={<ClassStudyPage />} />
+          <Route path="class/:classId/:documentId" element={<ClassStudyPage />} />
+        </Route>
+
         {/* Classroom */}
         <Route
           path="classroom"
@@ -86,8 +101,6 @@ export default function App() {
           }
         >
           <Route index element={<ClassroomPage />} />
-          <Route path="documents" element={<DocumentsPage />} />
-          <Route path="study/:documentId" element={<StudyPage />} />
           <Route path="exam-hall" element={<ExamHallPage />} />
           <Route path="leaderboard" element={<LeaderboardPage />} />
           <Route path="challenges" element={<ChallengesPage />} />
@@ -105,7 +118,6 @@ export default function App() {
           <Route index element={<ClassOverviewPage />} />
           <Route path="chat" element={<ClassChatPage />} />
           <Route path="library" element={<ClassLibraryPage />} />
-          <Route path="study" element={<ClassStudyPage />} />
           <Route path="quiz" element={<ClassQuizPage />} />
           <Route path="participants" element={<ClassMembersPage />} />
         </Route>

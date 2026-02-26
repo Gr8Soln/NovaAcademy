@@ -1,4 +1,4 @@
-import { ArrowLeft, FilePlus, Library, Loader2, Search, Sparkles, Upload } from "lucide-react";
+import { ArrowLeft, FilePlus, GraduationCap, Library, Loader2, Search, Sparkles, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -17,26 +17,30 @@ interface Document {
 interface StudySidebarProps {
     currentDocId?: string;
     onSelectDoc: (doc: Document) => void;
+    onGenerateQuiz?: () => void;
+    classCode?: string;
     className?: string;
 }
 
 export default function StudySidebar({
     currentDocId,
     onSelectDoc,
+    onGenerateQuiz,
+    classCode = "personal",
     className,
 }: StudySidebarProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ["personal-documents-sidebar"],
-        queryFn: () => documentsApi.list("personal", 0, 50),
+        queryKey: ["documents-sidebar", classCode],
+        queryFn: () => documentsApi.list(classCode, 0, 50),
     });
 
     const documents: Document[] = (data as any)?.data || data || [];
 
     const { mutate: uploadFile, isPending: isUploading } = useMutation({
-        mutationFn: (file: File) => documentsApi.upload("personal", file),
+        mutationFn: (file: File) => documentsApi.upload(classCode, file),
         onSuccess: () => refetch(),
     });
 
@@ -145,8 +149,8 @@ export default function StudySidebar({
                 )}
             </div>
 
-            {/* Footer / Upload Button */}
-            <div className="p-4 bg-neutral-50/50 border-t border-neutral-100">
+            {/* Footer / Actions */}
+            <div className="p-4 bg-neutral-50/50 border-t border-neutral-100 space-y-2">
                 <input
                     type="file"
                     ref={fileInputRef}
@@ -158,7 +162,7 @@ export default function StudySidebar({
                 <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary-50 text-primary-700 text-xs font-bold hover:bg-primary-100 transition-all border border-primary-100/50 disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white text-neutral-700 text-xs font-bold hover:bg-neutral-100 transition-all border border-neutral-200 disabled:opacity-50 shadow-sm"
                 >
                     {isUploading ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -167,6 +171,15 @@ export default function StudySidebar({
                     )}
                     {isUploading ? "Uploading..." : "Upload New Material"}
                 </button>
+
+                <button
+                    onClick={onGenerateQuiz}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary-600 text-white text-xs font-bold hover:bg-primary-700 transition-all shadow-md shadow-primary-500/10"
+                >
+                    <GraduationCap className="h-3.5 w-3.5" />
+                    Generate Quiz
+                </button>
+
                 <div className="mt-4 p-3 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-lg shadow-primary-500/20">
                     <div className="flex items-center gap-2 mb-1">
                         <Sparkles className="h-3 w-3" />
