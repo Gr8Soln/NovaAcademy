@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.repositories import SQLDocumentRepository
 from app.adapters.services import DocumentExtractor, OllamaEmbedder
-from app.application.interfaces import (IDocumentEmbedderInterface,
+from app.application.interfaces import (IChatGroupInterface,
+                                        IDocumentEmbedderInterface,
                                         IDocumentExtractorInterface,
                                         IDocumentInterface, IStorageService,
                                         IVectorStoreInterface)
