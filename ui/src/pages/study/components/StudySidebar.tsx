@@ -1,8 +1,9 @@
-import { FilePlus, Library, Search, Sparkles, Upload } from "lucide-react";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, FilePlus, Library, Loader2, Search, Sparkles, Upload } from "lucide-react";
+import { useRef, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 
-import { documentsApi } from "@/lib/api";
+import { documentsApi } from "@/lib/api/documents";
 import { cn } from "@/lib/utils";
 
 interface Document {
@@ -10,6 +11,7 @@ interface Document {
     title: string;
     file_type: string;
     processing_status: string;
+    file_url?: string;
 }
 
 interface StudySidebarProps {
@@ -24,20 +26,47 @@ export default function StudySidebar({
     className,
 }: StudySidebarProps) {
     const [searchQuery, setSearchQuery] = useState("");
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { data: documents, isLoading } = useQuery<Document[]>({
-        queryKey: ["personal-documents"],
-        queryFn: () => documentsApi.list(0, 50) as Promise<Document[]>,
+    const { data, isLoading, refetch } = useQuery({
+        queryKey: ["personal-documents-sidebar"],
+        queryFn: () => documentsApi.list("personal", 0, 50),
     });
 
-    const filteredDocs = documents?.filter(doc =>
+    const documents: Document[] = (data as any)?.data || data || [];
+
+    const { mutate: uploadFile, isPending: isUploading } = useMutation({
+        mutationFn: (file: File) => documentsApi.upload("personal", file),
+        onSuccess: () => refetch(),
+    });
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            Array.from(files).forEach((file) => uploadFile(file));
+            e.target.value = "";
+        }
+    };
+
+    const filteredDocs = (Array.isArray(documents) ? documents : []).filter(doc =>
         doc.title.toLowerCase().includes(searchQuery.toLowerCase())
-    ) || [];
+    );
 
     return (
-        <div className={cn("flex flex-col h-full bg-neutral-50 border-r border-neutral-200/60 w-72", className)}>
+        <div className={cn("flex flex-col h-full bg-white border-r border-neutral-200/60 w-72", className)}>
+            {/* Back to Dashboard */}
+            <div className="px-4 pt-4 pb-2">
+                <Link
+                    to="/dashboard"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-400 hover:text-primary-600 transition-colors group"
+                >
+                    <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                    Back to Dashboard
+                </Link>
+            </div>
+
             {/* Header */}
-            <div className="p-5 pb-4">
+            <div className="px-5 pb-4 pt-2">
                 <div className="flex items-center gap-2.5 mb-5">
                     <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 text-white shadow-lg shadow-primary-500/20">
                         <Library className="h-4 w-4" />
@@ -56,7 +85,7 @@ export default function StudySidebar({
                         placeholder="Search materials…"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white border border-neutral-200 rounded-xl pl-9 pr-4 py-2 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-all"
+                        className="w-full bg-neutral-50 border border-neutral-200 rounded-xl pl-9 pr-4 py-2 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-all"
                     />
                 </div>
             </div>
@@ -85,14 +114,14 @@ export default function StudySidebar({
                             className={cn(
                                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group",
                                 currentDocId === doc.id
-                                    ? "bg-white text-primary-700 shadow-sm border border-neutral-200/50"
-                                    : "text-neutral-500 hover:bg-neutral-100/80 hover:text-neutral-700"
+                                    ? "bg-primary-50 text-primary-700 shadow-sm border border-primary-100/50"
+                                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700"
                             )}
                         >
                             <div className={cn(
                                 "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-all",
                                 currentDocId === doc.id
-                                    ? "bg-primary-50 text-primary-600"
+                                    ? "bg-primary-100 text-primary-600"
                                     : "bg-neutral-100 text-neutral-400 group-hover:bg-neutral-200 group-hover:text-neutral-500"
                             )}>
                                 <Upload className="h-3.5 w-3.5" />
@@ -117,10 +146,26 @@ export default function StudySidebar({
             </div>
 
             {/* Footer / Upload Button */}
-            <div className="p-4 bg-white border-t border-neutral-100">
-                <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary-50 text-primary-700 text-xs font-bold hover:bg-primary-100 transition-all border border-primary-100/50">
-                    <FilePlus className="h-3.5 w-3.5" />
-                    Upload New Material
+            <div className="p-4 bg-neutral-50/50 border-t border-neutral-100">
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    multiple
+                    onChange={handleFileChange}
+                    accept=".pdf,.docx,.txt,.md,.csv,.xlsx,.pptx"
+                />
+                <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary-50 text-primary-700 text-xs font-bold hover:bg-primary-100 transition-all border border-primary-100/50 disabled:opacity-50"
+                >
+                    {isUploading ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                        <FilePlus className="h-3.5 w-3.5" />
+                    )}
+                    {isUploading ? "Uploading..." : "Upload New Material"}
                 </button>
                 <div className="mt-4 p-3 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-lg shadow-primary-500/20">
                     <div className="flex items-center gap-2 mb-1">
