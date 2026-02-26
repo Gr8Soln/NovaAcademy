@@ -70,7 +70,7 @@ function buildNavItems(classId: string): NavItem[] {
       key: "study",
       label: "Study",
       icon: BookOpen,
-      path: `${base}/study`,
+      path: `/study/class/${classId}`,
       color: "from-violet-500 to-purple-500",
     },
     {

@@ -1,6 +1,7 @@
 import { googleLogout } from "@react-oauth/google";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
+import { pages } from "@/lib/constant";
 import { useAuthStore } from "@/stores";
 
 const StudyLayout = () => {
@@ -33,10 +34,16 @@ const StudyLayout = () => {
                 Dashboard
               </Link>
               <Link
-                to="/classroom"
-                className="text-sm font-medium text-gray-500 hover:text-primary-600 transition"
+                to={pages.classroom}
+                className="text-sm font-medium text-neutral-500 hover:text-primary-600 transition"
               >
                 Classes
+              </Link>
+              <Link
+                to={pages.documents}
+                className="text-sm font-medium text-neutral-500 hover:text-primary-600 transition"
+              >
+                My Library
               </Link>
             </nav>
           </div>

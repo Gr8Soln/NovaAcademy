@@ -352,7 +352,7 @@ const howItWorksSteps: HowItWorksStep[] = [
     description:
       "Watch your mastery grow with detailed performance analytics. Track study time, quiz scores, streaks, and subject mastery over time.",
     ctaText: "View Analytics",
-    ctaLink: pages.analytics,
+    ctaLink: pages.dashboard,
     bgColor: "bg-rose-50",
     badgeBg: "bg-danger-100",
     badgeText: "text-danger-700",
@@ -409,17 +409,15 @@ function HowItWorksCard({
   return (
     <div
       ref={ref}
-      className={`sticky top-20 lg:top-28 w-full mb-8 lg:mb-12 last:mb-0 transition-opacity duration-1000 ${
-        isVisible ? "opacity-100" : "opacity-0"
-      }`}
+      className={`sticky top-20 lg:top-28 w-full mb-8 lg:mb-12 last:mb-0 transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"
+        }`}
       style={{
         zIndex: index + 10,
       }}
     >
       <div
-        className={`${step.bgColor} rounded-2xl shadow-xl overflow-hidden border border-neutral-200/60 transition-transform duration-700 ${
-          isVisible ? "translate-y-0" : "translate-y-8"
-        }`}
+        className={`${step.bgColor} rounded-2xl shadow-xl overflow-hidden border border-neutral-200/60 transition-transform duration-700 ${isVisible ? "translate-y-0" : "translate-y-8"
+          }`}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-0">
           {/* Left column — Text */}
@@ -710,15 +708,14 @@ export default function LandingPage() {
                   <div className="relative">
                     <Avatar name={entry.name} size="sm" />
                     <span
-                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ring-1 ring-white ${
-                        i === 0
+                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ring-1 ring-white ${i === 0
                           ? "bg-accent-500 text-white"
                           : i === 1
                             ? "bg-neutral-300 text-neutral-800"
                             : i === 2
                               ? "bg-accent-700 text-white"
                               : "bg-neutral-100 text-neutral-600"
-                      }`}
+                        }`}
                     >
                       {i + 1}
                     </span>

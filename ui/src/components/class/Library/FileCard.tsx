@@ -142,8 +142,8 @@ export default function FileCard({
               onClick={(e) => {
                 e.stopPropagation();
                 const path = classCode === "personal"
-                  ? `/classroom/study/${doc.id}`
-                  : `/class/${classCode}/study?docId=${doc.id}`;
+                  ? `/study/${doc.id}`
+                  : `/study/class/${classCode}/${doc.id}`;
                 navigate(path);
               }}
               className="p-1 rounded text-neutral-300 hover:text-primary-600 transition-colors"
@@ -210,8 +210,8 @@ export default function FileCard({
           onClick={(e) => {
             e.stopPropagation();
             const path = classCode === "personal"
-              ? `/classroom/study/${doc.id}`
-              : `/class/${classCode}/study?docId=${doc.id}`;
+              ? `/study/${doc.id}`
+              : `/study/class/${classCode}/${doc.id}`;
             navigate(path);
           }}
           className="flex h-8 w-8 items-center justify-center rounded-lg text-primary-600 hover:bg-primary-50 transition-colors"

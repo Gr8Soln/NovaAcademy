@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { AuthLayout, DashboardLayout, StudyLayout } from "@/components/layout";
+import AuthLayout from "@/components/layout/auth";
+import DashboardLayout from "@/components/layout/dashboard";
+import StudyLayout from "@/components/layout/study";
 import { PageLoader } from "@/components/ui";
 import { pages } from "@/lib/constant";
 import {
@@ -86,12 +88,11 @@ export default function App() {
           }
         >
           <Route path=":documentId" element={<StudyPage />} />
-          <Route path="personal" element={<DocumentsPage />} />
           <Route path="class/:classId" element={<ClassStudyPage />} />
           <Route path="class/:classId/:documentId" element={<ClassStudyPage />} />
         </Route>
 
-        {/* Classroom */}
+        {/* Classroom & Personal Library */}
         <Route
           path="classroom"
           element={
@@ -101,6 +102,7 @@ export default function App() {
           }
         >
           <Route index element={<ClassroomPage />} />
+          <Route path="documents" element={<DocumentsPage />} />
           <Route path="exam-hall" element={<ExamHallPage />} />
           <Route path="leaderboard" element={<LeaderboardPage />} />
           <Route path="challenges" element={<ChallengesPage />} />
