@@ -5,6 +5,11 @@ WORKDIR /app
 COPY ui/package.json ui/package-lock.json ./
 RUN npm ci --include=dev --legacy-peer-deps
 
+ARG VITE_BASE_API_URL
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_BASE_API_URL=$VITE_BASE_API_URL
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+
 COPY ui/ ./
 RUN npm run build
 

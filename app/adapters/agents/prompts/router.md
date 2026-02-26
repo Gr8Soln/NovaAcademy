@@ -6,6 +6,7 @@ Available Actions:
 - `tutor`: Answer questions about materials, explain concepts.
 - `quiz`: Generate quizzes, MCQs, or practice tests.
 - `analyze`: Provide feedback on student performance or status.
+- `conversational`: General greetings, small talk, getting to know each other.
 
 User Message:
 {user_message}

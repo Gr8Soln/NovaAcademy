@@ -13,6 +13,8 @@ from app.adapters.agents.prompt_service import PromptService
 from app.domain.entities.ai_entity import QuizType
 
 
+from langgraph.checkpoint.memory import MemorySaver
+
 class AgentState(TypedDict):
     messages: Annotated[List[BaseMessage], add_messages]
     context: Dict[str, Any]
@@ -22,6 +24,7 @@ class NovaAgentUseCase:
     """
     Use case that orchestration the Nova AI agentic flow using LangGraph.
     It takes an ILLMInterface, allowing flexibility between different LLM providers.
+    Now includes conversational memory and persistent checkpointers.
     """
 
     def __init__(
@@ -35,6 +38,7 @@ class NovaAgentUseCase:
         self._tutor_use_case = tutor_use_case
         self._quiz_use_case = quiz_use_case
         self._prompt_service = prompt_service
+        self._memory = MemorySaver()
         self._graph = self._build_graph()
 
     def _build_graph(self):
@@ -43,6 +47,7 @@ class NovaAgentUseCase:
         workflow.add_node("router", self._route_node)
         workflow.add_node("tutor", self._tutor_node)
         workflow.add_node("quiz_gen", self._quiz_gen_node)
+        workflow.add_node("conversational", self._conversational_node)
 
         workflow.set_entry_point("router")
         workflow.add_conditional_edges(
@@ -51,13 +56,15 @@ class NovaAgentUseCase:
             {
                 "tutor": "tutor",
                 "quiz": "quiz_gen",
+                "conversational": "conversational",
                 "end": END
             }
         )
         workflow.add_edge("tutor", END)
         workflow.add_edge("quiz_gen", END)
+        workflow.add_edge("conversational", END)
 
-        return workflow.compile()
+        return workflow.compile(checkpointer=self._memory)
 
     async def _route_node(self, state: AgentState):
         """Analyze user intent using a dynamic prompt."""
@@ -73,13 +80,34 @@ class NovaAgentUseCase:
         
         if "quiz" in action:
             return {"context": {"action": "quiz"}}
+        if "conversational" in action:
+            return {"context": {"action": "conversational"}}
         return {"context": {"action": "tutor"}}
 
     def _routing_logic(self, state: AgentState):
         action = state["context"].get("action")
         if action == "quiz":
             return "quiz"
+        if action == "conversational":
+            return "conversational"
         return "tutor"
+
+    async def _conversational_node(self, state: AgentState):
+        """Handle general conversation and greetings."""
+        last_message = state["messages"][-1].content
+        
+        # History is automatically managed by the checkpointer in 'messages'
+        # But for the prompt, we can format it if needed
+        # However, to keep it simple, we just pass the last message or 
+        # let the LLM see the whole state if possible.
+        
+        prompt = self._prompt_service.get_prompt("conversational", {
+            "user_message": last_message,
+            "history": "" # History is already in the 'messages' list of the state
+        })
+        
+        response = await self._llm.complete(prompt)
+        return {"messages": [HumanMessage(content=response)]}
 
     async def _tutor_node(self, state: AgentState):
         """Handle tutoring requests using context-aware prompts."""

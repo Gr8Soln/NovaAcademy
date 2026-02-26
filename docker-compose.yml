@@ -68,9 +68,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.ui
+      args:
+        VITE_BASE_API_URL: ${VITE_BASE_API_URL}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
     container_name: nova-academy-ui
     ports:
-      - "3000:80"
+      - "5173:80"
     depends_on:
       - backend
     restart: unless-stopped
