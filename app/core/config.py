@@ -15,9 +15,9 @@ class Settings(BaseSettings):
     # ── App ─────────────────────────────────────────────────────
     APP_NAME: str = "NovaAcademy"
     API_PREFIX: str = "/api/v1"
-    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
     BASE_URL: str = "http://localhost:8000"
     UI_BASE_URL: str = "http://localhost:5173"
+    CORS_ORIGINS: list[str] = ["https://novaacademy-ui.vercel.app", "http://localhost:5173"]
 
     # ── Auth ────────────────────────────────────────────────────
     SECRET_KEY: str = "change-me-in-production"

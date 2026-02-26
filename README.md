@@ -61,7 +61,40 @@ Dependencies point **inward**: infrastructure → adapters → application → d
 
 ---
 
-## Getting Started
+## 🐳 Running with Docker (Recommended)
+
+The easiest way to get NovaAcademy running is via **Docker Compose**. This will start the frontend, backend, AI models, and all necessary databases with a single command.
+
+### 1. Prerequisites
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
+
+### 2. Launch the Stack
+```bash
+# Clone the repository
+git clone <repo-url> && cd NovaAcademy
+
+# Create environment file and fill in your secrets
+cp .env.example .env
+
+# Start everything
+docker compose up --build -d
+```
+
+### 3. Service Access
+| Service        | URL / Port               | Description                      |
+| -------------- | ------------------------ | -------------------------------- |
+| **Frontend**   | `http://localhost:3000`  | Main Web Application            |
+| **Backend API**| `http://localhost:8000`  | API Root & WebSockets           |
+| **API Docs**   | `http://localhost:8000/api/v1/docs` | Swagger UI (Interactive Docs) |
+| **PostgreSQL** | `localhost:5432`         | Local Database Access           |
+| **Ollama**     | `localhost:11434`        | Local LLM API                   |
+
+> [!NOTE]
+> On the first run, the `ollama-puller` service will take a few minutes to download the required models (`qwen3` and `nomic-embed-text`). You can monitor progress with: `docker compose logs -f ollama-puller`.
+
+---
+
+## 🔧 Manual Setup (Development)
 
 ### Prerequisites
 
@@ -134,24 +167,6 @@ cd ui && npm run dev
 ```
 
 API docs available at **http://localhost:8000/api/v1/docs**.
-
----
-
-## Docker
-
-Spin up the full stack (backend, frontend, Postgres, Redis, Qdrant):
-
-```bash
-docker compose up --build
-```
-
-| Service     | Port |
-| ----------- | ---- |
-| Backend API | 8000 |
-| Frontend    | 3000 |
-| PostgreSQL  | 5432 |
-| Redis       | 6379 |
-| Qdrant      | 6333 |
 
 ---
 

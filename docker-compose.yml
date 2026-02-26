@@ -9,11 +9,15 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/1
       - QDRANT_HOST=qdrant
+      - OLLAMA_HOST=http://ollama:11434
     ports:
       - "8000:8000"
     volumes:
       - ./uploads:/app/uploads
+      - ./logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -21,6 +25,42 @@ services:
         condition: service_started
       qdrant:
         condition: service_started
+    restart: unless-stopped
+
+  # ===== Celery Worker =================================
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.be
+    container_name: nova-academy-worker
+    command: celery -A app.infrastructure.celery_app worker --loglevel=info
+    env_file: .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/1
+      - QDRANT_HOST=qdrant
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+
+  # ===== Celery Beat ===================================
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.be
+    container_name: nova-academy-beat
+    command: celery -A app.infrastructure.celery_app beat --loglevel=info
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/1
+    depends_on:
+      - redis
     restart: unless-stopped
 
   # ===== UI (React + Nginx) ==============================
@@ -40,15 +80,15 @@ services:
     image: postgres:16-alpine
     container_name: nova-academy-postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      POSTGRES_DB: ${POSTGRES_DB:-novaacademy}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-novaacademy}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -70,12 +110,34 @@ services:
     container_name: nova-academy-qdrant
     ports:
       - "6333:6333"
-      - "6334:6334"
     volumes:
       - qdrantdata:/qdrant/storage
     restart: unless-stopped
+
+  # ===== Ollama ==============================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: nova-academy-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollamadata:/root/.ollama
+    restart: unless-stopped
+
+  # ===== Ollama Model Puller =================
+  ollama-puller:
+    image: ollama/ollama:latest
+    container_name: nova-academy-ollama-puller
+    volumes:
+      - ollamadata:/root/.ollama
+      - ./scripts:/scripts
+    entrypoint: /bin/sh
+    command: "/scripts/bootstrap-ollama.sh"
+    depends_on:
+      - ollama
 
 volumes:
   pgdata:
   redisdata:
   qdrantdata:
+  ollamadata:
