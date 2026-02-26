@@ -108,6 +108,29 @@ class SQLDocumentRepository(IDocumentInterface):
 
         return [self._to_entity(r) for r in rows], total
 
+    async def list_by_class(
+        self,
+        class_id: UUID,
+        offset: int = 0,
+        limit: int = 20,
+    ) -> tuple[list[Document], int]:
+        base = select(DocumentModel).where(DocumentModel.class_id == class_id)
+
+        # Total count
+        from sqlalchemy import func as sa_func
+        count_q = select(sa_func.count()).select_from(base.subquery())
+        total = (await self._session.execute(count_q)).scalar_one()
+
+        # Paginated rows
+        rows_q = (
+            base.order_by(DocumentModel.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+        rows = (await self._session.execute(rows_q)).scalars().all()
+
+        return [self._to_entity(r) for r in rows], total
+
     async def delete(self, document_id: UUID, user_id: UUID) -> bool:
         result = await self._session.execute(
             select(DocumentModel).where(

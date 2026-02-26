@@ -19,6 +19,7 @@ from app.core.config import Settings, get_settings
 from app.infrastructure.db import get_db_session
 
 from .core_dep import get_storage_service
+from .chat_dep import get_chat_group_repository
 
 
 def get_document_repository(
@@ -51,10 +52,12 @@ def get_document_embedder() -> IDocumentEmbedderInterface:
 def get_upload_document_usecase(
     document_repo: IDocumentInterface = Depends(get_document_repository),
     storage: IStorageService = Depends(get_storage_service),
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
 ) -> UploadDocumentUseCase:
     return UploadDocumentUseCase(
         document_repo=document_repo,
-        storage=storage
+        storage=storage,
+        group_repo=group_repo
     )
 
 
@@ -76,25 +79,29 @@ def get_process_document_usecase(
 
 def get_get_document_usecase(
     document_repo: IDocumentInterface = Depends(get_document_repository),
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
 ) -> GetDocumentUseCase:
-    return GetDocumentUseCase(document_repo=document_repo)
+    return GetDocumentUseCase(document_repo=document_repo, group_repo=group_repo)
 
 
 def get_list_documents_usecase(
     document_repo: IDocumentInterface = Depends(get_document_repository),
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
 ) -> ListDocumentsUseCase:
-    return ListDocumentsUseCase(document_repo=document_repo)
+    return ListDocumentsUseCase(document_repo=document_repo, group_repo=group_repo)
 
 
 def get_delete_document_usecase(
     document_repo: IDocumentInterface = Depends(get_document_repository),
     storage: IStorageService = Depends(get_storage_service),
     vector_store: IVectorStoreInterface = Depends(get_vector_store),
+    group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
 ) -> DeleteDocumentUseCase:
     return DeleteDocumentUseCase(
         document_repo=document_repo,
         storage=storage,
         vector_store=vector_store,
+        group_repo=group_repo
     )
 
 

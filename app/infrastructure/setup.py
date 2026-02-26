@@ -82,6 +82,13 @@ def create_app() -> FastAPI:
             status_code=exc.status_code, content=jsonable_encoder(response)
         )
 
+    @app.exception_handler(PermissionError)
+    async def permission_exception_handler(request: Request, exc: PermissionError):
+        response = error_response(str(exc))
+        return JSONResponse(
+            status_code=403, content=jsonable_encoder(response)
+        )
+
     @app.exception_handler(Exception)
     async def general_exception_handler(request: Request, exc: Exception):
         logger.error(f"Unexpected error: {exc!s}")
@@ -98,7 +105,7 @@ def create_app() -> FastAPI:
     app.include_router(user_router, prefix=settings.API_PREFIX)
     app.include_router(chat_router, prefix=settings.API_PREFIX)
     app.include_router(document_router, prefix=settings.API_PREFIX)
-    app.include_router(personal_document_router, prefix=f"{settings.API_PREFIX}/documents")
+    app.include_router(personal_document_router, prefix=settings.API_PREFIX)
     app.include_router(study_router, prefix=settings.API_PREFIX)
     app.include_router(file_router, include_in_schema=False)
 

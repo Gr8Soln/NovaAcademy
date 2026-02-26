@@ -47,13 +47,13 @@ class Document:
     - chunk_count is set only when processing succeeds.
     """
     user_id: UUID
-    class_id: Optional[UUID] = None
     file_id: str
     title: str
     file_type: str                         
     file_size_bytes: int
     file_url: str
     file_extension: str
+    class_id: Optional[UUID] = None
     id: UUID = field(default_factory=uuid4)
     processing_status: ProcessingStatus = ProcessingStatus.PENDING
     page_count: Optional[int] = None

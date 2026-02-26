@@ -21,7 +21,7 @@ from app.infrastructure.tasks import process_document
 
 logger = get_logger(__name__)
 
-router = APIRouter(tags=["Personal Documents"])
+router = APIRouter(prefix="/documents", tags=["Personal Documents"])
 
 # ── Helpers ───────────────────────────────────────────────────────────
 

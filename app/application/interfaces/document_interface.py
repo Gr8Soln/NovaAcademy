@@ -54,6 +54,18 @@ class IDocumentInterface(ABC):
         ...
 
     @abstractmethod
+    async def list_by_class(
+        self,
+        class_id: UUID,
+        offset: int = 0,
+        limit: int = 20,
+    ) -> tuple[list[Document], int]:
+        """
+        Paginated list of documents for a class (all uploaders).
+        """
+        ...
+
+    @abstractmethod
     async def delete(self, document_id: UUID, user_id: UUID) -> bool:
         """
         Delete a document record.

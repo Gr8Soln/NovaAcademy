@@ -2,10 +2,12 @@ import datetime
 from typing import Optional
 from uuid import UUID
 
-from app.application.interfaces import (IDocumentEmbedderInterface,
-                                        IDocumentExtractorInterface,
-                                        IDocumentInterface, IStorageService,
-                                        IVectorStoreInterface)
+from app.application.interfaces import (IChatGroupInterface,
+                                         IDocumentEmbedderInterface,
+                                         IDocumentExtractorInterface,
+                                         IDocumentInterface, IStorageService,
+                                         IVectorStoreInterface)
+from app.application.dtos import ChatGroupRole
 from app.core.config import settings
 from app.core.logging import get_logger
 from app.domain.entities import (Document, DocumentChunksAndEmbeddings,
@@ -21,9 +23,11 @@ class UploadDocumentUseCase:
         self,
         document_repo: IDocumentInterface,
         storage: IStorageService,
+        group_repo: Optional[IChatGroupInterface] = None,
     ) -> None:
         self._repo = document_repo
         self._storage = storage
+        self._group_repo = group_repo
 
     async def execute(
         self,
@@ -56,6 +60,16 @@ class UploadDocumentUseCase:
 
         # Persist the raw file
         storage_result = await self._storage.upload_document(file, max_size_mb=settings.MAX_DOCUMENT_SIZE_MB)
+
+        # ROLE CHECK if class_id is provided
+        if class_id and self._group_repo:
+            group = await self._group_repo.get_by_id(class_id)
+            if not group:
+                raise ValueError("Class not found")
+            
+            member = group.get_member(user_id)
+            if not member or member.role not in [ChatGroupRole.ADMIN, ChatGroupRole.OWNER]:
+                raise PermissionError("Only class admins or owners can upload class materials")
 
         doc_title = title or filename
         document = Document(
@@ -141,23 +155,46 @@ class ProcessDocumentUseCase:
 
 
 class GetDocumentUseCase:
-    """Retrieve a single document by ID; caller must own it."""
+    """Retrieve a single document by ID; allows access if owner or class member."""
 
-    def __init__(self, document_repo: IDocumentInterface) -> None:
+    def __init__(
+        self, 
+        document_repo: IDocumentInterface,
+        group_repo: Optional[IChatGroupInterface] = None
+    ) -> None:
         self._repo = document_repo
+        self._group_repo = group_repo
 
     async def execute(self, document_id: UUID, user_id: UUID) -> Document:
-        document = await self._repo.get_by_id(document_id, user_id)
+        # Get any document first
+        document = await self._repo.get_any_by_id(document_id)
         if not document:
-            raise ValueError("Document not found")
-        return document
+             raise ValueError("Document not found")
+             
+        # PERMISSION CHECK
+        # 1. Owner can always access
+        if document.user_id == user_id:
+            return document
+            
+        # 2. If it belongs to a class, check if user is a member
+        if document.class_id and self._group_repo:
+            is_member = await self._group_repo.is_member(document.class_id, user_id)
+            if is_member:
+                return document
+                
+        raise PermissionError("Access denied")
 
 
 class ListDocumentsUseCase:
     """List documents for the calling user, with optional class filter."""
 
-    def __init__(self, document_repo: IDocumentInterface) -> None:
+    def __init__(
+        self, 
+        document_repo: IDocumentInterface,
+        group_repo: Optional[IChatGroupInterface] = None
+    ) -> None:
         self._repo = document_repo
+        self._group_repo = group_repo
 
     async def execute(
         self,
@@ -166,11 +203,26 @@ class ListDocumentsUseCase:
         limit: int = 20,
         class_id: Optional[UUID] = None,
     ) -> tuple[list[Document], int]:
+        if class_id:
+            # Check membership
+            if self._group_repo:
+                is_member = await self._group_repo.is_member(class_id, user_id)
+                if not is_member:
+                    raise PermissionError("You are not a member of this class")
+            
+            # Use list_by_class to get all class materials
+            return await self._repo.list_by_class(
+                class_id=class_id,
+                offset=offset,
+                limit=min(limit, 100)
+            )
+
+        # Personal library
         return await self._repo.list_by_user(
             user_id=user_id,
             offset=offset,
             limit=min(limit, 100),
-            class_id=class_id,
+            class_id=None,
         )
 
 
@@ -182,15 +234,32 @@ class DeleteDocumentUseCase:
         document_repo: IDocumentInterface,
         storage: IStorageService,
         vector_store: IVectorStoreInterface,
+        group_repo: Optional[IChatGroupInterface] = None,
     ) -> None:
         self._repo = document_repo
         self._storage = storage
         self._vector_store = vector_store
+        self._group_repo = group_repo
 
     async def execute(self, document_id: UUID, user_id: UUID) -> None:
-        document = await self._repo.get_by_id(document_id, user_id)
+        document = await self._repo.get_any_by_id(document_id)
         if not document:
             raise ValueError("Document not found")
+
+        # PERMISSION CHECK
+        # 1. Owner can always delete
+        allowed = (document.user_id == user_id)
+        
+        # 2. Class Admin/Owner can delete class materials
+        if not allowed and document.class_id and self._group_repo:
+            group = await self._group_repo.get_by_id(document.class_id)
+            if group:
+                member = group.get_member(user_id)
+                if member and member.role in [ChatGroupRole.ADMIN, ChatGroupRole.OWNER]:
+                    allowed = True
+        
+        if not allowed:
+            raise PermissionError("Only the uploader or class admins can delete this document")
 
         # 1. Remove vectors from Qdrant
         await self._vector_store.delete_embeddings(str(document_id))
