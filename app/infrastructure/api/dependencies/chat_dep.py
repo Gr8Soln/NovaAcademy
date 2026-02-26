@@ -121,25 +121,51 @@ async def get_chat_notification_service(
 
 
 
+
 async def get_chat_send_message_use_case(
     message_repo: IChatMessageInterface = Depends(get_chat_message_repository),
     group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
     pubsub: IChatPubSub = Depends(get_chat_pubsub_service),
     cache: IChatCacheInterface = Depends(get_chat_cache_service),
     notification: IChatNotificationInterface = Depends(get_chat_notification_service),
-    nova_agent_dep = Depends("app.infrastructure.api.dependencies.ai_dep.get_nova_agent"), # Use string to avoid circularity
 ) -> SendChatMessageUseCase:
     """Get SendMessage use case with NovaAI support."""
-    # Note: We need to resolve the agent properly. 
-    # Since fastapi handles Depends, nova_agent_dep will be the agent instance.
-    
+    # Deferred import to avoid circular: chat_dep <- document_dep <- ai_dep -> chat_dep
+    from app.core.config import get_settings
+    from app.infrastructure.api.dependencies.tutor_dep import get_llm_service, get_tutor_usecase
+    from app.adapters.services import OllamaEmbedder
+    from app.adapters.services.qdrant_vector import QdrantVector
+    from app.application.use_cases.tutor_usecases import TutorUseCase
+    from app.application.use_cases.ai_use_cases import GenerateQuizUseCase
+    from app.application.use_cases.document_usecases import SearchDocumentsUseCase
+    from app.adapters.agents.prompt_service import PromptService
+    from app.application.use_cases.nova_agent_usecase import NovaAgentUseCase
+
+    settings = get_settings()
+    llm = get_llm_service(settings)
+
+    # Build deps needed for search/tutor
+    vector_store = QdrantVector(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT)
+    embedder = OllamaEmbedder()
+    search_uc = SearchDocumentsUseCase(vector_store=vector_store, embedder=embedder)
+    tutor_uc = TutorUseCase(llm=llm, search_use_case=search_uc)
+    quiz_uc = GenerateQuizUseCase(llm=llm, search_use_case=search_uc)
+    prompt_svc = PromptService()
+
+    nova_agent = NovaAgentUseCase(
+        llm=llm,
+        tutor_use_case=tutor_uc,
+        quiz_use_case=quiz_uc,
+        prompt_service=prompt_svc
+    )
+
     return SendChatMessageUseCase(
         message_repo=message_repo,
         group_repo=group_repo,
         pubsub=pubsub,
         cache=cache,
         notification_service=notification,
-        nova_agent=nova_agent_dep
+        nova_agent=nova_agent
     )
 
 
