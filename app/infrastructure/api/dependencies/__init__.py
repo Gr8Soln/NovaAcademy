@@ -1,3 +1,4 @@
+from .ai_dep import *
 from .auth_dep import *
 from .chat_dep import *
 from .core_dep import *

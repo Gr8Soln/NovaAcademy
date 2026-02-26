@@ -21,12 +21,14 @@ class SendChatMessageUseCase:
         pubsub: IChatPubSub,
         cache: IChatCacheInterface,
         notification_service: IChatNotificationInterface,
+        nova_agent: Optional[Any] = None, # Avoid cyclic dependency or use interface
     ):
         self._message_repo = message_repo
         self._group_repo = group_repo
         self._pubsub = pubsub
         self._cache = cache
         self._notification = notification_service
+        self._nova_agent = nova_agent
     
     async def execute(self, input_data: SendChatMessageInput) -> SendChatMessageOutput:
         """
@@ -85,6 +87,15 @@ class SendChatMessageUseCase:
                 group_name=group.name,
             )
         
+        # 9. Trigger NovaAI if mentioned
+        if self._nova_agent:
+            # Simple check for @Nova or @NovaAI
+            content_lower = input_data.content.lower()
+            if "@nova" in content_lower or "@novaai" in content_lower:
+                # Run in background via Celery or async task
+                # For now, just a call to the agent
+                await self._trigger_nova(saved_message, group)
+
         # Return result
         mentioned_user_ids = [m.user_id for m in message.mentions]
         return SendChatMessageOutput(
@@ -171,6 +182,39 @@ class SendChatMessageUseCase:
                 # Log error but don't fail the message send
                 # Notifications are non-critical
                 print(f"Failed to send mention notification: {e}")
+
+    async def _trigger_nova(self, message: ChatMessage, group: ChatGroup) -> None:
+        """Trigger NovaAI agent to process the message and reply."""
+        try:
+            # Prepare context for Nova
+            # We strip the mention from the content for the agent
+            cleaned_content = re.sub(r'@nova(ai)?\s*', '', message.content, flags=re.IGNORECASE).strip()
+            
+            # Run Nova agent (using graph)
+            result = await self._nova_agent.run(
+                input_text=cleaned_content,
+                conversation_id=str(group.id) # Use group_id as thread_id/conversation_id
+            )
+            
+            if result and "messages" in result:
+                ai_reply_content = result["messages"][-1].content
+                
+                # Create and save AI message
+                ai_message = ChatMessage(
+                    group_id=group.id,
+                    sender_id=UUID("00000000-0000-0000-0000-000000000000"), # SYSTEM/AI ID
+                    content=ai_reply_content,
+                    message_type="text",
+                    reply_to_id=message.id,
+                    metadata={"is_ai": True, "agent": "Nova"},
+                )
+                
+                saved_ai_msg = await self._message_repo.save(ai_message)
+                await self._cache.set_message(saved_ai_msg, ttl=300)
+                await self._pubsub.publish_message(group.id, saved_ai_msg)
+                
+        except Exception as e:
+             print(f"Failed to trigger NovaAI: {e}")
 
 
 # =============================================================================

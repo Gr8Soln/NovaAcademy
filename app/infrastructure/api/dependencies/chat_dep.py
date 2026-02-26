@@ -127,14 +127,19 @@ async def get_chat_send_message_use_case(
     pubsub: IChatPubSub = Depends(get_chat_pubsub_service),
     cache: IChatCacheInterface = Depends(get_chat_cache_service),
     notification: IChatNotificationInterface = Depends(get_chat_notification_service),
+    nova_agent_dep = Depends("app.infrastructure.api.dependencies.ai_dep.get_nova_agent"), # Use string to avoid circularity
 ) -> SendChatMessageUseCase:
-    """Get SendMessage use case with all dependencies injected."""
+    """Get SendMessage use case with NovaAI support."""
+    # Note: We need to resolve the agent properly. 
+    # Since fastapi handles Depends, nova_agent_dep will be the agent instance.
+    
     return SendChatMessageUseCase(
         message_repo=message_repo,
         group_repo=group_repo,
         pubsub=pubsub,
         cache=cache,
         notification_service=notification,
+        nova_agent=nova_agent_dep
     )
 
 
