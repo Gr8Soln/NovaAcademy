@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Optional, Any
 from uuid import UUID
 
 from app.application.interfaces import (IChatCacheInterface,
@@ -190,10 +190,12 @@ class SendChatMessageUseCase:
             # We strip the mention from the content for the agent
             cleaned_content = re.sub(r'@nova(ai)?\s*', '', message.content, flags=re.IGNORECASE).strip()
             
-            # Run Nova agent (using graph)
-            result = await self._nova_agent.run(
+            # Run Nova agent (using graph via execute)
+            result = await self._nova_agent.execute(
                 input_text=cleaned_content,
-                conversation_id=str(group.id) # Use group_id as thread_id/conversation_id
+                user_id=message.sender_id,
+                class_id=group.id,
+                conversation_id=str(group.id)
             )
             
             if result and "messages" in result:
