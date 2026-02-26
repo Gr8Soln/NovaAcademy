@@ -1,4 +1,4 @@
-import { Bot, Send, Sparkles } from "lucide-react";
+import { Bot, ChevronRight, Send, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { cn } from "@/lib/utils";
@@ -14,9 +14,10 @@ interface Message {
 interface NovaCopilotProps {
     documentId?: string;
     classId?: string;
+    onCollapse?: () => void;
 }
 
-export default function NovaCopilot({ documentId }: NovaCopilotProps) {
+export default function NovaCopilot({ documentId, onCollapse }: NovaCopilotProps) {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -99,17 +100,29 @@ export default function NovaCopilot({ documentId }: NovaCopilotProps) {
     return (
         <div className="flex flex-col h-full bg-white border-l border-neutral-200/60 shadow-[-4px_0_12px_rgba(0,0,0,0.02)]">
             {/* Header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-neutral-100 bg-gradient-to-br from-primary-50/30 to-accent-50/20">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-accent-600 text-white shadow-sm ring-2 ring-primary-500/10">
-                    <Sparkles className="h-4 w-4" />
-                </div>
-                <div>
-                    <h3 className="text-sm font-bold text-neutral-900 leading-tight">NovaAI Copilot</h3>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                        <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Document Aware</span>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 bg-gradient-to-br from-primary-50/30 to-accent-50/20">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-accent-600 text-white shadow-sm ring-2 ring-primary-500/10">
+                        <Sparkles className="h-4 w-4" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-bold text-neutral-900 leading-tight">NovaAI Copilot</h3>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Document Aware</span>
+                        </div>
                     </div>
                 </div>
+
+                {onCollapse && (
+                    <button
+                        onClick={onCollapse}
+                        className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+                        title="Collapse Copilot"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </button>
+                )}
             </div>
 
             {/* Messages */}

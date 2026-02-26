@@ -76,8 +76,8 @@ export default function StudySidebar({
                         <Library className="h-4 w-4" />
                     </div>
                     <div>
-                        <h2 className="text-sm font-bold text-neutral-900 leading-tight">My Library</h2>
-                        <p className="text-[10px] text-neutral-400 font-medium mt-0.5">Standalone Study</p>
+                        <h2 className="text-sm font-bold text-neutral-900 leading-tight">Study Library</h2>
+                        <p className="text-[10px] text-neutral-400 font-medium mt-0.5">{classCode === "personal" ? "Standalone Study" : "Class Materials"}</p>
                     </div>
                 </div>
 

@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { useImmersive } from "@/components/layout/study";
+import { ChevronLeft, ChevronRight, Sparkles, Maximize2, Minimize2 } from "lucide-react";
 
 import { documentsApi } from "@/lib/api/documents";
 import { cn } from "@/lib/utils";
-import MaterialViewer from "./MaterialViewer";
-import NovaCopilot from "./NovaCopilot";
-import StudyTimer from "./StudyTimer";
-import StudySidebar from "./StudySidebar";
-import StudyQuizModal from "./StudyQuizModal";
+import MaterialViewer from "@/pages/study/components/MaterialViewer";
+import NovaCopilot from "@/pages/study/components/NovaCopilot";
+import StudyTimer from "@/pages/study/components/StudyTimer";
+import StudySidebar from "@/pages/study/components/StudySidebar";
+import StudyQuizModal from "@/pages/study/components/StudyQuizModal";
 
 interface StudyRoomProps {
     mode: "personal" | "class";
@@ -22,6 +23,7 @@ export default function StudyRoom({
     classId: propClassId,
     initialDocId,
 }: StudyRoomProps) {
+    const { isImmersive, setIsImmersive } = useImmersive();
     const { classId: urlClassId } = useParams<{ classId: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
     const classId = propClassId || urlClassId;
@@ -71,8 +73,10 @@ export default function StudyRoom({
 
     return (
         <div className={cn(
-            "flex bg-neutral-50 overflow-hidden relative",
-            mode === "personal" ? "h-[calc(100vh-64px)]" : "h-full"
+            "flex bg-neutral-50 overflow-hidden relative transition-all duration-300",
+            mode === "personal"
+                ? (isImmersive ? "h-screen" : "h-[calc(100vh-56px)]") // 56px = h-14
+                : "h-full"
         )}>
             {/* ── Left Panel (Materials & Actions) ── */}
             <>
@@ -135,6 +139,19 @@ export default function StudyRoom({
                         className="h-full"
                     />
                 </div>
+
+                {/* Immersive Toggle Button (Fixed bottom right of viewer area) */}
+                <button
+                    onClick={() => setIsImmersive(!isImmersive)}
+                    className={cn(
+                        "absolute bottom-6 right-6 z-30 p-2.5 rounded-full shadow-lg transition-all",
+                        "bg-white border border-neutral-200 text-neutral-500 hover:text-primary-600 hover:scale-110",
+                        isImmersive && "bg-primary-600 text-white border-primary-500 shadow-primary-200"
+                    )}
+                    title={isImmersive ? "Exit Focus Mode" : "Enter Focus Mode"}
+                >
+                    {isImmersive ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+                </button>
             </div>
 
             {/* ── Right Panel (NovaAI Copilot) ── */}
@@ -147,6 +164,7 @@ export default function StudyRoom({
                 <NovaCopilot
                     documentId={selectedDoc?.id}
                     classId={classId}
+                    onCollapse={() => setRightOpen(false)}
                 />
             </div>
 
