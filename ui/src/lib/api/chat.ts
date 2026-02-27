@@ -108,3 +108,40 @@ export const classApi = {
       body: JSON.stringify({ role }),
     }),
 };
+
+export interface SendMessagePayload {
+  group_id: string;
+  content: string;
+  message_type: "text" | "image" | "file";
+  reply_to_id?: string;
+}
+
+export const chatApi = {
+  getMessages: (classCode: string, limit = 50, before?: string) => {
+    let url = `/class/${classCode}/chat/messages?limit=${limit}`;
+    if (before) url += `&before=${encodeURIComponent(before)}`;
+    return api<any[]>(url);
+  },
+
+  sendMessage: (classCode: string, payload: SendMessagePayload) =>
+    api<any>(`/class/${classCode}/chat/messages`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  editMessage: (classCode: string, messageId: string, content: string) =>
+    api<any>(`/class/${classCode}/chat/messages/${messageId}`, {
+      method: "PUT",
+      body: JSON.stringify({ content }),
+    }),
+
+  deleteMessage: (classCode: string, messageId: string) =>
+    api<null>(`/class/${classCode}/chat/messages/${messageId}`, {
+      method: "DELETE",
+    }),
+
+  searchMessages: (classCode: string, query: string, limit = 20) =>
+    api<any[]>(
+      `/class/${classCode}/chat/search?q=${encodeURIComponent(query)}&limit=${limit}`,
+    ),
+};

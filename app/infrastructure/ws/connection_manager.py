@@ -67,7 +67,7 @@ class ConnectionManager:
         # Track which groups we've subscribed to in Redis
         self._subscribed_groups: Set[UUID] = set()
     
-    async def connect(self, websocket: WebSocket, user_id: UUID, group_id: UUID):
+    async def connect(self, websocket: WebSocket, user_id: UUID, group_id: UUID, username: str):
         """
         Connect a WebSocket to a group.
         
@@ -92,13 +92,12 @@ class ConnectionManager:
             await self._subscribe_to_group(group_id)
             self._subscribed_groups.add(group_id)
         
-        logger.info(f"User {user_id} connected to group {group_id}")
+        logger.info(f"User {user_id} ({username}) connected to group {group_id}")
         
         # Publish "user joined" event to all instances
-        # This will be received by ALL instances and broadcast to their clients
-        # (We'll get username from the use case layer)
+        await self._pubsub.publish_user_joined(group_id, user_id, username)
     
-    async def disconnect(self, websocket: WebSocket, group_id: UUID):
+    async def disconnect(self, websocket: WebSocket, group_id: UUID, username: str = "Someone"):
         """
         Disconnect a WebSocket from a group.
         
@@ -125,6 +124,9 @@ class ConnectionManager:
             del self._connection_users[websocket]
         
         logger.info(f"User {user_id} disconnected from group {group_id}")
+        
+        if user_id:
+            await self._pubsub.publish_user_left(group_id, user_id, username)
     
     async def broadcast_to_group(self, group_id: UUID, message: dict):
         """

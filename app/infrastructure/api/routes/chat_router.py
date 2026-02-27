@@ -89,6 +89,7 @@ def _message_response(message, mentions=None) -> MessageResponse:
         id=message.id,
         group_id=message.group_id,
         sender_id=message.sender_id,
+        sender_name=getattr(message, "sender_name", None),
         content=message.content,
         message_type=message.message_type.value,
         mentions=[

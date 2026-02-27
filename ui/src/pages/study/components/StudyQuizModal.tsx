@@ -58,8 +58,12 @@ export default function StudyQuizModal({
             const allQuestions: QuizQuestion[] = [];
             for (const docId of selectedDocs) {
                 try {
-                    const result: any = await aiApi.generateQuiz(docId, 5);
-                    const qs = result?.questions || result || [];
+                    const response: any = await aiApi.generateQuiz(docId, 5);
+                    // The backend returns { "message": "...", "data": { "quiz": [...] } }
+                    // Our api helper unwraps { "message", "data" } so result should be { "quiz": [...] }
+                    const quizData = response?.quiz || response;
+                    const qs = Array.isArray(quizData) ? quizData : quizData?.questions || [];
+
                     if (Array.isArray(qs)) {
                         allQuestions.push(...qs);
                     }

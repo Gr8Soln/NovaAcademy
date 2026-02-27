@@ -64,17 +64,20 @@ export default function NovaCopilot({ documentId, onCollapse }: NovaCopilotProps
             const decoder = new TextDecoder();
 
             if (reader) {
+                let accumulatedContent = "";
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
 
-                    const chunk = decoder.decode(value);
+                    const chunk = decoder.decode(value, { stream: true });
+                    accumulatedContent += chunk;
+
                     setMessages((prev) => {
                         const last = prev[prev.length - 1];
-                        if (last.role === "assistant") {
+                        if (last.role === "assistant" && last.id === assistantMessage.id) {
                             return [
                                 ...prev.slice(0, -1),
-                                { ...last, content: last.content + chunk },
+                                { ...last, content: accumulatedContent },
                             ];
                         }
                         return prev;

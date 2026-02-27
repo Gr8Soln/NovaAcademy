@@ -1,21 +1,31 @@
+import json
+from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, WebSocket
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from sqlalchemy import select
 
-from app.core.config import get_settings
+from app.application.interfaces import IChatPresenceService, IChatPubSub
+from app.core.config import Settings, get_settings
+from app.core.logging import get_logger
+from app.domain.entities import User as UserEntity
 from app.infrastructure.api.dependencies import (get_chat_presence_service,
+                                                 get_chat_pubsub_service,
                                                  get_connection_manager)
+from app.infrastructure.db import get_db_session as db_session
 from app.infrastructure.ws.connection_manager import (ConnectionManager,
                                                       get_websocket_user)
 
 router = APIRouter(prefix="/chat", tags=["Class chat"])
+logger = get_logger(__name__)
 
 @router.websocket("/groups/{group_id}")
 async def websocket_endpoint(
     websocket: WebSocket,
     group_id: UUID,
     manager: ConnectionManager = Depends(get_connection_manager),
-    presence_service = Depends(get_chat_presence_service),
+    presence_service: IChatPresenceService = Depends(get_chat_presence_service),
+    pubsub: IChatPubSub = Depends(get_chat_pubsub_service),
 ):
     """
     WebSocket endpoint for real-time chat.
@@ -38,41 +48,52 @@ async def websocket_endpoint(
     """
     settings = get_settings()
     
+    # 1. Authenticate (from token in query params)
     try:
         user_id = await get_websocket_user(websocket, settings.SECRET_KEY)
-    except ValueError as e:
-        return  
-    
-    # Connect WebSocket
-    await manager.connect(websocket, user_id, group_id)
-    
-    # Mark user as online
-    await presence_service.set_user_online(user_id, group_id)
-    
+    except Exception as e:
+        logger.warning(f"WebSocket auth failed: {e}")
+        return
+
+    # 2. Get username for broadcast
     try:
-        # Listen for messages from client
+        # We need a repository to get the user
+        async with db_session() as session:
+            stmt = select(UserEntity).where(UserEntity.id == user_id)
+            result = await session.execute(stmt)
+            user = result.scalar_one_or_none()
+            username = user.username if user else "Someone"
+    except Exception as e:
+        logger.warning(f"Failed to get username: {e}")
+        username = "Someone"
+
+    # Connect WebSocket
+    await manager.connect(websocket, user_id, group_id, username)
+    await presence_service.set_user_online(user_id, group_id)
+
+    try:
         while True:
-            data = await websocket.receive_json()
+            # Receive message from WebSocket
+            data = await websocket.receive_text()
+            event = json.loads(data)
             
-            # Handle different message types from client
-            msg_type = data.get("type")
+            if event["type"] == "typing":
+                await pubsub.publish_typing_indicator(
+                    group_id=group_id,
+                    user_id=user_id,
+                    username=username,
+                    is_typing=event["is_typing"]
+                )
             
-            if msg_type == "typing":
-                # Broadcast typing indicator
-                # (In production, use use case + pub/sub)
-                pass
-            
-            elif msg_type == "heartbeat":
-                # Refresh presence
+            elif event["type"] == "heartbeat":
+                # Refresh presence in Redis
                 await presence_service.set_user_online(user_id, group_id)
-            
-            # Note: Actual message sending should use REST API,
-            # not WebSocket, for better error handling and persistence
+
+    except WebSocketDisconnect:
+        await manager.disconnect(websocket, group_id, username)
+        await presence_service.set_user_offline(user_id, group_id)
     
     except Exception as e:
-        print(f"WebSocket error: {e}")
-    
-    finally:
-        # Disconnect
-        await manager.disconnect(websocket, group_id)
+        logger.error(f"WebSocket error in group {group_id}: {e}")
+        await manager.disconnect(websocket, group_id, username)
         await presence_service.set_user_offline(user_id, group_id)

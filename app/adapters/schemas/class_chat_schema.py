@@ -19,6 +19,7 @@ class MessageResponse(BaseModel):
     id: UUID
     group_id: UUID
     sender_id: UUID
+    sender_name: Optional[str] = None
     content: str
     message_type: str
     mentions: list[dict]

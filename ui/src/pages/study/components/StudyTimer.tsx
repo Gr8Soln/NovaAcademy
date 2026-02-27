@@ -1,5 +1,6 @@
-import { Clock, Pause, Play, RotateCcw } from "lucide-react";
+import { useIdleTimer } from "react-idle-timer";
 import { useEffect, useRef, useState } from "react";
+import { Clock, Pause, Play, RotateCcw } from "lucide-react";
 
 import { studySessionsApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -22,8 +23,21 @@ export default function StudyTimer({
     const [sessionId, setSessionId] = useState<string | null>(null);
 
     const heartbeatIntervalRef = useRef<number | null>(null);
-    const activityTimeoutRef = useRef<number | null>(null);
-    const lastActivityTimeRef = useRef<number>(Date.now());
+
+    const onIdle = () => {
+        setIsUserActive(false);
+    };
+
+    const onActive = () => {
+        setIsUserActive(true);
+    };
+
+    useIdleTimer({
+        onIdle,
+        onActive,
+        timeout: 60000,
+        throttle: 500
+    });
 
     // Initialize Session
     useEffect(() => {
@@ -41,59 +55,12 @@ export default function StudyTimer({
 
         return () => {
             if (heartbeatIntervalRef.current) window.clearInterval(heartbeatIntervalRef.current);
-            if (activityTimeoutRef.current) window.clearTimeout(activityTimeoutRef.current);
 
             if (sessionId) {
                 studySessionsApi.end(sessionId).catch(console.error);
             }
         };
     }, [documentId]);
-
-    // Smart Activity Tracking: Visibility + Activity Listeners
-    useEffect(() => {
-        const ACTIVITY_THRESHOLD = 60000; // 1 minute of no activity before pausing
-
-        const handleActivity = () => {
-            lastActivityTimeRef.current = Date.now();
-            if (!isUserActive) setIsUserActive(true);
-
-            if (activityTimeoutRef.current) window.clearTimeout(activityTimeoutRef.current);
-            activityTimeoutRef.current = window.setTimeout(() => {
-                setIsUserActive(false);
-            }, ACTIVITY_THRESHOLD);
-        };
-
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                setIsUserActive(false);
-            } else {
-                handleActivity();
-            }
-        };
-
-        // Events to track
-        window.addEventListener("mousemove", handleActivity);
-        window.addEventListener("mousedown", handleActivity);
-        window.addEventListener("keydown", handleActivity);
-        window.addEventListener("touchstart", handleActivity);
-        window.addEventListener("scroll", handleActivity, { passive: true });
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        // Initial timeout
-        activityTimeoutRef.current = window.setTimeout(() => {
-            setIsUserActive(false);
-        }, ACTIVITY_THRESHOLD);
-
-        return () => {
-            window.removeEventListener("mousemove", handleActivity);
-            window.removeEventListener("mousedown", handleActivity);
-            window.removeEventListener("keydown", handleActivity);
-            window.removeEventListener("touchstart", handleActivity);
-            window.removeEventListener("scroll", handleActivity);
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-            if (activityTimeoutRef.current) window.clearTimeout(activityTimeoutRef.current);
-        };
-    }, []);
 
     // Timer Tick (Only if active, visible, and user is active)
     useEffect(() => {

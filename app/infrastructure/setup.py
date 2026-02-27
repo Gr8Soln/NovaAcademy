@@ -13,6 +13,7 @@ from app.core.logging import get_logger
 from app.infrastructure.api import (ai_router, analytics_router, auth_router,
                                     chat_router, document_router, personal_document_router, file_router,
                                     study_router, user_router)
+from app.infrastructure.ws.ws_router import router as ws_router
 from app.infrastructure.db import Base, engine
 
 logger = get_logger(__name__)
@@ -107,6 +108,7 @@ def create_app() -> FastAPI:
     app.include_router(document_router, prefix=settings.API_PREFIX)
     app.include_router(personal_document_router, prefix=settings.API_PREFIX)
     app.include_router(study_router, prefix=settings.API_PREFIX)
+    app.include_router(ws_router, prefix=settings.API_PREFIX)
     app.include_router(file_router, include_in_schema=False)
 
     @app.get(f"{settings.API_PREFIX}/health")

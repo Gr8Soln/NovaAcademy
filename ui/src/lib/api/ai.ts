@@ -14,6 +14,7 @@ export const aiApi = {
         document_id: documentId,
         question,
         top_k: topK,
+        stream: true,
       }),
     });
   },
@@ -26,12 +27,12 @@ export const aiApi = {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ document_id: documentId }),
+      body: JSON.stringify({ document_id: documentId, stream: true }),
     });
   },
 
   generateQuiz: (documentId: string, numQuestions = 10) =>
-    api("/ai/quiz", {
+    api("/ai/quiz/generate", {
       method: "POST",
       body: JSON.stringify({
         document_id: documentId,
