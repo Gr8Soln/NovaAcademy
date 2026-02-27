@@ -54,6 +54,8 @@ class Settings(BaseSettings):
     OLLAMA_CHAT_MODEL: str = "qwen3:latest"
     OLLAMA_EMBEDDING_MODEL: str = "nomic-embed-text"
 
+    LLM_PROVIDER: str = "openai"  # "openai" or "ollama"
+
     # ── File storage ────────────────────────────────────────────
     UPLOAD_DIR: str = "./uploads"
     MAX_IMAGE_SIZE_KB: int = 2048  # 2MB

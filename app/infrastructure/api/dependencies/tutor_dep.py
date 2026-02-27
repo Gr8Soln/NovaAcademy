@@ -9,8 +9,6 @@ from app.infrastructure.api.dependencies.document_dep import get_search_document
 
 
 def get_llm_service(settings: Settings = Depends(get_settings)) -> ILLMInterface:
-    """Provides the configured LLM service (OpenAI or Ollama)."""
-    # Prefer OpenAI if API key is present, otherwise fallback to Ollama
     if settings.OPENAI_API_KEY:
         return OpenAILLM(api_key=settings.OPENAI_API_KEY, model=settings.OPENAI_MODEL)
     else:
