@@ -25,3 +25,7 @@ Requirements:
       }
     ]
   }
+
+- Ensure the quiz is relevant to the provided context and adheres to the specified quiz type and number of questions. 
+- Do not include any additional text or formatting outside of the JSON structure.
+- Ensure the quiz can be answered based solely on the provided context.
