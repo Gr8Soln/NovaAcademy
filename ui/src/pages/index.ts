@@ -19,7 +19,6 @@ export const DocumentsPage = lazy(() => import("./study/documents"));
 export const StudyPage = lazy(() => import("./study/study"));
 
 // ── Exam ────────────────────────────────────────────────────
-export const ExamHallPage = lazy(() => import("./exam/exam-hall"));
 
 // ── Compete ─────────────────────────────────────────────────
 

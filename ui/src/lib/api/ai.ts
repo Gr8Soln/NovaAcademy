@@ -19,20 +19,9 @@ export const aiApi = {
     });
   },
 
-  summaryStream: (documentId: string) => {
-    const token = useAuthStore.getState().accessToken;
-    return fetch(`${BASE_URL}/ai/summary`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ document_id: documentId, stream: true }),
-    });
-  },
 
   generateQuiz: (documentId: string, numQuestions = 10) =>
-    api("/ai/quiz/generate", {
+    api("/ai/quiz/generate/generate", {
       method: "POST",
       body: JSON.stringify({
         document_id: documentId,
@@ -40,12 +29,3 @@ export const aiApi = {
       }),
     }),
 
-  generateFlashcards: (documentId: string, numCards = 20) =>
-    api("/ai/flashcards", {
-      method: "POST",
-      body: JSON.stringify({
-        document_id: documentId,
-        num_cards: numCards,
-      }),
-    }),
-};

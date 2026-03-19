@@ -259,7 +259,12 @@ export default function DashboardPage() {
               <Card className="h-[300px]">
                 <CardContent className="p-4 h-full flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={mockSubjectData}>
+                    <RadarChart
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="80%"
+                      data={mockSubjectData}
+                    >
                       <PolarGrid stroke="#e5e5e5" />
                       <PolarAngleAxis
                         dataKey="subject"
@@ -291,11 +296,9 @@ export default function DashboardPage() {
               </h3>
             </CardHeader>
             <CardContent className="p-2 pt-0">
-              <div className="space-y-1">
-              </div>
+              <div className="space-y-1"></div>
             </CardContent>
           </Card>
-
         </div>
       </div>
     </div>

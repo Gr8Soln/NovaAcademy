@@ -20,7 +20,6 @@ export const pages = {
   classParticipants: "/class/:classCode/participants",
   documents: "/classroom/documents",
   study: "/study/:documentId",
-  examHall: "/classroom/exam-hall",
   leaderboard: "/classroom/leaderboard",
 
   // Profile

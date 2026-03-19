@@ -275,7 +275,6 @@ const DashboardLayout = () => {
           {[
             { to: pages.dashboard, icon: LayoutDashboard, label: "Home" },
             { to: pages.documents, icon: BookOpen, label: "Study" },
-            { to: pages.examHall, icon: Shield, label: "Exam" },
             { to: pages.leaderboard, icon: Trophy, label: "Rank" },
           ].map(({ to, icon: Icon, label }) => (
             <NavLink

@@ -18,7 +18,6 @@ import {
   ConfirmEmailPage,
   DashboardPage,
   DocumentsPage,
-  ExamHallPage,
   ForgotPasswordPage,
   LandingPage,
   LoginPage,
@@ -104,7 +103,6 @@ export default function App() {
         >
           <Route index element={<ClassroomPage />} />
           <Route path="documents" element={<DocumentsPage />} />
-          <Route path="exam-hall" element={<ExamHallPage />} />
         </Route>
 
         {/* Class detail — nested routes for each section */}

@@ -175,20 +175,9 @@ export const aiApi = {
     });
   },
 
-  summaryStream: (documentId: string) => {
-    const token = useAuthStore.getState().accessToken;
-    return fetch(`${BASE}/ai/summary`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ document_id: documentId }),
-    });
-  },
 
   generateQuiz: (documentId: string, numQuestions = 10) =>
-    request("/ai/quiz", {
+    request("/ai/quiz/generate", {
       method: "POST",
       body: JSON.stringify({
         document_id: documentId,
@@ -196,41 +185,6 @@ export const aiApi = {
       }),
     }),
 
-  generateFlashcards: (documentId: string, numCards = 20) =>
-    request("/ai/flashcards", {
-      method: "POST",
-      body: JSON.stringify({
-        document_id: documentId,
-        num_cards: numCards,
-      }),
-    }),
-};
-
-// ── Quizzes ──────────────────────────────────────────────────────
-
-export const quizzesApi = {
-  list: () => request("/quizzes/"),
-  get: (id: string) => request(`/quizzes/${id}`),
-  submit: (quizId: string, answers: Record<string, string>) =>
-    request(`/quizzes/${quizId}/submit`, {
-      method: "POST",
-      body: JSON.stringify({ answers }),
-    }),
-};
-
-// ── Dashboard ────────────────────────────────────────────────────
-
-export const dashboardApi = {
-  get: () => request("/dashboard/"),
-};
-
-// ── Points ───────────────────────────────────────────────────────
-
-export const pointsApi = {
-  balance: () => request("/points/balance"),
-  history: (offset = 0, limit = 20) =>
-    request(`/points/history?offset=${offset}&limit=${limit}`),
-};
 
 // ── Study Sessions ───────────────────────────────────────────────
 
