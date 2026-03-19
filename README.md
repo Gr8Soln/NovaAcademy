@@ -23,38 +23,66 @@ AI-powered personalized study platform. Upload documents, generate quizzes and f
 ## Project Structure
 
 ```
-app/
-├── domain/                  # Layer 1 — Entities & business rules
-│   ├── entities/            # Pure dataclasses (User, Document, Quiz …)
-│   └── exceptions/          # Domain exceptions (no framework deps)
-│
-├── application/             # Layer 2 — Use cases & ports
-│   ├── use_cases/           # Application logic (RegisterUseCase …)
-│   ├── interfaces/          # Abstract ports (IUserRepository, IAuthService …)
-│   └── dtos/                # Data transfer objects
-│
-├── adapters/                # Layer 3 — Interface adapters
-│   ├── repositories/        # Concrete repo implementations (SQLAlchemy)
-│   ├── gateways/            # External service adapters (Stripe, Paystack)
-│   ├── schemas/             # Pydantic request/response schemas
-│   └── services/            # Service implementations (JWT, cache …)
-│
-├── infrastructure/          # Layer 4 — Frameworks & drivers
-│   ├── api/
-│   │   ├── routes/          # FastAPI routers
-│   │   └── dependencies.py  # Dependency injection wiring
-│   ├── db/
-│   │   ├── base.py          # SQLAlchemy DeclarativeBase
-│   │   ├── models/          # ORM models
-│   │   ├── mapper.py        # Entity ↔ Model mappers
-│   │   └── session.py       # Async session factory
-│   └── setup.py             # App factory (create_app)
-│
-├── core/                    # Shared config & logging
-│   ├── config.py            # pydantic-settings (reads .env)
-│   └── logging.py           # Loguru setup
-│
-└── main.py                  # Entry point
+.
+├── app/
+│   ├── main.py                         # Backend entrypoint (uvicorn)
+│   ├── core/                           # Shared app config and logging
+│   │   ├── config.py
+│   │   └── logging.py
+│   ├── domain/                         # Layer 1: entities and domain exceptions
+│   │   ├── entities/
+│   │   └── exceptions/
+│   ├── application/                    # Layer 2: use-cases and interfaces (ports)
+│   │   ├── use_cases/
+│   │   ├── interfaces/
+│   │   └── dtos/
+│   ├── adapters/                       # Layer 3: concrete implementations
+│   │   ├── agents/                     # Prompt and agent orchestration adapters
+│   │   │   ├── prompt_service.py
+│   │   │   └── prompts/
+│   │   ├── repositories/               # SQLAlchemy repository implementations
+│   │   ├── gateways/                   # Third-party payment adapters
+│   │   │   ├── stripe_gateway.py
+│   │   │   └── paystack_gateway.py
+│   │   ├── schemas/                    # FastAPI request/response schemas
+│   │   └── services/                   # JWT, Redis, email, storage, LLM, vector services
+│   └── infrastructure/                 # Layer 4: framework/drivers
+│       ├── setup.py                    # FastAPI app factory (create_app)
+│       ├── celery_app.py               # Celery app + beat schedule
+│       ├── api/                        # Routers and DI wiring
+│       ├── db/                         # ORM models, mappers, session, migrations 
+│       ├── tasks/                      # Celery task modules
+│       └── ws/                         # WebSocket handlers
+├── migrations/                         # Alembic env and revision history
+├── templates/                          # HTML email templates
+├── uploads/                            # User-uploaded document storage (local dev)
+├── logs/                               # Application/runtime logs
+├── scripts/                            # Utility scripts (bootstrap, setup helpers)
+├── nginx/                              # Backend/infra nginx configs
+├── ui/                                 # React + Vite frontend
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   ├── tsconfig.json
+│   ├── index.html
+│   ├── public/                         # Static assets copied as-is
+│   └── src/
+│       ├── main.tsx                    # React app mount
+│       ├── App.tsx                     # Root app shell
+│       ├── index.css                   # Global styles + Tailwind imports
+│       ├── components/                 # Reusable UI components
+│       ├── pages/                      # Route-level screens
+│       ├── hooks/                      # Reusable React hooks
+│       ├── stores/                     # Client state stores (zustand)
+│       ├── lib/                        # Shared frontend utilities
+│       ├── styles/                     # Additional style modules/tokens
+│       └── types/                      # Frontend TS types
+├── docker-compose.yml
+├── Dockerfile.be
+├── Dockerfile.ui
+├── pyproject.toml
+├── requirements.txt
+└── README.md
 ```
 
 Dependencies point **inward**: infrastructure → adapters → application → domain.
@@ -66,9 +94,11 @@ Dependencies point **inward**: infrastructure → adapters → application → d
 The easiest way to get NovaAcademy running is via **Docker Compose**. This will start the frontend, backend, AI models, and all necessary databases with a single command.
 
 ### 1. Prerequisites
+
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
 
 ### 2. Launch the Stack
+
 ```bash
 # Clone the repository
 git clone <repo-url> && cd NovaAcademy
@@ -81,13 +111,14 @@ docker compose up --build -d
 ```
 
 ### 3. Service Access
-| Service        | URL / Port               | Description                      |
-| -------------- | ------------------------ | -------------------------------- |
-| **Frontend**   | `http://localhost:3000`  | Main Web Application            |
-| **Backend API**| `http://localhost:8000`  | API Root & WebSockets           |
-| **API Docs**   | `http://localhost:8000/api/v1/docs` | Swagger UI (Interactive Docs) |
-| **PostgreSQL** | `localhost:5432`         | Local Database Access           |
-| **Ollama**     | `localhost:11434`        | Local LLM API                   |
+
+| Service         | URL / Port                          | Description                   |
+| --------------- | ----------------------------------- | ----------------------------- |
+| **Frontend**    | `http://localhost:3000`             | Main Web Application          |
+| **Backend API** | `http://localhost:8000`             | API Root & WebSockets         |
+| **API Docs**    | `http://localhost:8000/api/v1/docs` | Swagger UI (Interactive Docs) |
+| **PostgreSQL**  | `localhost:5432`                    | Local Database Access         |
+| **Ollama**      | `localhost:11434`                   | Local LLM API                 |
 
 > [!NOTE]
 > On the first run, the `ollama-puller` service will take a few minutes to download the required models (`qwen3` and `nomic-embed-text`). You can monitor progress with: `docker compose logs -f ollama-puller`.
