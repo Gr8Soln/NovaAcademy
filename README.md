@@ -50,7 +50,7 @@ AI-powered personalized study platform. Upload documents, generate quizzes and f
 │       ├── setup.py                    # FastAPI app factory (create_app)
 │       ├── celery_app.py               # Celery app + beat schedule
 │       ├── api/                        # Routers and DI wiring
-│       ├── db/                         # ORM models, mappers, session, migrations 
+│       ├── db/                         # ORM models, mappers, session, migrations
 │       ├── tasks/                      # Celery task modules
 │       └── ws/                         # WebSocket handlers
 ├── migrations/                         # Alembic env and revision history
@@ -163,7 +163,37 @@ createdb novaacademy
 alembic upgrade head
 ```
 
-### 4. Celery (worker & beat)
+### 4. Start everything with script (recommended for local non-Docker)
+
+You can start backend, frontend, Celery worker, and Celery beat with one command:
+
+```bash
+# From project root
+chmod +x start.sh   # run once (Linux/macOS)
+./start.sh
+```
+
+For Git Bash on Windows:
+
+```bash
+bash start.sh
+```
+
+The script will:
+
+- Load variables from `.env`
+- Set up and activate `.venv`
+- Install backend and frontend dependencies
+- Run migrations
+- Start backend, Celery worker, Celery beat, and frontend
+
+Press `Ctrl+C` to stop all services.
+
+### 5. Start services manually (alternative)
+
+If you prefer starting services individually, use the commands below.
+
+#### Celery (worker & beat)
 
 Assumptions:
 
@@ -187,7 +217,7 @@ celery -A app.infrastructure.celery_app.celery_app beat --loglevel=info
 
 ---
 
-### 5. Run
+#### Backend + Frontend
 
 ```bash
 # Backend — starts on http://localhost:8000
