@@ -184,10 +184,15 @@ The script will:
 - Load variables from `.env`
 - Set up and activate `.venv`
 - Install backend and frontend dependencies
-- Run migrations
 - Start backend, Celery worker, Celery beat, and frontend
 
 Press `Ctrl+C` to stop all services.
+
+If you need to apply migrations, run this manually before starting:
+
+```bash
+alembic upgrade head
+```
 
 ### 5. Start services manually (alternative)
 

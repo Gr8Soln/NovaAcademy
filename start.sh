@@ -6,8 +6,6 @@
 # This script handles:
 # - Virtual environment creation and activation
 # - Python dependencies installation
-# - Service health checks (PostgreSQL, Redis)
-# - Database migrations
 # - Backend API server
 # - Celery worker and beat scheduler
 # - Frontend React dev server
@@ -316,22 +314,6 @@ except:
 }
 
 ################################################################################
-# Database Migrations
-################################################################################
-
-run_migrations() {
-    log_info "Running database migrations..."
-    
-    if [ -d "$PROJECT_ROOT/migrations" ]; then
-        cd "$PROJECT_ROOT"
-        alembic upgrade head
-        log_success "Database migrations completed"
-    else
-        log_warning "No migrations directory found. Skipping migrations."
-    fi
-}
-
-################################################################################
 # Frontend Setup
 ################################################################################
 
@@ -427,17 +409,10 @@ main() {
     activate_venv
     install_python_deps
     
-    # Step 4: Check services
-    check_postgres
-    check_redis
-    
-    # Step 5: Run migrations
-    run_migrations
-    
-    # Step 6: Install frontend dependencies
+    # Step 4: Install frontend dependencies
     install_frontend_deps
     
-    # Step 7: Start all services
+    # Step 5: Start all services
     echo ""
     log_info "Starting all services..."
     echo ""
