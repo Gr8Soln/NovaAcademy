@@ -93,17 +93,60 @@ trap cleanup SIGINT SIGTERM EXIT
 load_env() {
     if [ -f "$ENV_FILE" ]; then
         log_info "Loading environment variables from .env"
-        
-        # Load .env and export variables
-        set -a
-        source "$ENV_FILE"
-        set +a
+
+        # Load .env as plain KEY=VALUE pairs (do not execute it as shell code).
+        while IFS= read -r line || [ -n "$line" ]; do
+            # Normalize CRLF endings and skip blanks/comments
+            line="${line%$'\r'}"
+            [ -z "${line//[[:space:]]/}" ] && continue
+            case "$line" in
+                \#*) continue ;;
+            esac
+
+            # Allow optional "export KEY=VALUE" syntax
+            case "$line" in
+                export\ *) line="${line#export }" ;;
+            esac
+
+            # Ignore malformed lines
+            case "$line" in
+                *=*) ;;
+                *)
+                    log_warning "Skipping invalid .env line: $line"
+                    continue
+                    ;;
+            esac
+
+            key="${line%%=*}"
+            value="${line#*=}"
+
+            # Trim whitespace around key
+            key="${key#${key%%[![:space:]]*}}"
+            key="${key%${key##*[![:space:]]}}"
+
+            # Trim whitespace around value
+            value="${value#${value%%[![:space:]]*}}"
+            value="${value%${value##*[![:space:]]}}"
+
+            # Remove wrapping single/double quotes when present
+            if [ "${#value}" -ge 2 ]; then
+                first_char="${value:0:1}"
+                last_char="${value: -1}"
+                if [ "$first_char" = '"' ] && [ "$last_char" = '"' ]; then
+                    value="${value:1:${#value}-2}"
+                elif [ "$first_char" = "'" ] && [ "$last_char" = "'" ]; then
+                    value="${value:1:${#value}-2}"
+                fi
+            fi
+
+            export "$key=$value"
+        done < "$ENV_FILE"
         
         # Override ports if defined in .env
-        if [ -n "$PORT" ]; then
+        if [ -n "${PORT:-}" ]; then
             BACKEND_PORT=$PORT
         fi
-        if [ -n "$VITE_PORT" ]; then
+        if [ -n "${VITE_PORT:-}" ]; then
             FRONTEND_PORT=$VITE_PORT
         fi
         
@@ -129,7 +172,14 @@ create_logs_directory() {
 setup_venv() {
     if [ ! -d "$VENV_DIR" ]; then
         log_info "Virtual environment not found. Creating one..."
-        python3 -m venv "$VENV_DIR"
+        if command -v python3 >/dev/null 2>&1; then
+            python3 -m venv "$VENV_DIR"
+        elif command -v python >/dev/null 2>&1; then
+            python -m venv "$VENV_DIR"
+        else
+            log_error "Python is not available in PATH."
+            exit 1
+        fi
         log_success "Virtual environment created at $VENV_DIR"
     else
         log_info "Virtual environment already exists"
@@ -138,7 +188,19 @@ setup_venv() {
 
 activate_venv() {
     log_info "Activating virtual environment..."
-    source "$VENV_DIR/bin/activate"
+
+    if [ -f "$VENV_DIR/bin/activate" ]; then
+        # POSIX layout
+        source "$VENV_DIR/bin/activate"
+    elif [ -f "$VENV_DIR/Scripts/activate" ]; then
+        # Windows venv layout (Git Bash)
+        source "$VENV_DIR/Scripts/activate"
+    else
+        log_error "Could not find virtual environment activation script."
+        log_error "Looked for: $VENV_DIR/bin/activate and $VENV_DIR/Scripts/activate"
+        exit 1
+    fi
+
     log_success "Virtual environment activated"
 }
 
@@ -158,8 +220,8 @@ install_python_deps() {
     fi
     
     log_info "Installing Python dependencies from requirements.txt..."
-    pip install --upgrade pip -q
-    pip install -r requirements.txt -q
+    python -m pip install --upgrade pip -q
+    python -m pip install -r requirements.txt -q
     
     # Mark dependencies as installed
     echo "$REQUIREMENTS_HASH" > "$MARKER_FILE"
@@ -184,7 +246,7 @@ check_postgres() {
         fi
         
         # Fallback: try to connect using Python
-        python3 -c "
+        python -c "
 import sys
 try:
     import asyncpg
@@ -232,7 +294,7 @@ check_redis() {
         fi
         
         # Fallback: try Python redis connection
-        python3 -c "
+        python -c "
 import sys
 try:
     import redis
