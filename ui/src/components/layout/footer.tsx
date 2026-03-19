@@ -48,7 +48,7 @@ const Footer = () => {
               Product
             </h4>
             <ul className="space-y-2.5">
-              {["Features", "Pricing", "Leaderboard", "API"].map((item) => (
+              {["Features", "Pricing", "API"].map((item) => (
                 <li key={item}>
                   <a
                     href="#"

@@ -7,7 +7,6 @@ import StudyLayout from "@/components/layout/study";
 import { PageLoader } from "@/components/ui";
 import { pages } from "@/lib/constant";
 import {
-  ChallengesPage,
   ClassChatPage,
   ClassLibraryPage,
   ClassMembersPage,
@@ -22,7 +21,6 @@ import {
   ExamHallPage,
   ForgotPasswordPage,
   LandingPage,
-  LeaderboardPage,
   LoginPage,
   NotFoundPage,
   ProfilePage,
@@ -89,7 +87,10 @@ export default function App() {
         >
           <Route path=":documentId" element={<StudyPage />} />
           <Route path="class/:classId" element={<ClassStudyPage />} />
-          <Route path="class/:classId/:documentId" element={<ClassStudyPage />} />
+          <Route
+            path="class/:classId/:documentId"
+            element={<ClassStudyPage />}
+          />
         </Route>
 
         {/* Classroom & Personal Library */}
@@ -104,8 +105,6 @@ export default function App() {
           <Route index element={<ClassroomPage />} />
           <Route path="documents" element={<DocumentsPage />} />
           <Route path="exam-hall" element={<ExamHallPage />} />
-          <Route path="leaderboard" element={<LeaderboardPage />} />
-          <Route path="challenges" element={<ChallengesPage />} />
         </Route>
 
         {/* Class detail — nested routes for each section */}

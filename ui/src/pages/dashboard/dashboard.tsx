@@ -11,8 +11,8 @@ import {
   YAxis,
 } from "recharts";
 
-import { analyticsApi, challengesApi, dashboardApi } from "@/lib/api";
-import type { Challenge, DashboardData, UserAnalytics } from "@/types";
+import { analyticsApi, dashboardApi } from "@/lib/api";
+import type { DashboardData, UserAnalytics } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import {
   BarChart3,
@@ -21,18 +21,15 @@ import {
   Clock,
   Flame,
   Play,
-  Shield,
-  Swords,
   Target,
   Trophy,
   Upload,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/buttons";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SectionLoader } from "@/components/ui/loaders";
-import { pages } from "@/lib/constant";
 import { useAuthStore } from "@/stores";
 
 export default function DashboardPage() {
@@ -42,11 +39,6 @@ export default function DashboardPage() {
   const { data, isLoading } = useQuery<DashboardData>({
     queryKey: ["dashboard"],
     queryFn: () => dashboardApi.get() as Promise<DashboardData>,
-  });
-
-  const { data: challenges } = useQuery<Challenge[]>({
-    queryKey: ["challenges", "pending"],
-    queryFn: () => challengesApi.list() as Promise<Challenge[]>,
   });
 
   const { data: analytics } = useQuery<UserAnalytics>({
@@ -98,17 +90,7 @@ export default function DashboardPage() {
       color: "text-emerald-600",
       bg: "bg-emerald-100",
     },
-    {
-      label: "Challenges",
-      value: analytics?.total_challenges || 0,
-      icon: Swords,
-      color: "text-orange-600",
-      bg: "bg-orange-100",
-    },
   ];
-
-  const pendingChallenges =
-    challenges?.filter((c) => c.status === "pending").slice(0, 3) ?? [];
   const mostRecentDoc = data?.recent_documents?.[0];
 
   return (
@@ -298,7 +280,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Right Col: Quick Actions & Challenges */}
+        {/* Right Col: Quick Actions */}
         <div className="space-y-6">
           {/* Quick Actions */}
           <Card>
@@ -310,105 +292,10 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="p-2 pt-0">
               <div className="space-y-1">
-                <button
-                  onClick={() => navigate(pages.documents)}
-                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-all text-left group"
-                >
-                  <div className="h-8 w-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600 group-hover:bg-primary-100">
-                    <Upload className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-medium text-neutral-700 group-hover:text-primary-700">
-                    Upload New Document
-                  </span>
-                </button>
-                <button
-                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-all text-left group"
-                  onClick={() => navigate(pages.examHall)}
-                >
-                  <div className="h-8 w-8 rounded-lg bg-accent-50 flex items-center justify-center text-accent-600 group-hover:bg-accent-100">
-                    <Shield className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-medium text-neutral-700 group-hover:text-accent-700">
-                    Enter Exam Hall
-                  </span>
-                </button>
-                <button
-                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-all text-left group"
-                  onClick={() => navigate(pages.challenges)}
-                >
-                  <div className="h-8 w-8 rounded-lg bg-success-50 flex items-center justify-center text-success-600 group-hover:bg-success-100">
-                    <Swords className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-medium text-neutral-700 group-hover:text-success-700">
-                    1v1 Challenge
-                  </span>
-                </button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Upcoming Challenges */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="font-display text-lg font-semibold text-primary-900">
-                Challenges
-              </h2>
-              <Link
-                to={pages.challenges}
-                className="text-xs font-semibold text-primary-600 hover:text-primary-700"
-              >
-                View All
-              </Link>
-            </div>
-            {pendingChallenges.length > 0 ? (
-              <div className="space-y-3">
-                {pendingChallenges.map((c) => (
-                  <Card
-                    key={c.id}
-                    className="p-4 flex items-center justify-between hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-neutral-100 flex items-center justify-center">
-                        <Swords className="h-5 w-5 text-neutral-500" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-neutral-900">
-                          {c.wager_amount} pts
-                        </div>
-                        <div className="text-xs text-neutral-500">
-                          vs Opponent
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => navigate(pages.challenges)}
-                    >
-                      View
-                    </Button>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="bg-neutral-50 border-dashed">
-                <CardContent className="p-6 text-center">
-                  <Trophy className="h-8 w-8 text-neutral-300 mx-auto mb-2" />
-                  <p className="text-sm text-neutral-500">
-                    No active challenges.
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate(pages.challenges)}
-                    className="mt-2"
-                  >
-                    Create one?
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </div>
         </div>
       </div>
     </div>

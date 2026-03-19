@@ -224,77 +224,12 @@ export const dashboardApi = {
   get: () => request("/dashboard/"),
 };
 
-// ── Challenges ───────────────────────────────────────────────────
-
-export const challengesApi = {
-  create: (
-    opponentId: string,
-    documentId: string,
-    questionCount = 5,
-    wagerAmount = 5,
-  ) =>
-    request("/challenges/", {
-      method: "POST",
-      body: JSON.stringify({
-        opponent_id: opponentId,
-        document_id: documentId,
-        question_count: questionCount,
-        wager_amount: wagerAmount,
-      }),
-    }),
-
-  list: (status?: string, offset = 0, limit = 20) => {
-    const params = new URLSearchParams({
-      offset: String(offset),
-      limit: String(limit),
-    });
-    if (status) params.set("status", status);
-    return request(`/challenges/?${params}`);
-  },
-
-  accept: (id: string) =>
-    request(`/challenges/${id}/accept`, { method: "POST" }),
-
-  decline: (id: string) =>
-    request(`/challenges/${id}/decline`, { method: "POST" }),
-
-  cancel: (id: string) =>
-    request(`/challenges/${id}/cancel`, { method: "POST" }),
-
-  submitScore: (id: string, score: number) =>
-    request(`/challenges/${id}/submit-score`, {
-      method: "POST",
-      body: JSON.stringify({ score }),
-    }),
-
-  resolve: (id: string) =>
-    request(`/challenges/${id}/resolve`, { method: "POST" }),
-};
-
 // ── Points ───────────────────────────────────────────────────────
 
 export const pointsApi = {
   balance: () => request("/points/balance"),
   history: (offset = 0, limit = 20) =>
     request(`/points/history?offset=${offset}&limit=${limit}`),
-};
-
-// ── Leaderboard ──────────────────────────────────────────────────
-
-export const leaderboardApi = {
-  get: (boardType: string, period: string, limit = 100) =>
-    request(`/leaderboard/${boardType}/${period}?limit=${limit}`),
-
-  myRank: (boardType: string, period: string) =>
-    request(`/leaderboard/${boardType}/${period}/me`),
-
-  aroundUser: (boardType: string, period: string, userId: string, count = 5) =>
-    request(
-      `/leaderboard/${boardType}/${period}/around/${userId}?count=${count}`,
-    ),
-
-  /** Public preview — no auth required */
-  publicTop: (limit = 5) => request(`/leaderboard/public/top?limit=${limit}`),
 };
 
 // ── Study Sessions ───────────────────────────────────────────────

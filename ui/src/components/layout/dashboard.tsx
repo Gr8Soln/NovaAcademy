@@ -8,7 +8,6 @@ import {
   Menu,
   Search,
   Shield,
-  Swords,
   Trophy,
   User,
   X,
@@ -39,10 +38,7 @@ const navSections: { title?: string; items: NavItem[] }[] = [
   },
   {
     title: "Compete",
-    items: [
-      { to: pages.challenges, label: "Challenges", icon: Swords },
-      { to: pages.leaderboard, label: "Leaderboard", icon: Trophy },
-    ],
+    items: [{ to: pages.leaderboard, label: "Leaderboard", icon: Trophy }],
   },
   {
     items: [{ to: pages.profile, label: "Profile", icon: User }],

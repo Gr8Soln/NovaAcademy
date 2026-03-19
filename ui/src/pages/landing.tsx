@@ -10,9 +10,7 @@ import {
   MessageSquare,
   Shield,
   Sparkles,
-  Swords,
   TrendingUp,
-  Trophy,
   Upload,
   Zap,
   type LucideIcon,
@@ -94,11 +92,6 @@ const features: Feature[] = [
     title: "Exam Hall",
     description:
       "Immersive timed exams that simulate real test pressure and build confidence.",
-  },
-  {
-    icon: Swords,
-    title: "1v1 Challenges",
-    description: "Compete head-to-head against other students and earn points.",
   },
   {
     icon: BarChart3,
@@ -227,39 +220,6 @@ const StudyIllustration = () => (
   </div>
 );
 
-const ChallengeIllustration = () => (
-  <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-accent-100 to-accent-50 rounded-2xl p-6 overflow-hidden">
-    {/* VS Battle */}
-    <div className="absolute inset-0 flex items-center justify-center gap-6">
-      <div className="flex flex-col items-center gap-2">
-        <div className="w-14 h-14 rounded-full bg-primary-200 flex items-center justify-center text-lg font-bold text-primary-700">
-          Y
-        </div>
-        <span className="text-xs font-semibold text-neutral-700">You</span>
-        <span className="text-lg font-mono font-bold text-success-600">85</span>
-      </div>
-      <div className="flex flex-col items-center">
-        <div className="w-10 h-10 rounded-full bg-accent-500 flex items-center justify-center">
-          <Swords className="h-5 w-5 text-white" />
-        </div>
-        <span className="text-xs font-bold text-accent-700 mt-1">VS</span>
-      </div>
-      <div className="flex flex-col items-center gap-2">
-        <div className="w-14 h-14 rounded-full bg-danger-200 flex items-center justify-center text-lg font-bold text-danger-700">
-          R
-        </div>
-        <span className="text-xs font-semibold text-neutral-700">Rival</span>
-        <span className="text-lg font-mono font-bold text-danger-600">72</span>
-      </div>
-    </div>
-    {/* Floating badge */}
-    <div className="absolute top-4 right-4 bg-white rounded-full shadow-sm px-3 py-1 flex items-center gap-1.5">
-      <Trophy className="h-3 w-3 text-accent-500" />
-      <span className="text-xs font-semibold text-accent-700">+50 pts</span>
-    </div>
-  </div>
-);
-
 const TrackIllustration = () => (
   <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-danger-50 to-primary-50 rounded-2xl p-6 overflow-hidden">
     {/* Chart bars */}
@@ -333,19 +293,6 @@ const howItWorksSteps: HowItWorksStep[] = [
     illustration: StudyIllustration,
   },
   {
-    badge: "Compete",
-    badgeIcon: Swords,
-    heading: "Challenge & Conquer",
-    description:
-      "Quiz yourself or challenge friends in real-time 1v1 battles. Earn points, climb the leaderboard, and prove your mastery.",
-    ctaText: "See Challenges",
-    ctaLink: pages.challenges,
-    bgColor: "bg-accent-50",
-    badgeBg: "bg-accent-100",
-    badgeText: "text-accent-700",
-    illustration: ChallengeIllustration,
-  },
-  {
     badge: "Analytics",
     badgeIcon: BarChart3,
     heading: "Track Your Growth",
@@ -409,15 +356,17 @@ function HowItWorksCard({
   return (
     <div
       ref={ref}
-      className={`sticky top-20 lg:top-28 w-full mb-8 lg:mb-12 last:mb-0 transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"
-        }`}
+      className={`sticky top-20 lg:top-28 w-full mb-8 lg:mb-12 last:mb-0 transition-opacity duration-1000 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
       style={{
         zIndex: index + 10,
       }}
     >
       <div
-        className={`${step.bgColor} rounded-2xl shadow-xl overflow-hidden border border-neutral-200/60 transition-transform duration-700 ${isVisible ? "translate-y-0" : "translate-y-8"
-          }`}
+        className={`${step.bgColor} rounded-2xl shadow-xl overflow-hidden border border-neutral-200/60 transition-transform duration-700 ${
+          isVisible ? "translate-y-0" : "translate-y-8"
+        }`}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-0">
           {/* Left column — Text */}
@@ -708,14 +657,15 @@ export default function LandingPage() {
                   <div className="relative">
                     <Avatar name={entry.name} size="sm" />
                     <span
-                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ring-1 ring-white ${i === 0
+                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ring-1 ring-white ${
+                        i === 0
                           ? "bg-accent-500 text-white"
                           : i === 1
                             ? "bg-neutral-300 text-neutral-800"
                             : i === 2
                               ? "bg-accent-700 text-white"
                               : "bg-neutral-100 text-neutral-600"
-                        }`}
+                      }`}
                     >
                       {i + 1}
                     </span>

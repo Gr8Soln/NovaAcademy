@@ -344,7 +344,7 @@ start_backend() {
     log_info "Starting FastAPI backend on port $BACKEND_PORT..."
     
     cd "$PROJECT_ROOT"
-    python app/main.py > "$LOGS_DIR/backend.log" 2>&1 &
+    python -m app.main > "$LOGS_DIR/backend.log" 2>&1 &
     PIDS+=($!)
     
     log_success "Backend started (PID: ${PIDS[-1]}, Log: logs/backend.log)"

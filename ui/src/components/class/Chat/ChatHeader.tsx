@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface ChatHeaderProps {
   groupName: string;
-  groupAvatar?: string;
+  groupAvatar?: string | null;
   memberCount: number;
   onlineCount: number;
   onToggleSidebar: () => void;

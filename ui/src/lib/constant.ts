@@ -22,7 +22,6 @@ export const pages = {
   study: "/study/:documentId",
   examHall: "/classroom/exam-hall",
   leaderboard: "/classroom/leaderboard",
-  challenges: "/classroom/challenges",
 
   // Profile
   profile: "/profile",

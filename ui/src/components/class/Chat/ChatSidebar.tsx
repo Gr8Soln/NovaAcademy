@@ -110,7 +110,7 @@ interface ChatSidebarProps {
   open: boolean;
   onClose: () => void;
   groupName: string;
-  groupAvatar?: string;
+  groupAvatar?: string | null;
   groupDescription: string;
   memberCount: number;
   createdAt?: string;

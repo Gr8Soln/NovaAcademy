@@ -58,12 +58,6 @@ const Header = ({ transparent = false }: HeaderProps) => {
             >
               How It Works
             </a>
-            <Link
-              to={pages.leaderboard}
-              className="text-sm font-medium text-neutral-700 hover:text-primary-600 transition-colors"
-            >
-              Leaderboard
-            </Link>
           </nav>
 
           {/* Right side */}
@@ -178,13 +172,6 @@ const Header = ({ transparent = false }: HeaderProps) => {
               >
                 How It Works
               </a>
-              <Link
-                to={pages.leaderboard}
-                onClick={() => setMobileOpen(false)}
-                className="text-sm font-medium text-neutral-700 hover:text-primary-600 py-2"
-              >
-                Leaderboard
-              </Link>
             </nav>
 
             <div className="mt-auto flex flex-col gap-3">

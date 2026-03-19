@@ -27,12 +27,6 @@ export interface PointTransaction {
   created_at: string;
 }
 
-export interface LeaderboardEntry {
-  user_id: string;
-  score: number;
-  rank: number;
-}
-
 export interface StudySession {
   id: string;
   user_id: string;
@@ -54,7 +48,6 @@ export interface UserAnalytics {
   total_points: number;
   total_study_seconds: number;
   total_quizzes: number;
-  total_challenges: number;
   accuracy: number;
   class_stats: Record<string, number>;
 }

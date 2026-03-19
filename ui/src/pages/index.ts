@@ -22,8 +22,6 @@ export const StudyPage = lazy(() => import("./study/study"));
 export const ExamHallPage = lazy(() => import("./exam/exam-hall"));
 
 // ── Compete ─────────────────────────────────────────────────
-export const LeaderboardPage = lazy(() => import("./compete/leaderboard"));
-export const ChallengesPage = lazy(() => import("./compete/challenges"));
 
 // ── Classroom ───────────────────────────────────────────────
 export const ClassroomPage = lazy(() => import("./classroom/classroom"));
