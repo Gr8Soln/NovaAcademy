@@ -8,7 +8,6 @@ import {
   Flame,
   Layers,
   MessageSquare,
-  Shield,
   Sparkles,
   TrendingUp,
   Upload,
@@ -85,12 +84,6 @@ const features: Feature[] = [
     icon: Layers,
     title: "Summaries & Flashcards",
     description: "Auto-generated study aids from your uploaded content.",
-  },
-  {
-    icon: Shield,
-    title: "Exam Hall",
-    description:
-      "Immersive timed exams that simulate real test pressure and build confidence.",
   },
   {
     icon: BarChart3,
@@ -420,8 +413,6 @@ function HowItWorksCard({
 /* ─── Component ─────────────────────────────────────────────── */
 
 export default function LandingPage() {
-  
-
   return (
     <div className="min-h-screen bg-neutral-50">
       <Header transparent />
@@ -445,8 +436,8 @@ export default function LandingPage() {
                 Outperform. Outlearn. Outrank.
               </h1>
               <p className="mt-6 font-sans text-lg text-neutral-600 max-w-xl mx-auto lg:mx-0">
-                Upload your materials. Master them with AI-generated summaries,
-                flashcards, and timed exams. Compete on the leaderboard.
+                Upload your materials. Master them with AI-generated summaries
+                and flashcards.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
@@ -531,7 +522,7 @@ export default function LandingPage() {
 
                 {/* Floating badge */}
                 <div className="absolute -top-4 right-4 lg:-right-4 bg-accent-500 text-primary-900 rounded-full px-3 py-1.5 text-xs font-bold shadow-lg">
-                  #3 on Leaderboard
+                  A+ Student
                 </div>
               </div>
             </div>

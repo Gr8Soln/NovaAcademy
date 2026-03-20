@@ -84,14 +84,6 @@ class AlreadyLikedError(DomainException):
     """User has already liked this post."""
 
 
-class ChallengeNotFoundError(DomainException):
-    """Requested challenge does not exist."""
-
-
-class ChallengeValidationError(DomainException):
-    """Invalid challenge configuration or action."""
-
-
 class InsufficientPointsError(DomainException):
     """User does not have enough points for the requested action."""
 

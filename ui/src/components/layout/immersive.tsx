@@ -14,7 +14,7 @@ const ImmersiveLayout = () => {
             </div>
           </Link>
           <div className="h-6 w-px bg-neutral-200" />
-          <h1 className="text-sm font-semibold text-neutral-900">Exam Hall</h1>
+          <h1 className="text-sm font-semibold text-neutral-900">Focus Mode</h1>
         </div>
 
         {/* Center: Timer / Status (Placeholder for now, can be overridden by page portal) */}
