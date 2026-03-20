@@ -7,8 +7,6 @@ import {
   LogOut,
   Menu,
   Search,
-  Shield,
-  Trophy,
   User,
   X,
 } from "lucide-react";
@@ -35,10 +33,6 @@ const navSections: { title?: string; items: NavItem[] }[] = [
       { to: pages.classroom, label: "Classroom", icon: BookOpen },
       { to: pages.documents, label: "My Library", icon: GraduationCap },
     ],
-  },
-  {
-    title: "Compete",
-    items: [{ to: pages.leaderboard, label: "Leaderboard", icon: Trophy }],
   },
   {
     items: [{ to: pages.profile, label: "Profile", icon: User }],
@@ -275,7 +269,6 @@ const DashboardLayout = () => {
           {[
             { to: pages.dashboard, icon: LayoutDashboard, label: "Home" },
             { to: pages.documents, icon: BookOpen, label: "Study" },
-            { to: pages.leaderboard, icon: Trophy, label: "Rank" },
           ].map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}

@@ -11,8 +11,8 @@ import {
   YAxis,
 } from "recharts";
 
-import { analyticsApi, dashboardApi } from "@/lib/api";
-import type { DashboardData, UserAnalytics } from "@/types";
+import { analyticsApi, documentsApi } from "@/lib/api";
+import type { UserAnalytics } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import {
   BarChart3,
@@ -36,12 +36,12 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  const { data, isLoading } = useQuery<DashboardData>({
-    queryKey: ["dashboard"],
-    queryFn: () => dashboardApi.get() as Promise<DashboardData>,
+  const { data: documents } = useQuery({
+    queryKey: ["documents", { limit: 1 }],
+    queryFn: () => documentsApi.list(0, 1) as Promise<any>,
   });
 
-  const { data: analytics } = useQuery<UserAnalytics>({
+  const { data: analytics, isLoading } = useQuery<UserAnalytics>({
     queryKey: ["analytics", "me"],
     queryFn: () => analyticsApi.me() as Promise<UserAnalytics>,
   });
@@ -91,7 +91,7 @@ export default function DashboardPage() {
       bg: "bg-emerald-100",
     },
   ];
-  const mostRecentDoc = data?.recent_documents?.[0];
+  const mostRecentDoc = documents?.data?.[0];
 
   return (
     <div className="space-y-6 pb-20 lg:pb-0">

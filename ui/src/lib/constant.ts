@@ -20,7 +20,6 @@ export const pages = {
   classParticipants: "/class/:classCode/participants",
   documents: "/classroom/documents",
   study: "/study/:documentId",
-  leaderboard: "/classroom/leaderboard",
 
   // Profile
   profile: "/profile",

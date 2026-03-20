@@ -18,8 +18,6 @@ export const DashboardPage = lazy(() => import("./dashboard/dashboard"));
 export const DocumentsPage = lazy(() => import("./study/documents"));
 export const StudyPage = lazy(() => import("./study/study"));
 
-// ── Exam ────────────────────────────────────────────────────
-
 // ── Compete ─────────────────────────────────────────────────
 
 // ── Classroom ───────────────────────────────────────────────

@@ -175,7 +175,6 @@ export const aiApi = {
     });
   },
 
-
   generateQuiz: (documentId: string, numQuestions = 10) =>
     request("/ai/quiz/generate", {
       method: "POST",
@@ -184,7 +183,7 @@ export const aiApi = {
         num_questions: numQuestions,
       }),
     }),
-
+};
 
 // ── Study Sessions ───────────────────────────────────────────────
 
