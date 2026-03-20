@@ -21,7 +21,7 @@ export const aiApi = {
 
 
   generateQuiz: (documentId: string, numQuestions = 10) =>
-    api("/ai/quiz/generate/generate", {
+    api("/ai/quiz/generate", {
       method: "POST",
       body: JSON.stringify({
         document_id: documentId,

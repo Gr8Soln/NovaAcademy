@@ -12,6 +12,4 @@ export const studySessionsApi = {
 
   end: (sessionId: string) =>
     api(`/study-sessions/${sessionId}/end`, { method: "POST" }),
-
-  stats: () => api("/study-sessions/stats"),
 };

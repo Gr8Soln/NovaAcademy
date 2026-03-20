@@ -150,9 +150,6 @@ export const documentsApi = {
     return request("/documents/", { method: "POST", body: form });
   },
 
-  process: (id: string) =>
-    request(`/documents/${id}/process`, { method: "POST" }),
-
   delete: (id: string) => request(`/documents/${id}`, { method: "DELETE" }),
 };
 
@@ -199,8 +196,6 @@ export const studySessionsApi = {
 
   end: (sessionId: string) =>
     request(`/study-sessions/${sessionId}/end`, { method: "POST" }),
-
-  stats: () => request("/study-sessions/stats"),
 };
 
 // ── Analytics ────────────────────────────────────────────────────
