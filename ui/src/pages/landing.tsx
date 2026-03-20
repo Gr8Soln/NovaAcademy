@@ -24,7 +24,6 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/buttons";
 import { Card } from "@/components/ui/card";
 import { pages } from "@/lib/constant";
-import { useAuthStore } from "@/stores";
 
 /* ─── Counter hook ──────────────────────────────────────────── */
 
@@ -421,7 +420,7 @@ function HowItWorksCard({
 /* ─── Component ─────────────────────────────────────────────── */
 
 export default function LandingPage() {
-  const user = useAuthStore((s) => s.user);
+  
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -627,77 +626,6 @@ export default function LandingPage() {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Leaderboard Preview ──────────────────────────────── */}
-      <section className="py-16 lg:py-24 bg-neutral-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-900">
-              See Who's Leading
-            </h2>
-            <p className="mt-3 text-neutral-600">Our top scholars this week</p>
-          </div>
-
-          <Card className="overflow-hidden">
-            <div className="divide-y divide-neutral-100">
-              {[
-                { name: "Sarah Mitchell", pts: 2840 },
-                { name: "James Park", pts: 2615 },
-                { name: "Aisha Okafor", pts: 2490 },
-                { name: "Liam Chen", pts: 2305 },
-                { name: "Emma Rodriguez", pts: 2150 },
-              ].map((entry, i) => (
-                <div
-                  key={entry.name}
-                  className="flex items-center gap-4 py-4 hover:px-4 hover:bg-neutral-50 rounded-md transition-all cursor-pointer"
-                >
-                  <div className="relative">
-                    <Avatar name={entry.name} size="sm" />
-                    <span
-                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ring-1 ring-white ${
-                        i === 0
-                          ? "bg-accent-500 text-white"
-                          : i === 1
-                            ? "bg-neutral-300 text-neutral-800"
-                            : i === 2
-                              ? "bg-accent-700 text-white"
-                              : "bg-neutral-100 text-neutral-600"
-                      }`}
-                    >
-                      {i + 1}
-                    </span>
-                  </div>
-                  <span className="font-medium text-neutral-900 flex-1">
-                    {entry.name}
-                  </span>
-
-                  <span className="font-mono text-sm font-semibold text-accent-700">
-                    {entry.pts.toLocaleString()} pts
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <div className="text-center mt-6">
-            {user ? (
-              <Link to={pages.leaderboard}>
-                <Button variant="primary">
-                  View Full Leaderboard
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            ) : (
-              <Link to={pages.register}>
-                <Button variant="accent">
-                  Sign Up to See Your Rank
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            )}
           </div>
         </div>
       </section>

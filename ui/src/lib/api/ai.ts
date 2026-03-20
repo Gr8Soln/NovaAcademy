@@ -19,7 +19,6 @@ export const aiApi = {
     });
   },
 
-
   generateQuiz: (documentId: string, numQuestions = 10) =>
     api("/ai/quiz/generate", {
       method: "POST",
@@ -28,4 +27,4 @@ export const aiApi = {
         num_questions: numQuestions,
       }),
     }),
-
+};
