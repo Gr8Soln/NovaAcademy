@@ -112,7 +112,7 @@ def _message_response(message, mentions=None) -> MessageResponse:
 # Class CRUD
 # ---------------------------------------------------------------------------
 
-@router.post("", status_code=201)
+@router.post("/", status_code=201)
 async def create_class(
     name: str = Form(...),
     description: str = Form(""),
@@ -149,7 +149,7 @@ async def create_class(
     )
 
 
-@router.get("")
+@router.get("/")
 async def get_my_classes(
     current_user: User = Depends(get_current_user),
     use_case: GetUserClassesUseCase = Depends(get_get_user_classes_usecase),
