@@ -52,18 +52,13 @@ ui:
 	cd ui && npm run dev -- --host 0.0.0.0
 
 dev: venv
-	$(PYTHON) scripts/dev_tmux.py
+	bash dev.sh
 
 dev-attach:
 	tmux attach-session -t nova-dev
 
 stop_dev:
-	@if tmux has-session -t nova-dev 2>/dev/null; then \
-		tmux kill-session -t nova-dev; \
-		echo 'Stopped NovaAcademy development services.'; \
-	else \
-		echo 'No active NovaAcademy development session found.'; \
-	fi
+	bash dev.sh down
 
 dev-stop: stop_dev
 
