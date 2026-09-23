@@ -171,6 +171,7 @@ docker compose ps
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/api/v1/docs
+- Flower: http://localhost:8000/flower
 
 > **Note**: Compose starts Ollama but does not download models. Run `make ollama-pull` when you want to install `qwen3:latest` and `nomic-embed-text`.
 
@@ -183,10 +184,13 @@ make ollama-pull
 ```
 
 For local development, `make dev` opens one `tmux` session with tiled panes
-for migrations, backend, UI, Celery worker, Celery beat, and an `ngrok` tunnel
-to the backend. Use `NGROK=0 make dev` to omit the tunnel, `make dev-attach`
-to reconnect, and `make dev-stop` to stop the session. Install `tmux` and
-`ngrok` separately; for example, on macOS: `brew install tmux ngrok`.
+for the backend, UI, Celery worker/beat plus Flower, and an `ngrok` tunnel to
+the backend. Flower is available at `http://localhost:8000/flower` and through
+the public backend URL. Set `NGROK_URL` in `.env` to use a reserved ngrok URL;
+if it is empty, ngrok uses its normal temporary URL. Use `NGROK=0 make dev`
+to omit the tunnel, `make dev-attach` to reconnect, and `make dev-stop` to stop
+the session. Install `tmux` and `ngrok` separately; for example, on macOS:
+`brew install tmux ngrok`.
 
 The Makefile selects `.venv/bin/python` on macOS/Linux and
 `.venv/Scripts/python.exe` on Windows. On Windows, use GNU Make through

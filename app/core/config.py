@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api/v1"
     BASE_URL: str = "http://localhost:8000"
     UI_BASE_URL: str = "http://localhost:5173"
+    FLOWER_URL: str = "http://127.0.0.1:5555/flower"
     CORS_ORIGINS: list[str] = ["https://novaacademy-ui.vercel.app", "http://localhost:5173"]
 
     # ── Auth ────────────────────────────────────────────────────

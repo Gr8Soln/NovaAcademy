@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from app.adapters.schemas import error_response, success_response
 from app.core.config import settings
@@ -122,6 +122,51 @@ def create_app() -> FastAPI:
                   "debug": settings.DEBUG
                 }
             )
+
+    async def flower_proxy(request: Request, path: str = ""):
+        import httpx
+
+        target = f"{settings.FLOWER_URL.rstrip('/')}/{path}"
+        if request.url.query:
+            target = f"{target}?{request.url.query}"
+
+        headers = {
+            key: value
+            for key, value in request.headers.items()
+            if key.lower() not in {"host", "content-length"}
+        }
+        async with httpx.AsyncClient(follow_redirects=False, timeout=None) as client:
+            response = await client.request(
+                request.method,
+                target,
+                content=await request.body(),
+                headers=headers,
+            )
+
+        response_headers = {
+            key: value
+            for key, value in response.headers.items()
+            if key.lower() not in {"content-length", "transfer-encoding", "connection"}
+        }
+        return Response(
+            content=response.content,
+            status_code=response.status_code,
+            headers=response_headers,
+            media_type=response.headers.get("content-type"),
+        )
+
+    app.add_api_route(
+        "/flower",
+        flower_proxy,
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        include_in_schema=False,
+    )
+    app.add_api_route(
+        "/flower/{path:path}",
+        flower_proxy,
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        include_in_schema=False,
+    )
 
 
     return app

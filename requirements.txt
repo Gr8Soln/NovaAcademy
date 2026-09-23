@@ -28,6 +28,7 @@ ecdsa==0.19.1
 email-validator==2.3.0
 et_xmlfile==2.0.0
 fastapi==0.129.0
+flower==2.0.1
 filelock==3.24.3
 frozenlist==1.8.0
 fsspec==2026.2.0
