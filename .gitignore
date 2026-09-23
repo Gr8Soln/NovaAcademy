@@ -50,4 +50,7 @@ logs/
 
 # Celery Logs
 celerybeat-schedule.*
+celery_*.log
+celerybeat* 
 .ruff_cache
+
