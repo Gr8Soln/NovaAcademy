@@ -12,7 +12,8 @@ services:
       - CELERY_BROKER=redis://redis:6379/0
       - CELERY_BACKEND=redis://redis:6379/1
       - QDRANT_HOST=qdrant
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_HOST=${OLLAMA_HOST_DOCKER:-http://ollama:11434}
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
     ports:
       - "8000:8000"
     volumes:
@@ -41,7 +42,8 @@ services:
       - CELERY_BROKER=redis://redis:6379/0
       - CELERY_BACKEND=redis://redis:6379/1
       - QDRANT_HOST=qdrant
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_HOST=${OLLAMA_HOST_DOCKER:-http://ollama:11434}
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
     depends_on:
       - redis
       - postgres
@@ -126,18 +128,6 @@ services:
     volumes:
       - ollamadata:/root/.ollama
     restart: unless-stopped
-
-  # ===== Ollama Model Puller =================
-  ollama-puller:
-    image: ollama/ollama:latest
-    container_name: nova-academy-ollama-puller
-    volumes:
-      - ollamadata:/root/.ollama
-      - ./scripts:/scripts
-    entrypoint: /bin/sh
-    command: "/scripts/bootstrap-ollama.sh"
-    depends_on:
-      - ollama
 
 volumes:
   pgdata:

@@ -157,19 +157,47 @@ git clone https://github.com/yourusername/NovaAcademy.git
 cd NovaAcademy
 cp .env.example .env  # Add your OPENAI_API_KEY
 
-# Start everything
+# Start the full stack (does not download Ollama models)
 docker compose up --build -d
+
+# Run migrations
+docker compose exec backend python -m alembic upgrade head
 
 # Check services
 docker compose ps
 ```
 
 **Access**:
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:5173
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/api/v1/docs
 
-> **Note**: First run downloads Ollama models (qwen3, nomic-embed-text). Monitor progress: `docker compose logs -f ollama-puller`
+> **Note**: Compose starts Ollama but does not download models. Run `make ollama-pull` when you want to install `qwen3:latest` and `nomic-embed-text`.
+
+The same workflow is available through the Makefile:
+
+```bash
+make docker-up
+make docker-migrate
+make ollama-pull
+```
+
+The Makefile selects `.venv/bin/python` on macOS/Linux and
+`.venv/Scripts/python.exe` on Windows. On Windows, use GNU Make through
+Git Bash, MSYS2, or WSL.
+
+For an external OpenAI provider, skip Ollama entirely:
+
+```bash
+make docker-up-openai
+make docker-migrate
+```
+
+If Ollama is already installed and running on the host, use:
+
+```bash
+make docker-up-host-ollama
+```
 
 ---
 
