@@ -69,7 +69,7 @@ multidict==6.7.1
 mypy_extensions==1.1.0
 numpy==2.4.2
 ollama==0.6.1
-openai==2.21.0
+openai==2.45.0
 openpyxl==3.1.5
 orjson==3.11.7
 ormsgpack==1.12.2
@@ -96,7 +96,6 @@ python-dotenv==1.2.1
 python-jose==3.5.0
 python-multipart==0.0.22
 python-pptx==1.0.2
-pywin32==311
 PyYAML==6.0.3
 qdrant-client==1.17.0
 redis==7.2.0
