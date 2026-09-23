@@ -13,12 +13,14 @@ PORT ?= 8000
 OLLAMA_CHAT_MODEL ?= qwen3:latest
 OLLAMA_EMBEDDING_MODEL ?= nomic-embed-text
 
-.PHONY: help venv install migrate backend worker beat ui dev ollama-pull docker-up docker-up-openai docker-up-host-ollama docker-migrate docker-down docker-logs
+.PHONY: help venv install migrate backend worker beat ui dev dev-attach dev-stop ollama-pull docker-up docker-up-openai docker-up-host-ollama docker-migrate docker-down docker-logs
 
 help:
 	@echo 'make install               Install backend and UI dependencies'
 	@echo 'make migrate               Run database migrations'
-	@echo 'make dev                   Start local backend, workers, beat, and UI'
+	@echo 'make dev                   Start local services in a tmux session'
+	@echo 'make dev-attach            Attach to the existing dev tmux session'
+	@echo 'make dev-stop              Stop the dev tmux session'
 	@echo 'make ollama-pull           Pull Ollama models explicitly (host or Docker)'
 	@echo 'make docker-up             Build and start the full Compose stack'
 	@echo 'make docker-up-openai      Start Compose using an external OpenAI provider'
@@ -49,8 +51,14 @@ beat: venv
 ui:
 	cd ui && npm run dev -- --host 0.0.0.0
 
-dev:
-	@printf '%s\n' 'Run these targets in separate terminals: make migrate, make backend, make worker, make beat, make ui'
+dev: venv
+	$(PYTHON) scripts/dev_tmux.py
+
+dev-attach:
+	tmux attach-session -t nova-dev
+
+dev-stop:
+	tmux kill-session -t nova-dev
 
 ollama-pull:
 	$(PYTHON) scripts/pull_ollama.py $(OLLAMA_CHAT_MODEL) $(OLLAMA_EMBEDDING_MODEL)

@@ -182,6 +182,12 @@ make docker-migrate
 make ollama-pull
 ```
 
+For local development, `make dev` opens one `tmux` session with tiled panes
+for migrations, backend, UI, Celery worker, Celery beat, and an `ngrok` tunnel
+to the backend. Use `NGROK=0 make dev` to omit the tunnel, `make dev-attach`
+to reconnect, and `make dev-stop` to stop the session. Install `tmux` and
+`ngrok` separately; for example, on macOS: `brew install tmux ngrok`.
+
 The Makefile selects `.venv/bin/python` on macOS/Linux and
 `.venv/Scripts/python.exe` on Windows. On Windows, use GNU Make through
 Git Bash, MSYS2, or WSL.
