@@ -28,8 +28,8 @@ env/
 uploads/
 
 # Node
-ui/node_modules/
-ui/dist/
+frontend/node_modules/
+frontend/dist/
 
 # OS
 .DS_Store

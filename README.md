@@ -2,7 +2,7 @@
 
 > **Production-grade AI learning platform** that transforms static study materials into interactive learning experiences through semantic retrieval, AI tutoring, and real-time collaboration.
 
-**[Live Demo](https://novaacademy-ui.vercel.app/) | [Architecture Deep-Dive](docs/ARCHITECTURE.md) | [API Docs](https://novaacademy-api.example.com/api/v1/docs)**
+**[Live Demo](https://novaacademy-frontend.vercel.app/) | [Architecture Deep-Dive](docs/ARCHITECTURE.md) | [API Docs](https://novaacademy-api.example.com/api/v1/docs)**
 
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]() 
 [![Coverage](https://img.shields.io/badge/coverage-65%25-yellow)]()
@@ -149,127 +149,72 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design decisions and trade-
 
 ## Getting Started
 
-### 🐳 Quick Start with Docker (Recommended)
+### 🔧 Local Development
+
+**Prerequisites**: Python 3.11+, Node.js 18+, Docker (optional, for local infrastructure)
 
 ```bash
-# Clone and configure
+# 1. Clone and configure
 git clone https://github.com/yourusername/NovaAcademy.git
 cd NovaAcademy
-cp .env.example .env  # Add your OPENAI_API_KEY
+cp .env.example .env  # Fill in credentials
 
-# Start the full stack (does not download Ollama models)
-docker compose up --build -d
+# 2. Setup environment (installs python/node dependencies)
+make setup
 
-# Run migrations
-docker compose exec backend python -m alembic upgrade head
+# 3. Start local infrastructure (optional, if not using external DB/Redis)
+make infra
 
-# Check services
-docker compose ps
+# 4. Start all development services
+make dev
 ```
 
 **Access**:
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/api/v1/docs
-- Flower: http://localhost:8000/flower
+- Flower: http://localhost:5555/flower
+- Mobile: Use `make mobile` (Requires Expo Go app)
 
-> **Note**: Compose starts Ollama but does not download models. Run `make ollama-pull` when you want to install `qwen3:latest` and `nomic-embed-text`.
+### Configuration Options
 
-The same workflow is available through the Makefile:
+You can configure NovaAcademy to use local or external infrastructure using `.env`.
 
-```bash
-make docker-up
-make docker-migrate
-make ollama-pull
-```
+**A. External Infrastructure (e.g. Supabase, Upstash, OpenAI)**
+Configure `DATABASE_URL`, `REDIS_URL`, and `OPENAI_API_KEY` in `.env`. You do not need to run `make infra`. Set `LLM_PROVIDER=openai`.
 
-For local development, `make dev` opens one `tmux` session with tiled panes
-for the backend, UI, Celery worker/beat plus Flower, and an `ngrok` tunnel to
-the backend. Flower is available at `http://localhost:8000/flower` and through
-the public backend URL. Set `NGROK_URL` in `.env` to use a reserved ngrok URL;
-if it is empty, ngrok uses its normal temporary URL. Use `NGROK=0 make dev`
-to omit the tunnel, `make dev-attach` to reconnect, and `make dev-stop` to stop
-the session. Install `tmux` and `ngrok` separately; for example, on macOS:
-`brew install tmux ngrok`.
+**B. Local Infrastructure**
+Run `make infra` to start PostgreSQL, Redis, and Qdrant via Docker.
 
-The Makefile selects `.venv/bin/python` on macOS/Linux and
-`.venv/Scripts/python.exe` on Windows. On Windows, use GNU Make through
-Git Bash, MSYS2, or WSL.
+**C. Local AI (Ollama)**
+To use Ollama instead of OpenAI:
+1. Set `LLM_PROVIDER=ollama` in `.env`
+2. Run `make ollama` to start the Ollama container (if you don't have it running natively)
+3. Pull required models (qwen3:latest, nomic-embed-text) manually in Ollama.
 
-For an external OpenAI provider, skip Ollama entirely:
+### Available Make Commands
 
-```bash
-make docker-up-openai
-make docker-migrate
-```
-
-If Ollama is already installed and running on the host, use:
-
-```bash
-make docker-up-host-ollama
-```
-
----
-
-### 🔧 Local Development (Manual)
-
-**Prerequisites**: Python 3.11+, Node.js 18+, PostgreSQL 16, Redis 7
-
-```bash
-# Clone and configure
-git clone https://github.com/yourusername/NovaAcademy.git
-cd NovaAcademy
-cp .env.example .env  # Fill in credentials
-
-# Backend setup
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-
-# Frontend setup
-cd ui && npm install && cd ..
-
-# Database setup
-createdb novaacademy
-alembic upgrade head
-
-# Start all services (single command)
-chmod +x start.sh  # Once on Linux/macOS
-./start.sh         # bash start.sh on Windows Git Bash
-```
-
-The `start.sh` script handles:
-- Virtual environment activation
-- Dependency installation
-- Service health checks (PostgreSQL, Redis)
-- Database migrations
-- Backend, Celery worker, Celery beat, and frontend startup
-- Graceful shutdown on Ctrl+C
-
-**Logs**: Written to `logs/` directory (backend.log, celery-worker.log, frontend.log)
-
----
-
-### Manual Service Start (Alternative)
-
-```bash
-# Terminal 1: Backend
-python app/main.py
-
-# Terminal 2: Celery Worker
-celery -A app.infrastructure.celery_app.celery_app worker --loglevel=info
-# Windows: add --pool=solo
-
-# Terminal 3: Celery Beat
-celery -A app.infrastructure.celery_app.celery_app beat --loglevel=info
-
-# Terminal 4: Frontend
-cd ui && npm run dev
-```
+- `make setup`: Set up the local development environment
+- `make dev`: Start all core services (backend, frontend, worker, beat)
+- `make infra`: Start local Docker infrastructure
+- `make infra-down`: Stop local Docker infrastructure
+- `make postgres`: Start local PostgreSQL in Docker
+- `make redis`: Start local Redis in Docker
+- `make ollama`: Start local Ollama in Docker
+- `make backend`: Start only the backend
+- `make frontend`: Start only the frontend
+- `make worker`: Start Celery worker
+- `make beat`: Start Celery beat
+- `make flower`: Start Celery flower monitoring
+- `make mobile`: Start the Expo mobile app
+- `make tunnel`: Start ngrok tunnel for external webhooks
+- `make migrate`: Run database migrations
+- `make migration name="message"`: Create a new migration
 
 ---
 
 ## Environment Variables
+
 
 Key configuration (see [.env.example](.env.example) for full list):
 
@@ -339,7 +284,7 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment guide.
 │       ├── tasks/               # Celery tasks
 │       └── ws/                  # WebSocket handlers
 ├── migrations/                  # Alembic migrations
-├── ui/                          # React + Vite frontend
+├── frontend/                          # React + Vite frontend
 │   └── src/
 │       ├── components/
 │       ├── pages/
@@ -349,7 +294,6 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment guide.
 ├── docs/                        # Documentation
 ├── scripts/                     # Utility scripts
 ├── docker-compose.yml
-└── start.sh                     # Development startup script
 ```
 
 ---
@@ -373,7 +317,7 @@ ruff check app/ --fix
 pytest tests/ -v
 
 # Start development environment
-./start.sh
+make dev
 ```
 
 ---

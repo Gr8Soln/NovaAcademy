@@ -82,14 +82,14 @@ services:
     restart: unless-stopped
 
   # ===== UI (React + Nginx) ==============================
-  ui:
+  frontend:
     build:
       context: .
-      dockerfile: Dockerfile.ui
+      dockerfile: Dockerfile.frontend
       args:
         VITE_BASE_API_URL: ${VITE_BASE_API_URL}
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
-    container_name: nova-academy-ui
+    container_name: nova-academy-frontend
     ports:
       - "5173:80"
     depends_on:

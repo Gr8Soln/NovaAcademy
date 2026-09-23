@@ -1,84 +1,107 @@
 .DEFAULT_GOAL := help
 
-ifeq ($(OS),Windows_NT)
-VENV_PYTHON := .venv/Scripts/python.exe
-BOOTSTRAP_PYTHON ?= py -3
-else
-VENV_PYTHON := .venv/bin/python
-BOOTSTRAP_PYTHON ?= python3
-endif
-
-PYTHON ?= $(VENV_PYTHON)
-PORT ?= 8000
-OLLAMA_CHAT_MODEL ?= qwen3:latest
-OLLAMA_EMBEDDING_MODEL ?= nomic-embed-text
-
-.PHONY: help venv install migrate backend worker beat ui dev dev-attach stop_dev dev-stop ollama-pull docker-up docker-up-openai docker-up-host-ollama docker-migrate docker-down docker-logs
+.PHONY: help setup dev stop backend frontend worker beat flower mobile mobile-ios mobile-android tunnel infra infra-down postgres redis ollama migrate migration test lint format typecheck logs clean
 
 help:
-	@echo 'make install               Install backend and UI dependencies'
-	@echo 'make migrate               Run database migrations'
-	@echo 'make dev                   Start local services in a tmux session'
-	@echo 'make dev-attach            Attach to the existing dev tmux session'
-	@echo 'make stop_dev              Stop all services started by make dev'
-	@echo 'make ollama-pull           Pull Ollama models explicitly (host or Docker)'
-	@echo 'make docker-up             Build and start the full Compose stack'
-	@echo 'make docker-up-openai      Start Compose using an external OpenAI provider'
-	@echo 'make docker-up-host-ollama Start Compose stack using host Ollama'
-	@echo 'make docker-migrate        Run migrations inside the backend container'
-	@echo 'make docker-down           Stop Compose services'
-	@echo 'make docker-logs           Follow Compose logs'
+	@echo 'Usage: make <target>'
+	@echo ''
+	@echo 'Targets:'
+	@echo '  setup              Set up the local development environment'
+	@echo '  dev                Start all core services (backend, frontend, worker, beat)'
+	@echo '  stop               Stop all running development services'
+	@echo '  backend            Start the FastAPI backend'
+	@echo '  frontend           Start the Vite/React frontend'
+	@echo '  worker             Start the Celery worker'
+	@echo '  beat               Start the Celery beat'
+	@echo '  flower             Start the Celery flower (monitoring)'
+	@echo '  mobile             Start the Expo mobile app'
+	@echo '  mobile-ios         Start the Expo mobile app in iOS simulator'
+	@echo '  mobile-android     Start the Expo mobile app in Android emulator'
+	@echo '  tunnel             Start ngrok tunnel'
+	@echo '  infra              Start core local Docker infrastructure (postgres, redis, qdrant)'
+	@echo '  infra-down         Stop all local Docker infrastructure'
+	@echo '  postgres           Start local PostgreSQL in Docker'
+	@echo '  redis              Start local Redis in Docker'
+	@echo '  ollama             Start local Ollama in Docker'
+	@echo '  migrate            Run database migrations'
+	@echo '  migration          Create a new migration (usage: make migration name="message")'
+	@echo '  test               Run backend tests'
+	@echo '  lint               Run backend linters'
+	@echo '  format             Format backend code'
+	@echo '  typecheck          Run backend type checking'
+	@echo '  clean              Clean up cached files and build artifacts'
 
-venv:
-	$(BOOTSTRAP_PYTHON) -m venv .venv
+setup:
+	@./scripts/setup.sh
 
-install: venv
-	$(PYTHON) -m pip install -r requirements.txt
-	cd ui && npm install
+stop:
+	@./scripts/stop.sh
 
-migrate: venv
-	$(PYTHON) -m alembic upgrade head
 
-backend: venv
-	$(PYTHON) -m uvicorn app.main:app --host 0.0.0.0 --port $(PORT) --reload
+dev:
+	@./scripts/dev.sh
 
-worker: venv
-	$(PYTHON) -m celery -A app.infrastructure.celery_app worker --loglevel=info
+backend:
+	@./scripts/backend.sh
 
-beat: venv
-	$(PYTHON) -m celery -A app.infrastructure.celery_app beat --loglevel=info
+frontend:
+	@./scripts/frontend.sh
 
-ui:
-	cd ui && npm run dev -- --host 0.0.0.0
+worker:
+	@./scripts/worker.sh
 
-dev: venv
-	bash dev.sh
+beat:
+	@./scripts/beat.sh
 
-dev-attach:
-	tmux attach-session -t nova-dev
+flower:
+	@./scripts/flower.sh
 
-stop_dev:
-	bash dev.sh down
+mobile:
+	@./scripts/mobile.sh
 
-dev-stop: stop_dev
+mobile-ios:
+	@./scripts/mobile.sh ios
 
-ollama-pull:
-	$(PYTHON) scripts/pull_ollama.py $(OLLAMA_CHAT_MODEL) $(OLLAMA_EMBEDDING_MODEL)
+mobile-android:
+	@./scripts/mobile.sh android
 
-docker-up:
-	docker compose up --build -d --remove-orphans
+tunnel:
+	@./scripts/tunnel.sh
 
-docker-up-openai:
-	LLM_PROVIDER=openai docker compose up --build -d --remove-orphans postgres redis qdrant backend worker beat ui
+infra:
+	@./scripts/infra.sh up
 
-docker-up-host-ollama:
-	OLLAMA_HOST_DOCKER=http://host.docker.internal:11434 docker compose up --build -d --remove-orphans postgres redis qdrant backend worker beat ui
+infra-down:
+	@./scripts/infra.sh down
 
-docker-migrate:
-	docker compose exec backend python -m alembic upgrade head
+postgres:
+	@./scripts/infra.sh up postgres
 
-docker-down:
-	docker compose down
+redis:
+	@./scripts/infra.sh up redis
 
-docker-logs:
-	docker compose logs -f
+ollama:
+	@./scripts/infra.sh up ollama
+
+migrate:
+	@./scripts/migrate.sh
+
+migration:
+	@./scripts/migrate.sh "$(name)"
+
+test:
+	.venv/bin/pytest
+
+lint:
+	.venv/bin/ruff check app
+
+format:
+	.venv/bin/ruff format app
+
+typecheck:
+	.venv/bin/mypy app
+
+clean:
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	rm -rf .ruff_cache
+	rm -rf .mypy_cache
