@@ -16,13 +16,21 @@ class QdrantVector(IVectorStoreInterface):
             api_key=api_key,
         )
         
-        if not self._client.collection_exists(settings.QDRANT_COLLECTION_NAME):
-            self._client.create_collection(
-            collection_name=settings.QDRANT_COLLECTION_NAME,
-            vectors_config=models.VectorParams(
-                size=settings.QDRANT_VECTOR_SIZE, distance=models.Distance.COSINE
-            ),
-        )
+        try:
+            if not self._client.collection_exists(settings.QDRANT_COLLECTION_NAME):
+                self._client.create_collection(
+                    collection_name=settings.QDRANT_COLLECTION_NAME,
+                    vectors_config=models.VectorParams(
+                        size=settings.QDRANT_VECTOR_SIZE,
+                        distance=models.Distance.COSINE,
+                    ),
+                )
+        except Exception as e:
+            from app.core.logging import get_logger
+            logger = get_logger(__name__)
+            logger.error(f"Failed to ensure Qdrant collection exists: {e}")
+            # Continue without raising; operations will fail later if collection missing.
+
 
     async def store_embeddings(
         self,
