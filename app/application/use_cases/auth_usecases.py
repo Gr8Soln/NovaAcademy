@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from google.auth.transport import requests
 from google.oauth2 import id_token
 
-from app.application.dtos import TokenPair
+from app.application.dtos import TokenPair, AuthProvider
 from app.application.interfaces import (IEmailService, IJwtService,
                                         IUserInterface)
 from app.core.logging import get_logger
@@ -81,7 +81,7 @@ class LoginUseCase:
         if not user:
             raise InvalidCredentialError("Incorrect credentials")
 
-        if user.auth_provider != 'email' or not user.hashed_password:
+        if user.auth_provider != AuthProvider.EMAIL or not user.hashed_password:
             raise InvalidAuthMethodError("This account is registered with a different authentication method")
 
         if not self._auth_repo.verify_password(password, user.hashed_password):
@@ -140,7 +140,7 @@ class GoogleAuthUseCase:
         user = await self._user_repo.get_by_email(email)
         if user:
             is_new_user = False
-            if user.auth_provider != 'google' or user.google_sub != google_sub:
+            if user.auth_provider != AuthProvider.GOOGLE or user.google_sub != google_sub:
                 raise UserAlreadyExistsError(f"User with email already exists with a different authentication method") 
         else:
             username = await _gen_unique_username(email, self._user_repo)
@@ -192,7 +192,7 @@ class ForgotPasswordUseCase:
         user = await self._user_repo.get_by_email(email)
         # Always return success to avoid email enumeration
         if not user:
-        # if not user or user.auth_provider != "email":
+        # if not user or user.auth_provider != AuthProvider.EMAIL:
             return
 
         token = self._auth_repo.create_password_reset_token(user.id)
@@ -255,7 +255,7 @@ class ResendConfirmEmailUseCase:
 
     async def execute(self, email: str) -> None:
         user = await self._user_repo.get_by_email(email)
-        if not user or user.auth_provider != "email":
+        if not user or user.auth_provider != AuthProvider.EMAIL:
             return  # silent — avoid enumeration
 
         if user.is_email_verified:
