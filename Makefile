@@ -93,13 +93,13 @@ test:
 	.venv/bin/pytest
 
 lint:
-	.venv/bin/ruff check app
+	.venv/bin/ruff check src
 
 format:
-	.venv/bin/ruff format app
+	.venv/bin/ruff format src
 
 typecheck:
-	.venv/bin/mypy app
+	.venv/bin/mypy src
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

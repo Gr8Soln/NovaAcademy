@@ -15,9 +15,9 @@ The Celery agent handles background processing tasks for the NovaAcademy applica
 ## Configuration
 
 The Celery agent is configured to work with the Celery framework and uses the following key components:
-- `app/infrastructure/tasks/` for task definitions
-- `app/adapters/services/document_service.py` for document processing
-- `app/infrastructure/celery/beat.py` for task scheduling
+- `src/infrastructure/tasks/` for task definitions
+- `src/adapters/services/document_service.py` for document processing
+- `src/infrastructure/celery/beat.py` for task scheduling
 
 ## Usage
 
@@ -34,9 +34,9 @@ celery -A app.infrastructure.celery_app.celery_app beat --loglevel=info
 ## Integration
 
 The Celery agent integrates with:
-- `app/adapters/repositories/document_repository.py` for document storage
-- `app/infrastructure/websocket/` for real-time notifications
-- `app/infrastructure/db/` for database operations
+- `src/adapters/repositories/document_repository.py` for document storage
+- `src/infrastructure/websocket/` for real-time notifications
+- `src/infrastructure/db/` for database operations
 
 ## Documentation
 

@@ -18,8 +18,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./uploads:/app/uploads
-      - ./logs:/app/logs
+      - ./uploads:/src/uploads
+      - ./logs:/src/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -35,7 +35,7 @@ services:
       context: .
       dockerfile: Dockerfile.be
     container_name: nova-academy-worker
-    command: celery -A app.infrastructure.celery_app worker --loglevel=info
+    command: celery -A src.infrastructure.celery_app worker --loglevel=info
     env_file: .env
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
@@ -56,7 +56,7 @@ services:
       context: .
       dockerfile: Dockerfile.be
     container_name: nova-academy-beat
-    command: celery -A app.infrastructure.celery_app beat --loglevel=info
+    command: celery -A src.infrastructure.celery_app beat --loglevel=info
     env_file: .env
     environment:
       - REDIS_URL=redis://redis:6379/0
@@ -72,7 +72,7 @@ services:
       context: .
       dockerfile: Dockerfile.be
     container_name: nova-academy-flower
-    command: celery -A app.infrastructure.celery_app flower --port=5555 --url_prefix=/flower
+    command: celery -A src.infrastructure.celery_app flower --port=5555 --url_prefix=/flower
     env_file: .env
     environment:
       - CELERY_BROKER=redis://redis:6379/0
