@@ -15,9 +15,9 @@ The Vector Search agent provides semantic search capabilities for the NovaAcadem
 ## Configuration
 
 The Vector Search agent is configured to work with the Qdrant vector database and uses the following key components:
-- `app/infrastructure/db/vector_db.py` for database connections
-- `app/adapters/services/vector_service.py` for search operations
-- `app/infrastructure/tasks/` for background indexing
+- `src/infrastructure/db/vector_db.py` for database connections
+- `src/adapters/services/vector_service.py` for search operations
+- `src/infrastructure/tasks/` for background indexing
 
 ## Usage
 
@@ -31,9 +31,9 @@ To use the Vector Search agent, interact with the following endpoints:
 ## Integration
 
 The Vector Search agent integrates with:
-- `app/adapters/repositories/document_repository.py` for document storage
-- `app/infrastructure/websocket/` for real-time search updates
-- `app/infrastructure/celery/` for background indexing
+- `src/adapters/repositories/document_repository.py` for document storage
+- `src/infrastructure/websocket/` for real-time search updates
+- `src/infrastructure/celery/` for background indexing
 
 ## Documentation
 

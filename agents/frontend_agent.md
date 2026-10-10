@@ -15,9 +15,9 @@ The Frontend Agent manages the React-based user interface for NovaAcademy. It pr
 ## Configuration
 
 The Frontend Agent is configured to work with the React framework and uses the following key components:
-- `frontend/src/` for React component implementations
-- `frontend/src/hooks/` for state management
-- `frontend/src/stores/` for application state
+- `apps/frontend/src/` for React component implementations
+- `apps/frontend/src/hooks/` for state management
+- `apps/frontend/src/stores/` for application state
 
 ## Usage
 
@@ -30,9 +30,9 @@ http://localhost:3000
 ## Integration
 
 The Frontend Agent integrates with:
-- `app/infrastructure/api/` for API communication
-- `app/infrastructure/websocket/` for real-time features
-- `app/infrastructure/auth/` for authentication services
+- `src/infrastructure/api/` for API communication
+- `src/infrastructure/websocket/` for real-time features
+- `src/infrastructure/auth/` for authentication services
 
 ## Documentation
 

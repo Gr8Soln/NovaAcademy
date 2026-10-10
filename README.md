@@ -284,7 +284,7 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment guide.
 │       ├── tasks/               # Celery tasks
 │       └── ws/                  # WebSocket handlers
 ├── migrations/                  # Alembic migrations
-├── frontend/                          # React + Vite frontend
+├── apps/frontend/                          # React + Vite frontend
 │   └── src/
 │       ├── components/
 │       ├── pages/

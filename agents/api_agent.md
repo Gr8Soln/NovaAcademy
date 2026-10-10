@@ -15,9 +15,9 @@ The NovaAcademy API Agent handles all RESTful API endpoints for the application.
 ## Configuration
 
 The API agent is configured to work with the FastAPI framework and uses the following key components:
-- `app/core/config.py` for configuration settings
-- `app/infrastructure/api/` for route definitions
-- `app/adapters/services/` for business logic implementations
+- `src/core/config.py` for configuration settings
+- `src/infrastructure/api/` for route definitions
+- `src/adapters/services/` for business logic implementations
 
 ## Usage
 
@@ -33,9 +33,9 @@ To interact with the API agent, use the following endpoints:
 ## Integration
 
 The API agent integrates with:
-- `app/adapters/services/llm_service.py` for AI-powered features
-- `app/adapters/repositories/vector_repository.py` for vector search capabilities
-- `app/infrastructure/ws/` for WebSocket connections
+- `src/adapters/services/llm_service.py` for AI-powered features
+- `src/adapters/repositories/vector_repository.py` for vector search capabilities
+- `src/infrastructure/ws/` for WebSocket connections
 
 ## Documentation
 

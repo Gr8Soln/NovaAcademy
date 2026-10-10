@@ -1,0 +1,176 @@
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, Response
+
+from src.adapters.schemas import error_response, success_response
+from src.core.config import settings
+from src.core.logging import get_logger
+from src.infrastructure.api import (ai_router, analytics_router, auth_router,
+                                    chat_router, document_router, personal_document_router, file_router,
+                                    study_router, user_router)
+from src.infrastructure.ws.ws_router import router as ws_router
+from src.infrastructure.db import Base, engine
+
+logger = get_logger(__name__)
+
+
+# ── Lifespan ────────────────────────────────────────────────────
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """Startup / shutdown lifecycle hook."""
+    # Create all tables on a fresh database (idempotent via checkfirst=True)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    upload_dir = Path(settings.UPLOAD_DIR)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    logger.info(f"🟢 {settings.APP_NAME} App started")
+    yield
+    logger.info(f"🔴 {settings.APP_NAME} App stopped")
+
+
+def create_app() -> FastAPI:
+    """Build and return a fully-configured FastAPI application."""
+
+    app = FastAPI(
+        title=settings.APP_NAME,
+        version="0.1.0",
+        lifespan=lifespan,
+        docs_url=f"{settings.API_PREFIX}/docs",
+        redoc_url=f"{settings.API_PREFIX}/redoc",
+        openapi_url=f"{settings.API_PREFIX}/openapi.json",
+    )
+
+    if settings.ENABLE_RATE_LIMITING:
+        from src.core.middleware.rate_limit import SimpleRateLimiter
+        app.add_middleware(SimpleRateLimiter, settings=settings)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # ── Exception handlers ──────────────────────────────────────
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ):
+        errors = exc.errors()
+        error_messages = []
+        for error in errors:
+            field = " -> ".join(
+                str(loc) for loc in error["loc"] if loc != "body"
+            )
+            message = error["msg"]
+            error_messages.append(f"{field}: {message}")
+
+        detail = "; ".join(error_messages) if error_messages else "Validation error"
+        response = error_response(detail)
+        return JSONResponse(status_code=422, content=jsonable_encoder(response))
+
+    @app.exception_handler(HTTPException)
+    async def http_exception_handler(request: Request, exc: HTTPException):
+        response = error_response(exc.detail)
+        return JSONResponse(
+            status_code=exc.status_code, content=jsonable_encoder(response)
+        )
+
+    @app.exception_handler(PermissionError)
+    async def permission_exception_handler(request: Request, exc: PermissionError):
+        response = error_response(str(exc))
+        return JSONResponse(
+            status_code=403, content=jsonable_encoder(response)
+        )
+
+    @app.exception_handler(Exception)
+    async def general_exception_handler(request: Request, exc: Exception):
+        logger.error(f"Unexpected error: {exc!s}")
+        response = error_response(
+            "An unexpected error occurred. Please try again later."
+        )
+        return JSONResponse(status_code=500, content=jsonable_encoder(response))
+
+    # ── Routes ──────────────────────────────────────────────────
+
+    app.include_router(auth_router, prefix=settings.API_PREFIX)
+    app.include_router(ai_router, prefix=settings.API_PREFIX)
+    app.include_router(analytics_router, prefix=settings.API_PREFIX)
+    app.include_router(user_router, prefix=settings.API_PREFIX)
+    app.include_router(chat_router, prefix=settings.API_PREFIX)
+    app.include_router(document_router, prefix=settings.API_PREFIX)
+    app.include_router(personal_document_router, prefix=settings.API_PREFIX)
+    app.include_router(study_router, prefix=settings.API_PREFIX)
+    app.include_router(ws_router, prefix=settings.API_PREFIX)
+    app.include_router(file_router, include_in_schema=False)
+
+    @app.get(f"{settings.API_PREFIX}/health")
+    async def health():
+        return success_response(
+            "API is healthy", 
+            data={
+                  "status": "ok", 
+                  "version": "0.1.0", 
+                  "app_name": settings.APP_NAME, 
+                  "debug": settings.DEBUG
+                }
+            )
+
+    async def flower_proxy(request: Request, path: str = ""):
+        import httpx
+
+        target = f"{settings.FLOWER_URL.rstrip('/')}/{path}"
+        if request.url.query:
+            target = f"{target}?{request.url.query}"
+
+        headers = {
+            key: value
+            for key, value in request.headers.items()
+            if key.lower() not in {"host", "content-length"}
+        }
+        async with httpx.AsyncClient(follow_redirects=False, timeout=None) as client:
+            response = await client.request(
+                request.method,
+                target,
+                content=await request.body(),
+                headers=headers,
+            )
+
+        response_headers = {
+            key: value
+            for key, value in response.headers.items()
+            if key.lower() not in {"content-length", "transfer-encoding", "connection"}
+        }
+        return Response(
+            content=response.content,
+            status_code=response.status_code,
+            headers=response_headers,
+            media_type=response.headers.get("content-type"),
+        )
+
+    app.add_api_route(
+        "/flower",
+        flower_proxy,
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        include_in_schema=False,
+    )
+    app.add_api_route(
+        "/flower/{path:path}",
+        flower_proxy,
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        include_in_schema=False,
+    )
+
+
+    return app
+
+    

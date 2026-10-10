@@ -15,9 +15,9 @@ The WebSocket agent enables real-time communication between clients and the Nova
 ## Configuration
 
 The WebSocket agent is configured to work with the FastAPI framework and uses the following key components:
-- `app/infrastructure/ws/websocket_manager.py` for connection management
-- `app/adapters/services/presence_service.py` for presence tracking
-- `app/infrastructure/ws/connections.py` for connection state storage
+- `src/infrastructure/ws/websocket_manager.py` for connection management
+- `src/adapters/services/presence_service.py` for presence tracking
+- `src/infrastructure/ws/connections.py` for connection state storage
 
 ## Usage
 
@@ -30,9 +30,9 @@ To use the WebSocket agent, connect to the following endpoint:
 ## Integration
 
 The WebSocket agent integrates with:
-- `app/adapters/services/llm_service.py` for AI-powered features
-- `app/adapters/repositories/user_repository.py` for user data
-- `app/infrastructure/celery/` for background processing
+- `src/adapters/services/llm_service.py` for AI-powered features
+- `src/adapters/repositories/user_repository.py` for user data
+- `src/infrastructure/celery/` for background processing
 
 ## Documentation
 
