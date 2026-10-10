@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     ENV: str = "development"  # or "production"
     LOG_DIR: str = "./logs"
     DEBUG: bool = False
+    RATE_LIMIT_MESSAGES_PER_MINUTE: int = 60  # new default
+    RATE_LIMIT_API_PER_MINUTE: int = 120  # new default
     
     
     # ── App ─────────────────────────────────────────────────────
@@ -82,7 +84,8 @@ class Settings(BaseSettings):
     CACHE_GROUP_TTL: int = 3600  # 1 hour
     CACHE_MESSAGE_TTL: int = 300  # 5 minutes
     
-    # Rate Limiting
+    # Rate limiting middleware (optional)
+    ENABLE_RATE_LIMITING: bool = False
     RATE_LIMIT_MESSAGES_PER_MINUTE: int = 60
     RATE_LIMIT_API_PER_MINUTE: int = 120
     

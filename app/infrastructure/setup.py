@@ -47,7 +47,9 @@ def create_app() -> FastAPI:
         openapi_url=f"{settings.API_PREFIX}/openapi.json",
     )
 
-    # ── Middleware ───────────────────────────────────────────────
+    if settings.ENABLE_RATE_LIMITING:
+        from app.core.middleware.rate_limit import SimpleRateLimiter
+        app.add_middleware(SimpleRateLimiter, settings=settings)
 
     app.add_middleware(
         CORSMiddleware,
