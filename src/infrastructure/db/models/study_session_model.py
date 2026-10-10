@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.infrastructure.db.base import Base
+from src.infrastructure.db.base import Base
 
 
 class StudySessionModel(Base):

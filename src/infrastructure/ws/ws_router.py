@@ -5,15 +5,15 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy import select
 
-from app.application.interfaces import IChatPresenceService, IChatPubSub
-from app.core.config import Settings, get_settings
-from app.core.logging import get_logger
-from app.domain.entities import User as UserEntity
-from app.infrastructure.api.dependencies import (get_chat_presence_service,
+from src.application.interfaces import IChatPresenceService, IChatPubSub
+from src.core.config import Settings, get_settings
+from src.core.logging import get_logger
+from src.domain.entities import User as UserEntity
+from src.infrastructure.api.dependencies import (get_chat_presence_service,
                                                  get_chat_pubsub_service,
                                                  get_connection_manager)
-from app.infrastructure.db import get_db_session as db_session
-from app.infrastructure.ws.connection_manager import (ConnectionManager,
+from src.infrastructure.db import get_db_session as db_session
+from src.infrastructure.ws.connection_manager import (ConnectionManager,
                                                       get_websocket_user)
 
 router = APIRouter(prefix="/chat", tags=["Class chat"])

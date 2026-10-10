@@ -3,21 +3,21 @@ from uuid import UUID
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.adapters.repositories import SQLDocumentRepository
-from app.adapters.services import DocumentExtractor, OllamaEmbedder
-from app.application.interfaces import (IChatGroupInterface,
+from src.adapters.repositories import SQLDocumentRepository
+from src.adapters.services import DocumentExtractor, OllamaEmbedder
+from src.application.interfaces import (IChatGroupInterface,
                                         IDocumentEmbedderInterface,
                                         IDocumentExtractorInterface,
                                         IDocumentInterface, IStorageService,
                                         IVectorStoreInterface)
-from app.application.use_cases import (DeleteDocumentUseCase,
+from src.application.use_cases import (DeleteDocumentUseCase,
                                        GetDocumentUseCase,
                                        ListDocumentsUseCase,
                                        SearchDocumentsUseCase,
                                        UploadDocumentUseCase)
-from app.application.use_cases.document_usecases import ProcessDocumentUseCase
-from app.core.config import Settings, get_settings
-from app.infrastructure.db import get_db_session
+from src.application.use_cases.document_usecases import ProcessDocumentUseCase
+from src.core.config import Settings, get_settings
+from src.infrastructure.db import get_db_session
 
 from .core_dep import get_storage_service
 from .chat_dep import get_chat_group_repository
@@ -37,7 +37,7 @@ async def get_vector_store(
     settings: Settings = Depends(get_settings),
 ) -> IVectorStoreInterface:
     """Singleton Qdrant client (one connection pool for all requests)."""
-    from app.adapters.services.qdrant_vector import QdrantVector
+    from src.adapters.services.qdrant_vector import QdrantVector
 
     return QdrantVector(
         host=settings.QDRANT_HOST,

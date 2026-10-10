@@ -1,11 +1,11 @@
 from fastapi import Depends
 
-from app.adapters.services.llm_service import OllamaLLM, OpenAILLM
-from app.application.interfaces.llm_interface import ILLMInterface
-from app.application.use_cases.tutor_usecases import TutorUseCase
-from app.application.use_cases.document_usecases import SearchDocumentsUseCase
-from app.core.config import Settings, get_settings
-from app.infrastructure.api.dependencies.document_dep import get_search_documents_usecase
+from src.adapters.services.llm_service import OllamaLLM, OpenAILLM
+from src.application.interfaces.llm_interface import ILLMInterface
+from src.application.use_cases.tutor_usecases import TutorUseCase
+from src.application.use_cases.document_usecases import SearchDocumentsUseCase
+from src.core.config import Settings, get_settings
+from src.infrastructure.api.dependencies.document_dep import get_search_documents_usecase
 
 
 def get_llm_service(settings: Settings = Depends(get_settings)) -> ILLMInterface:

@@ -1,7 +1,7 @@
 import uvicorn
 
-from app.core.config import settings
-from app.infrastructure.setup import create_app
+from src.core.config import settings
+from src.infrastructure.setup import create_app
 
 app = create_app()
 

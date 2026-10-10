@@ -4,8 +4,8 @@ from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Optional
 
-from app.application.interfaces import IEmailService
-from app.core.logging import get_logger
+from src.application.interfaces import IEmailService
+from src.core.logging import get_logger
 
 logger = get_logger(__name__)
 

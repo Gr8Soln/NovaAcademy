@@ -3,9 +3,9 @@
 # import firebase_admin
 # from firebase_admin import credentials, messaging
 
-# from app.application.interfaces import IChatNotificationInterface
-# from app.core.logging import get_logger
-# from app.domain.entities import ChatMessage
+# from src.application.interfaces import IChatNotificationInterface
+# from src.core.logging import get_logger
+# from src.domain.entities import ChatMessage
 
 # logger = get_logger(__name__)
 

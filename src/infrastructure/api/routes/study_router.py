@@ -4,14 +4,14 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel
 
-from app.adapters.schemas import success_response
-from app.adapters.schemas.study_schema import StudySessionResponse, StudyStatsResponse
-from app.application.use_cases.study_usecases import (
+from src.adapters.schemas import success_response
+from src.adapters.schemas.study_schema import StudySessionResponse, StudyStatsResponse
+from src.application.use_cases.study_usecases import (
     StartStudySessionUseCase, UpdateStudySessionHeartbeatUseCase,
     EndStudySessionUseCase, GetStudyStatsUseCase
 )
-from app.domain.entities import User
-from app.infrastructure.api.dependencies import (
+from src.domain.entities import User
+from src.infrastructure.api.dependencies import (
     get_current_user, get_start_study_session_usecase,
     get_update_heartbeat_usecase, get_end_study_session_usecase,
     get_study_stats_usecase

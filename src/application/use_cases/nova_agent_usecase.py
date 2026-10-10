@@ -6,11 +6,11 @@ from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
-from app.application.interfaces.llm_interface import ILLMInterface
-from app.application.use_cases.tutor_usecases import TutorUseCase
-from app.application.use_cases.ai_use_cases import GenerateQuizUseCase
-from app.adapters.agents.prompt_service import PromptService
-from app.domain.entities.ai_entity import QuizType
+from src.application.interfaces.llm_interface import ILLMInterface
+from src.application.use_cases.tutor_usecases import TutorUseCase
+from src.application.use_cases.ai_use_cases import GenerateQuizUseCase
+from src.adapters.agents.prompt_service import PromptService
+from src.domain.entities.ai_entity import QuizType
 
 
 from langgraph.checkpoint.memory import MemorySaver

@@ -1,4 +1,4 @@
-from app.core.config import get_settings
+from src.core.config import get_settings
 
 from .chat_dep import (get_chat_cache_service, get_chat_presence_service,
                        get_chat_pubsub_service)

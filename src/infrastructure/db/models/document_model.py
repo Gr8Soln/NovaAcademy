@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.infrastructure.db.base import Base
+from src.infrastructure.db.base import Base
 
 
 class DocumentModel(Base):

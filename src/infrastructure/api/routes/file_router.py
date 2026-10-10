@@ -4,8 +4,8 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
-from app.core.config import settings
-from app.core.logging import get_logger
+from src.core.config import settings
+from src.core.logging import get_logger
 
 router = APIRouter(tags=["Files"])
 logger = get_logger(__name__)

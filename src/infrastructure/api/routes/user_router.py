@@ -3,22 +3,22 @@ from pathlib import Path
 from fastapi import (APIRouter, Depends, File, HTTPException, Query,
                      UploadFile, status)
 
-from app.adapters.schemas import (ChangePasswordRequest, SetPasswordRequest,
+from src.adapters.schemas import (ChangePasswordRequest, SetPasswordRequest,
                                   UpdateProfileRequest, UpdateUsernameRequest,
                                   UserResponse, success_response)
-from app.application.interfaces import IUserInterface
-from app.application.use_cases import (ChangePasswordUseCase,
+from src.application.interfaces import IUserInterface
+from src.application.use_cases import (ChangePasswordUseCase,
                                        DeactivateAccountUseCase,
                                        RemoveAvatarUseCase, SetPasswordUseCase,
                                        UpdateProfileUseCase,
                                        UpdateUsernameUseCase,
                                        UploadAvatarUseCase)
-from app.core.logging import get_logger
-from app.domain.entities import User
-from app.domain.exceptions import (InvalidCredentialError,
+from src.core.logging import get_logger
+from src.domain.entities import User
+from src.domain.exceptions import (InvalidCredentialError,
                                    InvalidUsernameError, UsernameCooldownError,
                                    UsernameUnavailableError)
-from app.infrastructure.api.dependencies import (
+from src.infrastructure.api.dependencies import (
     get_change_password_usecase, get_current_user,
     get_deactivate_account_usecase, get_remove_avatar_usecase,
     get_set_password_usecase, get_update_profile_usecase,

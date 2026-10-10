@@ -4,20 +4,20 @@ from uuid import UUID
 from fastapi import (APIRouter, Depends, File, Form, HTTPException, Query,
                      UploadFile, status)
 
-from app.adapters.schemas import (DocumentResponse, UploadDocumentResponse,
+from src.adapters.schemas import (DocumentResponse, UploadDocumentResponse,
                                    generate_pagination, success_response)
-from app.application.use_cases import (DeleteDocumentUseCase,
+from src.application.use_cases import (DeleteDocumentUseCase,
                                        GetDocumentUseCase,
                                        ListDocumentsUseCase,
                                        UploadDocumentUseCase)
-from app.core.logging import get_logger
-from app.domain.entities import User
-from app.infrastructure.api.dependencies import (get_current_user,
+from src.core.logging import get_logger
+from src.domain.entities import User
+from src.infrastructure.api.dependencies import (get_current_user,
                                                  get_delete_document_usecase,
                                                  get_get_document_usecase,
                                                  get_list_documents_usecase,
                                                  get_upload_document_usecase)
-from app.infrastructure.tasks import process_document
+from src.infrastructure.tasks import process_document
 
 logger = get_logger(__name__)
 

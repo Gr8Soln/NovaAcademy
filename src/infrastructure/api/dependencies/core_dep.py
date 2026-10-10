@@ -1,12 +1,12 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.adapters.repositories import SQLUserRepository
-from app.adapters.services import JWTAuth, LocalStorage, SMTPEmail
-from app.application.interfaces import (IEmailService, IJwtService,
+from src.adapters.repositories import SQLUserRepository
+from src.adapters.services import JWTAuth, LocalStorage, SMTPEmail
+from src.application.interfaces import (IEmailService, IJwtService,
                                         IStorageService, IUserInterface)
-from app.core.config import settings
-from app.infrastructure.db import get_db_session
+from src.core.config import settings
+from src.infrastructure.db import get_db_session
 
 
 def get_user_repository(

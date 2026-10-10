@@ -4,9 +4,9 @@ from typing import AsyncGenerator, Optional
 import httpx
 from openai import AsyncOpenAI
 
-from app.application.interfaces.llm_interface import ILLMInterface
-from app.core.config import settings
-from app.core.logging import get_logger
+from src.application.interfaces.llm_interface import ILLMInterface
+from src.core.config import settings
+from src.core.logging import get_logger
 
 logger = get_logger(__name__)
 

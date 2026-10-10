@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from app.domain.entities import ChatGroup, ChatMessage, ClassJoinRequest
+from src.domain.entities import ChatGroup, ChatMessage, ClassJoinRequest
 
 
 class IChatMessageInterface(ABC):    

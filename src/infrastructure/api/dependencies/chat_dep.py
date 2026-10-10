@@ -6,16 +6,16 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.adapters.repositories import (SQLChatGroupRepository,
+from src.adapters.repositories import (SQLChatGroupRepository,
                                        SQLChatMessageRepository)
-from app.adapters.services import (PushNotification, RedisCacheService,
+from src.adapters.services import (PushNotification, RedisCacheService,
                                    RedisPresence, RedisPubSub)
-from app.application.interfaces import (IChatCacheInterface,
+from src.application.interfaces import (IChatCacheInterface,
                                         IChatGroupInterface,
                                         IChatMessageInterface,
                                         IChatNotificationInterface,
                                         IChatPresenceService, IChatPubSub)
-from app.application.use_cases import (AddClassMemberUseCase,
+from src.application.use_cases import (AddClassMemberUseCase,
                                        ChangeClassMemberRoleUseCase,
                                        CreateClassUseCase,
                                        DeleteChatMessageUseCase,
@@ -31,14 +31,14 @@ from app.application.use_cases import (AddClassMemberUseCase,
                                        SearchClassesUseCase,
                                        SendChatMessageUseCase,
                                        UpdateClassUseCase)
-from app.core.config import Settings, get_settings
-from app.domain.entities import User
-from app.infrastructure.db import get_db_session
+from src.core.config import Settings, get_settings
+from src.domain.entities import User
+from src.infrastructure.db import get_db_session
 
 from .auth_dep import get_current_user
 
 if TYPE_CHECKING:
-    from app.infrastructure.ws.connection_manager import ConnectionManager
+    from src.infrastructure.ws.connection_manager import ConnectionManager
 
 _pubsub_instance: RedisPubSub | None = None
 _presence_instance: RedisPresence | None = None
@@ -85,7 +85,7 @@ async def get_chat_cache_service(
 
 
 async def get_connection_manager() -> ConnectionManager:
-    from app.infrastructure.ws.connection_manager import \
+    from src.infrastructure.ws.connection_manager import \
         ConnectionManager as CM
 
     global _connection_manager
@@ -131,15 +131,15 @@ async def get_chat_send_message_use_case(
 ) -> SendChatMessageUseCase:
     """Get SendMessage use case with NovaAI support."""
     # Deferred import to avoid circular: chat_dep <- document_dep <- ai_dep -> chat_dep
-    from app.core.config import get_settings
-    from app.infrastructure.api.dependencies.tutor_dep import get_llm_service, get_tutor_usecase
-    from app.adapters.services import OllamaEmbedder
-    from app.adapters.services.qdrant_vector import QdrantVector
-    from app.application.use_cases.tutor_usecases import TutorUseCase
-    from app.application.use_cases.ai_use_cases import GenerateQuizUseCase
-    from app.application.use_cases.document_usecases import SearchDocumentsUseCase
-    from app.adapters.agents.prompt_service import PromptService
-    from app.application.use_cases.nova_agent_usecase import NovaAgentUseCase
+    from src.core.config import get_settings
+    from src.infrastructure.api.dependencies.tutor_dep import get_llm_service, get_tutor_usecase
+    from src.adapters.services import OllamaEmbedder
+    from src.adapters.services.qdrant_vector import QdrantVector
+    from src.application.use_cases.tutor_usecases import TutorUseCase
+    from src.application.use_cases.ai_use_cases import GenerateQuizUseCase
+    from src.application.use_cases.document_usecases import SearchDocumentsUseCase
+    from src.adapters.agents.prompt_service import PromptService
+    from src.application.use_cases.nova_agent_usecase import NovaAgentUseCase
 
     settings = get_settings()
     llm = get_llm_service(settings)
@@ -228,9 +228,9 @@ async def get_create_class_usecase(
     db=Depends(get_db_session),
     settings: Settings = Depends(get_settings),
 ) -> CreateClassUseCase:
-    from app.adapters.repositories import SQLUserRepository
-    from app.adapters.services import LocalStorage
-    from app.application.interfaces import IUserInterface
+    from src.adapters.repositories import SQLUserRepository
+    from src.adapters.services import LocalStorage
+    from src.application.interfaces import IUserInterface
     user_repo: IUserInterface = SQLUserRepository(db)
     storage = LocalStorage(
         upload_dir=settings.UPLOAD_DIR if hasattr(settings, "UPLOAD_DIR") else "uploads",
@@ -255,7 +255,7 @@ async def get_update_class_usecase(
     group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
     settings: Settings = Depends(get_settings),
 ) -> UpdateClassUseCase:
-    from app.adapters.services import LocalStorage
+    from src.adapters.services import LocalStorage
     storage = LocalStorage(
         upload_dir=settings.UPLOAD_DIR if hasattr(settings, "UPLOAD_DIR") else "uploads",
         base_url=settings.BASE_URL if hasattr(settings, "BASE_URL") else "/api/v1/avatar",
@@ -273,8 +273,8 @@ async def get_add_class_member_usecase(
     group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
     db=Depends(get_db_session),
 ) -> AddClassMemberUseCase:
-    from app.adapters.repositories import SQLUserRepository
-    from app.application.interfaces import IUserInterface
+    from src.adapters.repositories import SQLUserRepository
+    from src.application.interfaces import IUserInterface
     user_repo: IUserInterface = SQLUserRepository(db)
     return AddClassMemberUseCase(group_repo=group_repo, user_repo=user_repo)
 
@@ -301,8 +301,8 @@ async def get_join_class_usecase(
     group_repo: IChatGroupInterface = Depends(get_chat_group_repository),
     db=Depends(get_db_session),
 ) -> JoinClassUseCase:
-    from app.adapters.repositories import SQLUserRepository
-    from app.application.interfaces import IUserInterface
+    from src.adapters.repositories import SQLUserRepository
+    from src.application.interfaces import IUserInterface
     user_repo: IUserInterface = SQLUserRepository(db)
     return JoinClassUseCase(group_repo=group_repo, user_repo=user_repo)
 

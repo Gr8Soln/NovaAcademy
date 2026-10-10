@@ -7,14 +7,14 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
-from app.adapters.schemas import error_response, success_response
-from app.core.config import settings
-from app.core.logging import get_logger
-from app.infrastructure.api import (ai_router, analytics_router, auth_router,
+from src.adapters.schemas import error_response, success_response
+from src.core.config import settings
+from src.core.logging import get_logger
+from src.infrastructure.api import (ai_router, analytics_router, auth_router,
                                     chat_router, document_router, personal_document_router, file_router,
                                     study_router, user_router)
-from app.infrastructure.ws.ws_router import router as ws_router
-from app.infrastructure.db import Base, engine
+from src.infrastructure.ws.ws_router import router as ws_router
+from src.infrastructure.db import Base, engine
 
 logger = get_logger(__name__)
 
@@ -48,7 +48,7 @@ def create_app() -> FastAPI:
     )
 
     if settings.ENABLE_RATE_LIMITING:
-        from app.core.middleware.rate_limit import SimpleRateLimiter
+        from src.core.middleware.rate_limit import SimpleRateLimiter
         app.add_middleware(SimpleRateLimiter, settings=settings)
 
     app.add_middleware(

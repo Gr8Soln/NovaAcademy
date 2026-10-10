@@ -5,9 +5,9 @@ from typing import List, Optional
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.interfaces.study_session_interface import IStudySessionInterface
-from app.domain.entities.study_session_entity import StudySession
-from app.infrastructure.db.models.study_session_model import StudySessionModel
+from src.application.interfaces.study_session_interface import IStudySessionInterface
+from src.domain.entities.study_session_entity import StudySession
+from src.infrastructure.db.models.study_session_model import StudySessionModel
 
 
 class SQLStudySessionRepository(IStudySessionInterface):

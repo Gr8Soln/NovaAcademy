@@ -6,8 +6,8 @@ from pathlib import Path
 from fastapi import UploadFile
 from PIL import Image
 
-from app.application.interfaces import IStorageService
-from app.core.logging import get_logger
+from src.application.interfaces import IStorageService
+from src.core.logging import get_logger
 
 logger = get_logger(__name__)
 

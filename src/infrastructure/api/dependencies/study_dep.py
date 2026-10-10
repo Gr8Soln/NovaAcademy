@@ -1,13 +1,13 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.adapters.repositories import SQLStudySessionRepository
-from app.application.interfaces import IStudySessionInterface
-from app.application.use_cases.study_usecases import (
+from src.adapters.repositories import SQLStudySessionRepository
+from src.application.interfaces import IStudySessionInterface
+from src.application.use_cases.study_usecases import (
     StartStudySessionUseCase, UpdateStudySessionHeartbeatUseCase,
     EndStudySessionUseCase, GetStudyStatsUseCase
 )
-from app.infrastructure.db import get_db_session
+from src.infrastructure.db import get_db_session
 
 
 def get_study_session_repository(

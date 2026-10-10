@@ -2,12 +2,12 @@ import re
 from typing import Optional, Any
 from uuid import UUID
 
-from app.application.interfaces import (IChatCacheInterface,
+from src.application.interfaces import (IChatCacheInterface,
                                         IChatGroupInterface,
                                         IChatMessageInterface,
                                         IChatNotificationInterface,
                                         IChatPubSub)
-from app.domain.entities import (ChatGroup, ChatMessage, SendChatMessageInput,
+from src.domain.entities import (ChatGroup, ChatMessage, SendChatMessageInput,
                                  SendChatMessageOutput)
 
 
@@ -387,8 +387,8 @@ class SearchchatMessagesUseCase:
 # GROUP MANAGEMENT USE CASES  (renamed: Group → Class)
 # =============================================================================
 
-from app.application.interfaces import IUserInterface
-from app.domain.entities import ClassJoinRequest, User, generate_class_code
+from src.application.interfaces import IUserInterface
+from src.domain.entities import ClassJoinRequest, User, generate_class_code
 
 
 class CreateClassUseCase:

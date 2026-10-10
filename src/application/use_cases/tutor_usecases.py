@@ -1,8 +1,8 @@
 import uuid
 from typing import AsyncGenerator, List, Optional
 
-from app.application.interfaces.llm_interface import ILLMInterface
-from app.application.use_cases.document_usecases import SearchDocumentsUseCase
+from src.application.interfaces.llm_interface import ILLMInterface
+from src.application.use_cases.document_usecases import SearchDocumentsUseCase
 
 
 class TutorUseCase:

@@ -4,8 +4,8 @@ from uuid import UUID
 
 from fastapi import WebSocket
 
-from app.application.interfaces import IChatPubSub
-from app.core.logging import get_logger
+from src.application.interfaces import IChatPubSub
+from src.core.logging import get_logger
 
 logger = get_logger(__name__)
 

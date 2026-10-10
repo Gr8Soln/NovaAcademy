@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from app.application.dtos import AuthProvider
+from src.application.dtos import AuthProvider
 
 _USERNAME_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]{2,14}$')
 

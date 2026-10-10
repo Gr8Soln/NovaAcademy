@@ -6,9 +6,9 @@ import bcrypt
 import httpx
 from jose import JWTError, jwt
 
-from app.application.dtos import GoogleUserInfo, TokenPair
-from app.application.interfaces import IJwtService
-from app.domain.exceptions import AuthenticationError
+from src.application.dtos import GoogleUserInfo, TokenPair
+from src.application.interfaces import IJwtService
+from src.domain.exceptions import AuthenticationError
 
 
 class JWTAuth(IJwtService):

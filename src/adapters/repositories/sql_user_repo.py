@@ -4,9 +4,9 @@ from typing import Optional
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.interfaces import IUserInterface
-from app.domain.entities import User
-from app.infrastructure.db import (UserModel, user_entity_to_model,
+from src.application.interfaces import IUserInterface
+from src.domain.entities import User
+from src.infrastructure.db import (UserModel, user_entity_to_model,
                                    user_model_to_entity)
 
 

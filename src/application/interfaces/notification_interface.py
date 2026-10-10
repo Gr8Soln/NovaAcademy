@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from app.domain.entities import ChatMessage
+from src.domain.entities import ChatMessage
 
 
 class IChatNotificationInterface(ABC):    

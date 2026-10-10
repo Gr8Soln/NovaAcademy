@@ -2,8 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, HTTPException
 
-from app.core.config import settings
-from app.core.middleware.rate_limit import SimpleRateLimiter
+from src.core.config import settings
+from src.core.middleware.rate_limit import SimpleRateLimiter
 
 app = FastAPI()
 app.add_middleware(SimpleRateLimiter, settings=settings)

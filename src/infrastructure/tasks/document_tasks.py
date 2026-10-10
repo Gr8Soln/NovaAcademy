@@ -5,15 +5,15 @@ from celery import Task
 from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
                                     create_async_engine)
 
-from app.adapters.repositories import SQLDocumentRepository
-from app.adapters.services.document_extractor import DocumentExtractor
-from app.adapters.services.local_storage import LocalStorage
-from app.adapters.services.ollama_embedder import OllamaEmbedder
-from app.adapters.services.qdrant_vector import QdrantVector
-from app.application.use_cases.document_usecases import ProcessDocumentUseCase
-from app.core.config import settings
-from app.core.logging import get_logger
-from app.infrastructure.celery_app import celery_app
+from src.adapters.repositories import SQLDocumentRepository
+from src.adapters.services.document_extractor import DocumentExtractor
+from src.adapters.services.local_storage import LocalStorage
+from src.adapters.services.ollama_embedder import OllamaEmbedder
+from src.adapters.services.qdrant_vector import QdrantVector
+from src.application.use_cases.document_usecases import ProcessDocumentUseCase
+from src.core.config import settings
+from src.core.logging import get_logger
+from src.infrastructure.celery_app import celery_app
 
 logger = get_logger(__name__)
 

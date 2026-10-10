@@ -1,7 +1,7 @@
 import uuid
 from abc import ABC, abstractmethod
 
-from app.application.dtos import GoogleUserInfo, TokenPair
+from src.application.dtos import GoogleUserInfo, TokenPair
 
 
 class IJwtService(ABC):

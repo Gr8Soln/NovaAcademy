@@ -1,23 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.adapters.schemas import (AuthResponse, ConfirmEmailRequest,
+from src.adapters.schemas import (AuthResponse, ConfirmEmailRequest,
                                   ForgotPasswordRequest, GoogleAuthRequest,
                                   LoginRequest, RefreshTokenRequest,
                                   RegisterRequest, ResendConfirmEmailRequest,
                                   ResetPasswordRequest, TokenResponse,
                                   UserResponse, success_response)
-from app.application.use_cases import (ConfirmEmailUseCase,
+from src.application.use_cases import (ConfirmEmailUseCase,
                                        ForgotPasswordUseCase,
                                        GoogleAuthUseCase, LoginUseCase,
                                        RefreshTokenUseCase, RegisterUseCase,
                                        ResendConfirmEmailUseCase,
                                        ResetPasswordUseCase)
-from app.core.logging import get_logger
-from app.domain.exceptions import (AccountInactiveError, EmailNotVerifiedError,
+from src.core.logging import get_logger
+from src.domain.exceptions import (AccountInactiveError, EmailNotVerifiedError,
                                    InvalidAuthMethodError,
                                    InvalidCredentialError, InvalidTokenError,
                                    UserAlreadyExistsError, UserNotFoundError)
-from app.infrastructure.api.dependencies import (
+from src.infrastructure.api.dependencies import (
     get_confirm_email_usecase, get_forgot_password_usecase,
     get_google_auth_usecase, get_login_usecase, get_refresh_token_usecase,
     get_register_usecase, get_resend_confirm_email_usecase,

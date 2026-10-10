@@ -3,11 +3,11 @@ import uuid
 
 from fastapi import UploadFile
 
-from app.application.interfaces import (IJwtService, IStorageService,
+from src.application.interfaces import (IJwtService, IStorageService,
                                         IUserInterface)
-from app.core.logging import get_logger
-from app.domain.entities import User
-from app.domain.exceptions import (AccountInactiveError, AuthenticationError,
+from src.core.logging import get_logger
+from src.domain.entities import User
+from src.domain.exceptions import (AccountInactiveError, AuthenticationError,
                                    InvalidCredentialError,
                                    InvalidUsernameError, UsernameCooldownError,
                                    UsernameUnavailableError, UserNotFoundError)

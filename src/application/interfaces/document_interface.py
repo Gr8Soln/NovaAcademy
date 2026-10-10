@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from uuid import UUID
 
-from app.domain.entities import Document
-from app.domain.entities.document_entity import (DocumentChunksAndEmbeddings,
+from src.domain.entities import Document
+from src.domain.entities.document_entity import (DocumentChunksAndEmbeddings,
                                                  ExtractedChunk)
 
 

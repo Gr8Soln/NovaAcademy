@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 
-from app.adapters.schemas import success_response
-from app.application.use_cases.study_usecases import GetStudyStatsUseCase
-from app.domain.entities import User
-from app.infrastructure.api.dependencies import (get_current_user,
+from src.adapters.schemas import success_response
+from src.application.use_cases.study_usecases import GetStudyStatsUseCase
+from src.domain.entities import User
+from src.infrastructure.api.dependencies import (get_current_user,
                                                  get_study_stats_usecase)
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])

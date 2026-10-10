@@ -1,11 +1,11 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from app.application.use_cases.auth_usecases import RegisterUseCase, LoginUseCase
-from app.application.dtos import TokenPair, AuthProvider
-from app.domain.entities import User
-from app.application.interfaces import IUserInterface, IJwtService, IEmailService
-from app.core.config import settings
+from src.application.use_cases.auth_usecases import RegisterUseCase, LoginUseCase
+from src.application.dtos import TokenPair, AuthProvider
+from src.domain.entities import User
+from src.application.interfaces import IUserInterface, IJwtService, IEmailService
+from src.core.config import settings
 
 class MockUserRepo(IUserInterface):
     def __init__(self):
@@ -86,5 +86,5 @@ async def test_login_invalid_auth_method_raises():
     with pytest.raises(Exception) as exc:
         await login_uc.execute("g@example.com", "doesntmatter")
     # The specific exception type is InvalidAuthMethodError
-    from app.application.use_cases.auth_usecases import InvalidAuthMethodError
+    from src.application.use_cases.auth_usecases import InvalidAuthMethodError
     assert isinstance(exc.value, InvalidAuthMethodError)

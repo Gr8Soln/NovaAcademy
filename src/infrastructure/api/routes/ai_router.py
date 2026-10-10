@@ -5,12 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from app.adapters.schemas import success_response
-from app.application.use_cases.tutor_usecases import TutorUseCase
-from app.domain.entities import User
-from app.application.use_cases.ai_use_cases import GenerateQuizUseCase, AnalyzeStudentPerformanceUseCase
-from app.domain.entities.ai_entity import QuizType
-from app.infrastructure.api.dependencies import (
+from src.adapters.schemas import success_response
+from src.application.use_cases.tutor_usecases import TutorUseCase
+from src.domain.entities import User
+from src.application.use_cases.ai_use_cases import GenerateQuizUseCase, AnalyzeStudentPerformanceUseCase
+from src.domain.entities.ai_entity import QuizType
+from src.infrastructure.api.dependencies import (
     get_current_user, get_tutor_usecase, get_generate_quiz_usecase, get_analyze_performance_usecase
 )
 

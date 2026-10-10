@@ -5,10 +5,10 @@ from uuid import UUID
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.interfaces import IDocumentInterface
-from app.core.logging import get_logger
-from app.domain.entities import Document, ProcessingStatus
-from app.infrastructure.db import DocumentModel
+from src.application.interfaces import IDocumentInterface
+from src.core.logging import get_logger
+from src.domain.entities import Document, ProcessingStatus
+from src.infrastructure.db import DocumentModel
 
 logger = get_logger(__name__)
 

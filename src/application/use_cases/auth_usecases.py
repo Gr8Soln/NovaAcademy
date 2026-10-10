@@ -6,12 +6,12 @@ from fastapi import HTTPException
 from google.auth.transport import requests
 from google.oauth2 import id_token
 
-from app.application.dtos import TokenPair, AuthProvider
-from app.application.interfaces import (IEmailService, IJwtService,
+from src.application.dtos import TokenPair, AuthProvider
+from src.application.interfaces import (IEmailService, IJwtService,
                                         IUserInterface)
-from app.core.logging import get_logger
-from app.domain.entities import User
-from app.domain.exceptions import (AccountInactiveError, AuthenticationError,
+from src.core.logging import get_logger
+from src.domain.entities import User
+from src.domain.exceptions import (AccountInactiveError, AuthenticationError,
                                    EmailNotVerifiedError,
                                    InvalidAuthMethodError,
                                    InvalidCredentialError, InvalidTokenError,

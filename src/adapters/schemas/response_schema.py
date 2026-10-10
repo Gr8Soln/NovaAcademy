@@ -4,7 +4,7 @@ from typing import Any, Generic, Optional, TypeVar
 
 from pydantic import BaseModel
 
-from app.core.logging import get_logger
+from src.core.logging import get_logger
 
 logger = get_logger(__name__)
 

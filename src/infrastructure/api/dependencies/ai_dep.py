@@ -1,12 +1,12 @@
 from fastapi import Depends
-from app.application.use_cases.ai_use_cases import GenerateQuizUseCase, AnalyzeStudentPerformanceUseCase
-from app.application.interfaces.llm_interface import ILLMInterface
-from app.application.use_cases.document_usecases import SearchDocumentsUseCase
-from app.infrastructure.api.dependencies.tutor_dep import get_llm_service, get_tutor_usecase
-from app.infrastructure.api.dependencies.document_dep import get_search_documents_usecase
-from app.application.use_cases.nova_agent_usecase import NovaAgentUseCase
-from app.adapters.agents.prompt_service import PromptService
-from app.application.use_cases.tutor_usecases import TutorUseCase
+from src.application.use_cases.ai_use_cases import GenerateQuizUseCase, AnalyzeStudentPerformanceUseCase
+from src.application.interfaces.llm_interface import ILLMInterface
+from src.application.use_cases.document_usecases import SearchDocumentsUseCase
+from src.infrastructure.api.dependencies.tutor_dep import get_llm_service, get_tutor_usecase
+from src.infrastructure.api.dependencies.document_dep import get_search_documents_usecase
+from src.application.use_cases.nova_agent_usecase import NovaAgentUseCase
+from src.adapters.agents.prompt_service import PromptService
+from src.application.use_cases.tutor_usecases import TutorUseCase
 
 async def get_prompt_service() -> PromptService:
     return PromptService()

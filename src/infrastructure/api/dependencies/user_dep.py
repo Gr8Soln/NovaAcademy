@@ -1,8 +1,8 @@
 from fastapi import Depends
 
-from app.application.interfaces import (IJwtService, IStorageService,
+from src.application.interfaces import (IJwtService, IStorageService,
                                         IUserInterface)
-from app.application.use_cases import (ChangePasswordUseCase,
+from src.application.use_cases import (ChangePasswordUseCase,
                                        DeactivateAccountUseCase,
                                        GetCurrentUserUseCase,
                                        RemoveAvatarUseCase, SetPasswordUseCase,

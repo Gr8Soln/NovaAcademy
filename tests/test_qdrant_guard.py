@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from app.adapters.services.qdrant_vector import QdrantVector
+from src.adapters.services.qdrant_vector import QdrantVector
 
 class DummyClient:
     def __init__(self, *args, **kwargs):

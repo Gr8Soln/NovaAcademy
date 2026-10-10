@@ -3,9 +3,9 @@ from typing import Optional
 
 from qdrant_client import QdrantClient, models
 
-from app.application.interfaces import IVectorStoreInterface
-from app.core.config import settings
-from app.domain.entities import DocumentChunksAndEmbeddings
+from src.application.interfaces import IVectorStoreInterface
+from src.core.config import settings
+from src.domain.entities import DocumentChunksAndEmbeddings
 
 
 class QdrantVector(IVectorStoreInterface):
@@ -26,7 +26,7 @@ class QdrantVector(IVectorStoreInterface):
                     ),
                 )
         except Exception as e:
-            from app.core.logging import get_logger
+            from src.core.logging import get_logger
             logger = get_logger(__name__)
             logger.error(f"Failed to ensure Qdrant collection exists: {e}")
             # Continue without raising; operations will fail later if collection missing.

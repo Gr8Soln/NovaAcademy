@@ -9,9 +9,9 @@ from PIL import Image
 from pptx import Presentation
 from transformers import AutoTokenizer
 
-from app.application.interfaces import IDocumentExtractorInterface
-from app.core.config import settings
-from app.domain.entities.document_entity import ExtractedChunk
+from src.application.interfaces import IDocumentExtractorInterface
+from src.core.config import settings
+from src.domain.entities.document_entity import ExtractedChunk
 
 
 class DocumentExtractor(IDocumentExtractorInterface):

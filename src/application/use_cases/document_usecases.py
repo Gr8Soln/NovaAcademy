@@ -2,15 +2,15 @@ import datetime
 from typing import Optional
 from uuid import UUID
 
-from app.application.interfaces import (IChatGroupInterface,
+from src.application.interfaces import (IChatGroupInterface,
                                          IDocumentEmbedderInterface,
                                          IDocumentExtractorInterface,
                                          IDocumentInterface, IStorageService,
                                          IVectorStoreInterface)
-from app.application.dtos import ChatGroupRole
-from app.core.config import settings
-from app.core.logging import get_logger
-from app.domain.entities import (Document, DocumentChunksAndEmbeddings,
+from src.application.dtos import ChatGroupRole
+from src.core.config import settings
+from src.core.logging import get_logger
+from src.domain.entities import (Document, DocumentChunksAndEmbeddings,
                                  EmbeddedChunk)
 
 logger = get_logger(__name__)

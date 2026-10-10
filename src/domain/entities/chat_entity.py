@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
 
-from app.application.dtos import ChatGroupRole, MessageType
+from src.application.dtos import ChatGroupRole, MessageType
 
 _CODE_CHARS = string.ascii_letters + string.digits  # A-Z, a-z, 0-9
 

@@ -5,9 +5,9 @@ from uuid import UUID
 
 import redis.asyncio as redis
 
-from app.application.dtos import MessageType
-from app.application.interfaces import IChatCacheInterface
-from app.domain.entities import (ChatGroup, ChatGroupMember, ChatGroupRole,
+from src.application.dtos import MessageType
+from src.application.interfaces import IChatCacheInterface
+from src.domain.entities import (ChatGroup, ChatGroupMember, ChatGroupRole,
                                  ChatMemberMention, ChatMessage)
 
 

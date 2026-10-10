@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from uuid import UUID
 
-from app.domain.entities.study_session_entity import StudySession
+from src.domain.entities.study_session_entity import StudySession
 
 
 class IStudySessionInterface(ABC):

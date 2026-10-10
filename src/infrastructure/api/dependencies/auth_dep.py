@@ -6,17 +6,17 @@ from fastapi.security import (HTTPAuthorizationCredentials, HTTPBearer,
                               OAuth2PasswordBearer)
 from jose import JWTError, jwt
 
-from app.application.interfaces import (IEmailService, IJwtService,
+from src.application.interfaces import (IEmailService, IJwtService,
                                         IUserInterface)
-from app.application.use_cases import (ConfirmEmailUseCase,
+from src.application.use_cases import (ConfirmEmailUseCase,
                                        ForgotPasswordUseCase,
                                        GoogleAuthUseCase, LoginUseCase,
                                        RefreshTokenUseCase, RegisterUseCase,
                                        ResendConfirmEmailUseCase,
                                        ResetPasswordUseCase)
-from app.core.config import Settings, get_settings, settings
-from app.domain.entities import User
-from app.domain.exceptions import AccountInactiveError, AuthenticationError
+from src.core.config import Settings, get_settings, settings
+from src.domain.entities import User
+from src.domain.exceptions import AccountInactiveError, AuthenticationError
 
 from .core_dep import get_email_service, get_jwt_service, get_user_repository
 

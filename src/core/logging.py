@@ -3,7 +3,7 @@ import sys
 
 from loguru import logger
 
-from app.core.config import settings
+from src.core.config import settings
 
 # -----------------------------------------------------------
 # Global Loguru configuration

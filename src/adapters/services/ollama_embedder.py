@@ -2,8 +2,8 @@ from typing import Optional
 
 from ollama import AsyncClient
 
-from app.application.interfaces import IDocumentEmbedderInterface
-from app.core.config import settings
+from src.application.interfaces import IDocumentEmbedderInterface
+from src.core.config import settings
 
 
 class OllamaEmbedder(IDocumentEmbedderInterface):

@@ -5,14 +5,14 @@ from uuid import UUID
 from fastapi import (APIRouter, Depends, File, Form, HTTPException, Query,
                      UploadFile)
 
-from app.adapters.schemas import (AddMemberRequest, ChangeMemberRoleRequest,
+from src.adapters.schemas import (AddMemberRequest, ChangeMemberRoleRequest,
                                   ClassMemberResponse, ClassResponse,
                                   EditMessageRequest, HandleJoinRequestRequest,
                                   JoinRequestResponse, MessageResponse,
                                   SendMessageRequest, UpdateClassRequest,
                                   success_response)
-from app.application.dtos.enum_dto import MessageType
-from app.application.use_cases import (AddClassMemberUseCase,
+from src.application.dtos.enum_dto import MessageType
+from src.application.use_cases import (AddClassMemberUseCase,
                                        ChangeClassMemberRoleUseCase,
                                        CreateClassUseCase,
                                        DeleteChatMessageUseCase,
@@ -29,8 +29,8 @@ from app.application.use_cases import (AddClassMemberUseCase,
                                        SendChatMessageInput,
                                        SendChatMessageUseCase,
                                        UpdateClassUseCase)
-from app.domain.entities import User
-from app.infrastructure.api.dependencies import (
+from src.domain.entities import User
+from src.infrastructure.api.dependencies import (
     get_add_class_member_usecase, get_change_class_role_usecase,
     get_chat_messages_use_case, get_chat_presence_service,
     get_chat_send_message_use_case, get_connection_manager,

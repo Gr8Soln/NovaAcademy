@@ -6,13 +6,13 @@ from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.application.dtos import MessageType
-from app.application.interfaces import (IChatGroupInterface,
+from src.application.dtos import MessageType
+from src.application.interfaces import (IChatGroupInterface,
                                         IChatMessageInterface)
-from app.domain.entities import (ChatGroup, ChatGroupMember, ChatGroupRole,
+from src.domain.entities import (ChatGroup, ChatGroupMember, ChatGroupRole,
                                  ChatMemberMention, ChatMessage,
                                  ClassJoinRequest, JoinRequestStatus)
-from app.infrastructure.db import (GroupMemberModel, GroupModel,
+from src.infrastructure.db import (GroupMemberModel, GroupModel,
                                    JoinRequestModel, MessageMentionModel,
                                    MessageModel)
 

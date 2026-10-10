@@ -1,8 +1,8 @@
 import uuid
 from typing import List, Optional
-from app.domain.entities.ai_entity import Quiz, QuizType, PerformanceAnalysis
-from app.application.interfaces.llm_interface import ILLMInterface
-from app.application.use_cases.document_usecases import SearchDocumentsUseCase
+from src.domain.entities.ai_entity import Quiz, QuizType, PerformanceAnalysis
+from src.application.interfaces.llm_interface import ILLMInterface
+from src.application.use_cases.document_usecases import SearchDocumentsUseCase
 
 class GenerateQuizUseCase:
     """Use case to generate a quiz from documents."""

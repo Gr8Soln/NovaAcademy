@@ -6,7 +6,7 @@ from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.infrastructure.db.base import Base
+from src.infrastructure.db.base import Base
 
 
 class MessageModel(Base):

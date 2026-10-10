@@ -5,8 +5,8 @@ from uuid import UUID
 
 import redis.asyncio as redis
 
-from app.application.interfaces import IChatPresenceService, IChatPubSub
-from app.domain.entities import ChatMessage
+from src.application.interfaces import IChatPresenceService, IChatPubSub
+from src.domain.entities import ChatMessage
 
 
 class RedisPubSub(IChatPubSub):    

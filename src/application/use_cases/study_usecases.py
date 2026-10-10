@@ -1,8 +1,8 @@
 import uuid
 from typing import List, Optional
 
-from app.application.interfaces.study_session_interface import IStudySessionInterface
-from app.domain.entities.study_session_entity import StudySession
+from src.application.interfaces.study_session_interface import IStudySessionInterface
+from src.domain.entities.study_session_entity import StudySession
 
 
 class StartStudySessionUseCase:
